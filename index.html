@@ -2236,7 +2236,7 @@ function loadScenario(){
     var p=JSON.parse(raw);
     if(!p||!p.S){flashSave('Invalid data','#ef4444');return;}
     _restoreS(p.S);
-    renderAll();updateCalcs();
+    renderFromS();
     var d=new Date(p.ts);
     var tEl2=$('save-ts');if(tEl2)tEl2.textContent='Loaded '+d.toLocaleTimeString();
     flashSave('\u2713 Loaded ('+d.toLocaleDateString()+')','#3b82f6');
@@ -2261,6 +2261,37 @@ function exportJSON(){
   URL.revokeObjectURL(a.href);
   flashSave('\u2193 Exported');
 }
+
+function _setVal(id,val){
+  var el=$(id); if(!el) return;
+  if(el.type==='checkbox') el.checked=!!val; else el.value=val;
+}
+function renderFromS(){
+  // Write all static (non-rebuilt) inputs from S before rendering
+  _setVal('np-name',    S.npName);
+  _setVal('launch-year',S.launchYear);
+  _setVal('cfg-years',  S.years);
+  _setVal('yr-range',   S.years);
+  _setVal('yr-val',     S.years);
+  _setVal('prev-unit',  S.prevUnit);
+  _setVal('prev-val',   S.prevVal);
+  _setVal('pop-size-m', S.popSizeM);
+  _setVal('vol-override-toggle', S.usePatVolOverride);
+  // Rebuild all dynamic sections (these write S values into freshly created inputs)
+  compute();
+  renderCompList();
+  renderCascade();
+  renderGrowthFields();
+  renderVolTable();
+  renderBefTable();
+  renderSubsTable();
+  renderExpTable();
+  renderTxTable();
+  renderBITable();
+  // Sync back for consistency then update computed spans
+  syncAll(); updateCalcs();
+}
+
 function _restoreS(saved){
   // Full deep replacement of S from saved data
   // Clear existing comparator-keyed sub-objects first
@@ -2288,7 +2319,7 @@ function importJSON(input){
     try{
       var p=JSON.parse(ev.target.result);
       if(!p||!p.S)throw new Error('No scenario data found in file');
-      _restoreS(p.S);renderAll();updateCalcs();
+      _restoreS(p.S);renderFromS();
       flashSave('\u2713 Imported: '+file.name,'#3b82f6');
     }catch(err){flashSave('Import failed: '+err.message,'#ef4444');}
     input.value='';
