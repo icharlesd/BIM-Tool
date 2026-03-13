@@ -2235,7 +2235,7 @@ function loadScenario(){
     if(!raw){flashSave('Nothing saved yet','#f59e0b');return;}
     var p=JSON.parse(raw);
     if(!p||!p.S){flashSave('Invalid data','#ef4444');return;}
-    Object.assign(S,p.S);
+    _restoreS(p.S);
     renderAll();updateCalcs();
     var d=new Date(p.ts);
     var tEl2=$('save-ts');if(tEl2)tEl2.textContent='Loaded '+d.toLocaleTimeString();
@@ -2261,6 +2261,26 @@ function exportJSON(){
   URL.revokeObjectURL(a.href);
   flashSave('\u2193 Exported');
 }
+function _restoreS(saved){
+  // Full deep replacement of S from saved data
+  // Clear existing comparator-keyed sub-objects first
+  S.befMS={}; S.captureProp={}; S.txCost={};
+  // Copy all scalar and array fields
+  var keys=Object.keys(saved);
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i];
+    var v=saved[k];
+    if(v===null||v===undefined) continue;
+    if(typeof v==='object'&&!Array.isArray(v)){
+      // Deep copy plain objects
+      S[k]=JSON.parse(JSON.stringify(v));
+    } else if(Array.isArray(v)){
+      S[k]=v.slice();
+    } else {
+      S[k]=v;
+    }
+  }
+}
 function importJSON(input){
   var file=input.files[0];if(!file)return;
   var r=new FileReader();
@@ -2268,7 +2288,7 @@ function importJSON(input){
     try{
       var p=JSON.parse(ev.target.result);
       if(!p||!p.S)throw new Error('No scenario data found in file');
-      Object.assign(S,p.S);renderAll();updateCalcs();
+      _restoreS(p.S);renderAll();updateCalcs();
       flashSave('\u2713 Imported: '+file.name,'#3b82f6');
     }catch(err){flashSave('Import failed: '+err.message,'#ef4444');}
     input.value='';
