@@ -800,7 +800,7 @@ function gotoPage(id,el){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('active');});
   $(id+'-page').classList.add('active'); el.classList.add('active');
-  if(id==='psa'){syncAll();seedPSA();}
+  if(id==='psa'){seedPSA();}
   if(id==='tornado'||id==='scenario'||id==='threshold'){syncAll();compute();populateSaYrSelects();}
 }
 function proceedToPSA(){syncAll();seedPSA();gotoPage('psa',$('nav-psa'));}
@@ -2289,7 +2289,14 @@ function renderFromS(){
   renderTxTable();
   renderBITable();
   // Sync back for consistency then update computed spans
-  syncAll(); updateCalcs();
+  syncAll(); compute(); updateCalcs();
+  // Snapshot loaded state into PSA cfg so PSA tab reflects loaded scenario
+  cfg._S=JSON.parse(JSON.stringify(S));
+  cfg._D=JSON.parse(JSON.stringify(D));
+
+  // Snapshot loaded state into cfg so PSA tab uses loaded scenario
+  cfg._S=JSON.parse(JSON.stringify(S));
+  cfg._D=JSON.parse(JSON.stringify(D));
 }
 
 function _restoreS(saved){
