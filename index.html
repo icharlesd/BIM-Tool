@@ -709,7 +709,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div></div>
       <div class="sa-controls">
         <div class="
-
+<script>
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
    Paste into browser console or use with Jest/Jasmine.
@@ -2601,16 +2601,6 @@ function toggleVaryComp(cb){
       'Comparator costs are being varied probabilistically.':
       'Comparator costs are held fixed at base case values (recommended for known list prices).';
   }
-}
-
-      +'<td class="tc"><span class="cv '+(s.p95<0?'grn':'neg')+'">'+fmtM(s.p95)+'</span></td>'
-      +'<td class="tc"><span class="cv" style="color:#64748b;">'+fmtM(ciW)+'</span></td>'
-      +'</tr>';
-  }
-  h+='</tbody></table>'
-    +'<div style="font-size:9px;color:var(--ink5);margin-top:6px;">90% CI = P5 to P95 per year. Width shows range of plausible annual budget impacts.</div>'
-    +'</div>';
-  el.innerHTML=h;
 }
 
 </script>
