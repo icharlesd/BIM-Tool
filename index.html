@@ -646,7 +646,8 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
         </div>
         <div id="tab-vd" class="cp"><div id="vd-wrap"><div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first, then click this tab.</div></div></div>
         <div id="tab-boxplot" class="cp"><div class="cw"><canvas id="boxChart" height="120"></canvas><div class="ptbl" id="ptbl"></div>
-        <div id="annual-nbi-tbl"></div></div></div>
+        <div id="annual-nbi-tbl"></div>
+        <div id="param-ranking"></div></div></div>
       </div>
     </div>
   </div>
@@ -718,10 +719,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       </div>
     </div>
     <div class="thresh-grid" id="threshold-wrap">
-      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div>
-    </div>
-  </div>
-</div>
+      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</d
 <script>
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
@@ -1805,6 +1803,8 @@ function runSim(){
     if(fn)fn.textContent='* P95 uses ~'+(Math.round(N*0.05)).toLocaleString()+' tail obs at n='+N.toLocaleString()+'. Treat as indicative for n<50,000.';
     $('idle').style.display='none';$('res').style.display='block';
     renderHist(all,SIM);renderCDF(all);renderBox(SIM);renderAnnualTable(SIM.annStats,yrs);
+    // Auto-run variance decomposition
+    setTimeout(function(){runVD();},100);
     btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
     pw.style.display='none';busy=false;
   };
@@ -2528,6 +2528,7 @@ function runVD(){
   results.sort(function(a,b){return b.variance-a.variance;});
   var varSum=results.reduce(function(a,r){return a+r.variance;},0)||1;
   renderVD(results,varFull,varSum);
+  renderCompactRanking(results,varFull);
 }
 
 function renderVD(results,varFull,varSum){
@@ -2612,6 +2613,41 @@ function toggleVaryComp(cb){
       'Comparator costs are being varied probabilistically.':
       'Comparator costs are held fixed at base case values (recommended for known list prices).';
   }
+}
+
+function renderCompactRanking(results, varFull){
+  var el=$('param-ranking');
+  if(!el||!results||results.length===0) return;
+  var varSum=results.reduce(function(a,r){return a+r.variance;},0)||1;
+  var colors=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
+  var h='<div style="margin-top:16px;">'
+    +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'
+    +'<span>&#127942; Parameter Influence Ranking</span>'
+    +'<span style="font-size:10px;font-weight:400;color:var(--ink4);">Ranked by contribution to NBI uncertainty</span>'
+    +'</div>';
+  results.forEach(function(r,i){
+    var pct=varSum>0?(r.variance/varSum*100):0;
+    var barW=Math.round(pct);
+    var col=colors[i%colors.length];
+    h+='<div style="margin-bottom:8px;">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">'
+      +'<span style="font-size:11px;font-weight:600;color:var(--ink);">'
+      +'<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+col
+      +';color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:18px;margin-right:6px;">'+(i+1)+'</span>'
+      +r.label+'</span>'
+      +'<span style="font-size:11px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+col+';">'+pct.toFixed(1)+'%</span>'
+      +'</div>'
+      +'<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+barW+'%;background:'+col+';border-radius:4px;transition:width .5s ease;"></div>'
+      +'</div>'
+      +'<div style="font-size:9px;color:var(--ink5);margin-top:2px;">Partial SD: '+fmtM(r.sd)+'</div>'
+      +'</div>';
+  });
+  h+='<div style="font-size:9px;color:var(--ink5);margin-top:8px;padding:8px;background:var(--surface2);border-radius:4px;">'
+    +'&#8505; Partial variance decomposition — each parameter varied independently ('
+    +VD_N+' iterations). % = share of total explained variance.</div>'
+    +'</div>';
+  el.innerHTML=h;
 }
 </script>
 <div id="chartjs-warn" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#7f1d1d;color:#fca5a5;padding:10px 20px;border-radius:6px;font-size:11px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);">&#9888; Chart.js unavailable. Charts will not render. Calculations unaffected.</div>
