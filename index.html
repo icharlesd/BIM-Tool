@@ -563,26 +563,29 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       <div class="dc" id="dc-cost">
         <div class="dch"><div class="dcd" id="dot-cost"></div><span class="dcl" id="lbl-cost">Annual Cost</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-cost" onchange="changeCard('cost')"><option value="gamma" selected>Gamma</option></select></div>
+          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-cost" onchange="changeCard('cost')"><option value="gamma" selected>Gamma</option><option value="lognormal">Log-Normal</option><option value="normal">Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed from base</button></div>
         </div>
-        <div class="dchint" id="h-cost"></div><div class="dcf" id="f-cost"></div>
+        
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><label style="font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;">Spread (&#177;%, 90% CI)</label><input type="number" id="spread-cost" value="30" min="1" max="99" step="1" style="width:64px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;" title="Uncertainty spread as &#177;% of base value (90% CI)"/><span style="font-size:9px;color:var(--ink5);">of base value</span></div><div class="dchint" id="h-cost"></div><div class="dcf" id="f-cost"></div>
       </div>
       <div class="dc" id="dc-uptake">
         <div class="dch"><div class="dcd" id="dot-uptake"></div><span class="dcl" id="lbl-uptake">Uptake Rate</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-uptake" onchange="changeCard('uptake')"><option value="beta" selected>Beta</option></select></div>
+          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-uptake" onchange="changeCard('uptake')"><option value="beta" selected>Beta</option><option value="normal">Normal</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed from base</button></div>
         </div>
-        <div class="dchint" id="h-uptake"></div><div class="dcf" id="f-uptake"></div>
+        
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><label style="font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;">Spread (&#177;%, 90% CI)</label><input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" style="width:64px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;" title="Uncertainty spread as &#177;% of base value (90% CI)"/><span style="font-size:9px;color:var(--ink5);">of base value</span></div><div class="dchint" id="h-uptake"></div><div class="dcf" id="f-uptake"></div>
       </div>
       <div class="dc" id="dc-pop">
         <div class="dch"><div class="dcd" id="dot-pop"></div><span class="dcl">Population</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-pop" onchange="changeCard('pop')"><option value="normal" selected>Normal</option></select></div>
+          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-pop" onchange="changeCard('pop')"><option value="normal" selected>Normal</option><option value="lognormal">Log-Normal</option><option value="gamma">Gamma</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed from base</button></div>
         </div>
-        <div class="dchint" id="h-pop"></div><div class="dcf" id="f-pop"></div>
+        
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><label style="font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;">Spread (&#177;%, 90% CI)</label><input type="number" id="spread-pop" value="30" min="1" max="99" step="1" style="width:64px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;" title="Uncertainty spread as &#177;% of base value (90% CI)"/><span style="font-size:9px;color:var(--ink5);">of base value</span></div><div class="dchint" id="h-pop"></div><div class="dcf" id="f-pop"></div>
       </div>
       <div style="margin-top:16px;">
         <div style="font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">Comparator Cost Distributions</div>
@@ -655,68 +658,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       <div class="sa-controls">
         <div class="sa-ctrl-group">
           <label>Variation (±%)</label>
-          <input type="number" id="tornado-var" value="20" min="1" max="100" step="1"/>
-        </div>
-        <div class="sa-ctrl-group">
-          <label>Time Horizon (Years)</label>
-          <select id="tornado-yrs"></select>
-        </div>
-        <button class="run-sa-btn" onclick="runTornado()">&#9654; Run</button>
-      </div>
-    </div>
-    <div class="tornado-legend">
-      <span><i style="background:#10b981"></i> Saves budget vs base</span>
-      <span><i style="background:#ef4444"></i> Costs budget vs base</span>
-    </div>
-    <div class="tornado-wrap" id="tornado-chart-wrap">
-      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;">Click Run to generate the tornado diagram.</div>
-    </div>
-    <div id="tornado-tbl-wrap"></div>
-  </div>
-</div>
-
-<!-- =================== PAGE 4: SCENARIO ANALYSIS =================== -->
-<div id="scenario-page" class="page">
-  <div class="inner">
-    <div class="sa-header">
-      <div>
-        <div class="sa-title">Scenario Analysis</div>
-        <div class="sa-sub">Compare Base, Low, and High scenarios side-by-side. Edit Low/High inputs directly.</div>
-      </div>
-      <div class="sa-controls">
-        <div class="sa-ctrl-group">
-          <label>Time Horizon (Years)</label>
-          <select id="scenario-yrs"></select>
-        </div>
-        <button class="run-sa-btn" onclick="runScenario()">&#9654; Update</button>
-      </div>
-    </div>
-    <div id="scenario-wrap">
-      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;">Click Update
-
-<!-- =================== PAGE 5: THRESHOLD ANALYSIS =================== -->
-<div id="threshold-page" class="page">
-  <div class="inner">
-    <div class="sa-header">
-      <div>
-        <div class="sa-title">Threshold Analysis</div>
-        <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div>
-      </div>
-      <div class="sa-controls">
-        <div class="sa-ctrl-group">
-          <label>Time Horizon (Years)</label>
-          <select id="threshold-yrs"></select>
-        </div>
-        <button class="run-sa-btn" onclick="runThreshold()">&#9654; Calculate</button>
-      </div>
-    </div>
-    <div class="thresh-grid" id="threshold-wrap">
-      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div>
-    </div>
-  </div>
-</div>
-
-<script>
+          <input type="number"
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
    Paste into browser console or use with Jest/Jasmine.
@@ -1520,7 +1462,7 @@ function seedPSA(){
   cfg._S=JSON.parse(JSON.stringify(S));
   cfg._D=JSON.parse(JSON.stringify(D));
   ['cost','uptake','pop'].forEach(function(id){
-    var distList=id==='uptake'?['beta']:id==='pop'?['normal']:['gamma'];
+    var distList=id==='uptake'?['beta','normal','lognormal','triangular','uniform']:id==='pop'?['normal','lognormal','gamma','triangular','uniform']:['gamma','lognormal','normal','triangular','uniform'];
     var sel=$('d-'+id);
     sel.innerHTML=distList.map(function(d){return '<option value="'+d+'"'+(d===cfg[id].dist?' selected':'')+'>'+DR[d].label+'</option>';}).join('');
     renderCard(id);
@@ -1552,7 +1494,7 @@ function renderCompCostCards(){
     var ccfg=cfg.compCost[c.id]||{dist:'gamma'};
     if(!cfg.compCost[c.id]) cfg.compCost[c.id]=ccfg;
     var baseAnn=(dd.compAnn&&dd.compAnn[c.id])||0;
-    var distOpts=['gamma'];
+    var distOpts=['gamma','lognormal','normal','triangular','uniform'];
     var flds=DR[ccfg.dist].fields;
 
     var card=document.createElement('div');
@@ -1590,6 +1532,20 @@ function renderCompCostCards(){
     reseedField.appendChild(reseedBtn);
     uncRow.appendChild(distField); uncRow.appendChild(reseedField);
     card.appendChild(uncRow);
+    var sRow=document.createElement('div');
+    sRow.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px;';
+    var sLbl=document.createElement('label');
+    sLbl.style.cssText='font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;';
+    sLbl.textContent='Spread (\u00b1%, 90% CI)';
+    var sInp=document.createElement('input');
+    sInp.type='number';sInp.value='30';sInp.min='1';sInp.max='99';sInp.step='1';
+    sInp.id='spread-comp-'+c.id;
+    sInp.style.cssText='width:64px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:\'JetBrains Mono\',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;';
+    var sNote=document.createElement('span');
+    sNote.style.cssText='font-size:9px;color:var(--ink5);';
+    sNote.textContent='of base';
+    sRow.appendChild(sLbl);sRow.appendChild(sInp);sRow.appendChild(sNote);
+    card.appendChild(sRow);
 
     var hint=document.createElement('div'); hint.className='dchint'; hint.id='h-cc-'+c.id;
     hint.textContent=DR[ccfg.dist].hint;
@@ -1695,7 +1651,9 @@ function changeCard(id){
   var d=$('d-'+id).value;
   var ss=cfg._S||S,dd=cfg._D||D,isR=id==='uptake';
   var base=id==='cost'?(dd.npAnn||1000):id==='uptake'?((ss.npUptake[0]||5)/100):((dd.patVol&&dd.patVol[0])||100);
-  cfg[id]=Object.assign({dist:d},buildCfg(d,base,30,isR));
+  var spreadEl=$('spread-'+id);
+  var spr=spreadEl?Math.max(1,Math.min(99,parseFloat(spreadEl.value)||30)):30;
+  cfg[id]=Object.assign({dist:d},buildCfg(d,base,spr,isR));
   renderCard(id);
 }
 function reseedCard(id){
@@ -2540,6 +2498,50 @@ function renderVD(results,varFull,varSum){
     +'<strong>Method:</strong> Partial variance decomposition. Each parameter varied independently ('
     +VD_N+' iterations) with all others held at base. SD = standard deviation of NBI under that parameter\'s uncertainty alone. '
     +'% share normalised to sum of partial variances. Partial variances do not sum exactly to total variance due to interactions. '
+    +'Full PSA SD: <strong>'+fmtM(Math.sqrt(varFull))+'</strong>.</div>';
+  $('vd-wrap').innerHTML='<div class="cw">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
+    +'<div><div style="font-size:13px;font-weight:700;color:var(--ink);">Parameter Influence Ranking</div>'
+    +'<div style="font-size:11px;color:var(--ink4);margin-top:2px;">Which parameters drive the most uncertainty in NBI?</div></div>'
+    +'<button class="run-sa-btn" onclick="runVD()" style="padding:6px 14px;">&#8635; Recalculate</button>'
+    +'</div>'+svg+tbl+note+'</div>';
+}
+
+function renderAnnualTable(annStats, yrs){
+  var el=$('annual-nbi-tbl');
+  if(!el) return;
+  if(!annStats||Object.keys(annStats).length===0){
+    el.innerHTML=''; return;
+  }
+  var h='<div style="margin-top:16px;">'
+    +'<div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:8px;letter-spacing:-.1px;">Annual NBI Distribution</div>'
+    +'<table class="btbl"><thead><tr>'
+    +'<th style="text-align:left;">Year</th>'
+    +'<th>P5</th><th>P25</th><th>P50 Median</th><th>Mean</th><th>P75</th><th>P95</th>'
+    +'<th>90% CI Width</th>'
+    +'</tr></thead><tbody>';
+  for(var y=0;y<yrs;y++){
+    var s=annStats[y];
+    if(!s) continue;
+    var ciW=s.p95-s.p5;
+    var neg=s.p50<0?'grn':'neg';
+    h+='<tr class="dr"><td class="rl bold">Year '+(y+1)+'</td>'
+      +'<td class="tc"><span class="cv '+(s.p5<0?'grn':'neg')+'">'+fmtM(s.p5)+'</span></td>'
+      +'<td class="tc"><span class="cv '+(s.p25<0?'grn':'neg')+'">'+fmtM(s.p25)+'</span></td>'
+      +'<td class="tc"><span class="cv '+neg+'">'+fmtM(s.p50)+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:#3b82f6;">'+fmtM(s.mean)+'</span></td>'
+      +'<td class="tc"><span class="cv '+(s.p75<0?'grn':'neg')+'">'+fmtM(s.p75)+'</span></td>'
+      +'<td class="tc"><span class="cv '+(s.p95<0?'grn':'neg')+'">'+fmtM(s.p95)+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:#64748b;">'+fmtM(ciW)+'</span></td>'
+      +'</tr>';
+  }
+  h+='</tbody></table>'
+    +'<div style="font-size:9px;color:var(--ink5);margin-top:6px;">90% CI = P5 to P95 per year. Width shows range of plausible annual budget impacts.</div>'
+    +'</div>';
+  el.innerHTML=h;
+}
+
+hare normalised to sum of partial variances. Partial variances do not sum exactly to total variance due to interactions. '
     +'Full PSA SD: <strong>'+fmtM(Math.sqrt(varFull))+'</strong>.</div>';
   $('vd-wrap').innerHTML='<div class="cw">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
