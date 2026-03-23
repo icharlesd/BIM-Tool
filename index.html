@@ -411,6 +411,19 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 }
 #print-header h2 { font-size:14px; font-weight:700; margin-bottom:4px; }
 #print-header p  { font-size:10px; color:#64748b; }
+
+/* ── PSA two-panel layout ───────────── */
+.psa-layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 98px);overflow:hidden;}
+@media(max-width:900px){.psa-layout{grid-template-columns:1fr;height:auto;}}
+/* ── Tab panels ─────────────────────── */
+.tab-panel{display:none;padding:16px 0;}
+.tab-panel.active{display:block;}
+/* ── Run PSA button ─────────────────── */
+.run-psa-full-btn{width:100%;padding:12px;background:var(--teal);color:#fff;border:none;border-radius:var(--radius);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;letter-spacing:.3px;transition:background .15s;}
+.run-psa-full-btn:hover:not(:disabled){background:var(--teal-mid);}
+.run-psa-full-btn:disabled{opacity:.5;cursor:not-allowed;}
+/* ── Chart canvas sizes ─────────────── */
+#tab-hist canvas,#tab-cdf canvas,#tab-box canvas{max-height:300px;}
 </style>
 </head>
 <body>
@@ -822,6 +835,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 </div>
 
 <script>
+
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
    Paste into browser console or use with Jest/Jasmine.
@@ -1537,7 +1551,7 @@ function onYearsChange(){
 
 // ==================== DISTRIBUTIONS ====================
 var DR={
-  beta:      {label:'Beta',      color:'#f59e0b',applies:['uptake'],hint:'Beta distribution — used for the uptake trajectory multiplier (1.0 = base schedule). Alpha and Beta control the shape. Method of moments: seeded from your base uptake with 30% spread. Values <1.0 = slower ramp, >1.0 = faster. The simulation caps the multiplier so no year exceeds 100% uptake.',fields:[['alpha','Alpha (\u03b1)'],['beta','Beta (\u03b2)']]},
+  beta:      {label:'Beta',      color:'#f59e0b',applies:['uptake'],hint:'Beta distribution — parameterised on your Year 1 uptake rate (e.g. 0.05 = 5%). Alpha and Beta are derived via method of moments. Each iteration draws a Y1 rate; all years scale proportionally to preserve the ramp shape. This gives statistically valid parameters — avoids the degenerate Alpha=999 problem caused by centering Beta on 1.0.',fields:[['alpha','Alpha (\u03b1)'],['beta','Beta (\u03b2)']]},
   normal:    {label:'Normal',    color:'#3b82f6',applies:['cost','uptake','pop'],hint:'Normal distribution — used for patient population uncertainty. Mean = base case patient volume, SD reflects epidemiological estimation uncertainty (default: 30% spread \u2248 90% CI). Symmetric around the mean. Appropriate here because population estimates from registry data tend to be approximately normally distributed.',fields:[['mean','Mean'],['sd','Std Dev']]},
   lognormal: {label:'Log-Normal',color:'#ef4444',applies:['cost','uptake','pop'],hint:'Always positive with a right-skewed tail \u2014 recommended for costs. Reflects that costs can run high but not below zero. Enter the real-world mean and SD; log-space conversion is handled automatically.',fields:[['mean','Mean'],['sd','Std Dev']]},
   gamma:     {label:'Gamma',     color:'#f97316',applies:['cost','pop'],hint:'Gamma distribution — used for annual treatment costs. Always positive and right-skewed, reflecting that costs can run over budget but cannot be negative. Shape (\u03b1) and Scale (\u03b8) seeded by method of moments from your base annual cost with 30% spread. Mean = \u03b1\u00d7\u03b8. Replace default spread with a published confidence interval for formal submissions.',fields:[['shape','Shape (\u03b1)'],['scale','Scale (\u03b8)']]},
@@ -1616,7 +1630,9 @@ function seedPSA(){
   cfg.cost  =Object.assign({dist:cd},buildCfg(cd,D.npAnn,DEF_SPR,false));
   // Uptake card: samples a MULTIPLIER (mean=1) applied to the whole scheduled ramp
   // Distribution is centred on 1.0 — spread reflects trajectory uncertainty
-  cfg.uptake=Object.assign({dist:ud},buildCfg(ud,1.0,DEF_SPR,false));
+  var baseUptakeY1=(S.npUptake[0]||5)/100;
+  cfg.uptake=Object.assign({dist:ud},buildCfg(ud,baseUptakeY1,DEF_SPR,true));
+  cfg.uptake._baseY1=baseUptakeY1;
   cfg.pop   =Object.assign({dist:pd},buildCfg(pd,D.patVol[0]||100,DEF_SPR,false));
   // Seed per-comparator cost distributions
   cfg.compCost={};
@@ -1853,9 +1869,8 @@ var N=10000,SIM=null,busy=false;
 // ── PSA Web Worker (runs off main thread) ──
 var _wBlob=null,_worker=null;
 function _getWorker(){
-  if(!_wBlob)_wBlob=URL.createObjectURL(new Blob(["'use strict';\nvar _seed=42;\nfunction setSeed(s){_seed=(s>>>0)||1;}\nfunction _rand(){_seed+=0x6D2B79F5;var t=_seed;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}\nfunction rn(){var u=0,v=0;while(!u)u=_rand();while(!v)v=_rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}\nfunction sN(m,s){return m+rn()*s;}\nfunction sLN(m,s){var v=s*s,ml=Math.log(m*m/Math.sqrt(v+m*m)),sl=Math.sqrt(Math.log(1+v/(m*m)));return Math.exp(ml+sl*rn());}\nfunction sTri(a,c,b){var u=_rand(),fc=(c-a)/(b-a);return u<fc?a+Math.sqrt(u*(b-a)*(c-a)):b-Math.sqrt((1-u)*(b-a)*(b-c));}\nfunction sBeta(a,b){var x=sGamma(a,1),y=sGamma(b,1);return x/(x+y);}\nfunction sGamma(a,sc){if(a<1)return sGamma(1+a,sc)*Math.pow(_rand(),1/a);var d=a-1/3,c2=1/Math.sqrt(9*d);for(;;){var x,v;do{x=rn();v=1+c2*x;}while(v<=0);v=v*v*v;if(_rand()<1-0.0331*x*x*x*x)return d*v*sc;if(Math.log(_rand())<0.5*x*x+d*(1-v+Math.log(v)))return d*v*sc;}}\nfunction draw(c){switch(c.dist){case 'normal':return Math.max(0,sN(+c.mean,+c.sd));case 'triangular':return Math.max(0,sTri(+c.min,+c.pref,+c.max));case 'beta':return Math.max(0,Math.min(1,sBeta(+c.alpha,+c.beta)));case 'lognormal':return Math.max(0,sLN(+c.mean,+c.sd));case 'uniform':return Math.max(0,+c.min+_rand()*(+c.max-+c.min));case 'gamma':return Math.max(0,sGamma(+c.shape,+c.scale));}return 0;}\nfunction pc(s,p){var idx=(p/100)*(s.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);if(lo===hi)return s[lo];return s[lo]+(s[hi]-s[lo])*(idx-lo);}\nself.onmessage=function(e){\n  var d=e.data;setSeed(d.seed||42);\n  var cfg=d.cfg,ss=d.S,dd=d.D,N=d.N,yrs=d.yrs;\n  var all=[],annuals={},done=0,CHUNK=500,popBase=dd.patVol[0]||1;\n  function step(){\n    var n=Math.min(CHUNK,N-done);\n    for(var i=0;i<n;i++){\n      var npCs=Math.max(0,draw(cfg.cost));\n      var ccs={};\n      ss.comparators.forEach(function(c){var cc=cfg.compCost&&cfg.compCost[c.id];ccs[c.id]=(d.varyComp&&cc&&cc.dist)?Math.max(0,draw(cc)):(dd.compAnn[c.id]||0);});\n      var pY1=Math.max(1,draw(cfg.pop));\n      var maxS=0;for(var _y2=0;_y2<Math.min(yrs,ss.years);_y2++)maxS=Math.max(maxS,(ss.npUptake[_y2]||0)/100);\n      var mxM=maxS>0?1/maxS:20;\n      var uM=Math.min(mxM,Math.max(0,draw(cfg.uptake)));\n      var tot=0;\n      for(var y=0;y<Math.min(yrs,ss.years);y++){\n        var gr=popBase>0?(dd.patVol[y]||popBase)/popBase:1;\n        var pop=pY1*gr,uY=(ss.npUptake[y]||ss.npUptake[0]||5)/100;\n        var uR=Math.min(1,Math.max(0,uY*uM)),expR=(ss.expansionRates[y]||0)/100;\n        var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;\n        ss.comparators.forEach(function(c){\n          var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;\n          var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;\n          bef+=pop*bMs*ccs[c.id];aft+=tPop*Math.max(0,bMs-uR*cP)*ccs[c.id];\n        });\n        var nbiY=(aft-bef);\n        tot+=nbiY;\n        if(!annuals[y])annuals[y]=[];\n        annuals[y].push(nbiY);\n      }\n      all.push(tot);\n    }\n    done+=n;self.postMessage({type:'progress',pct:Math.round(done/N*100)});\n    if(done<N){setTimeout(step,0);return;}\n    all.sort(function(a,b){return a-b;});\n    var mean=all.reduce(function(a,b){return a+b;},0)/all.length;\n    var std=Math.sqrt(all.reduce(function(a,v){return a+(v-mean)*(v-mean);},0)/all.length);\n    var annStats={};\n    for(var ay in annuals){\n      var arr=annuals[ay].slice().sort(function(a,b){return a-b;});\n      annStats[ay]={p5:pc(arr,5),p25:pc(arr,25),p50:pc(arr,50),p75:pc(arr,75),p95:pc(arr,95),\n        mean:arr.reduce(function(a,b){return a+b;},0)/arr.length};\n    }\n    self.postMessage({type:'done',results:{mean:mean,std:std,hist:all,\n      p5:pc(all,5),p25:pc(all,25),p50:pc(all,50),p75:pc(all,75),p80:pc(all,80),p90:pc(all,90),p95:pc(all,95),\n      min:all[0],max:all[all.length-1],annStats:annStats}});\n  }\n  step();\n};"],{type:'application/javascript'}));
+  if(!_wBlob)_wBlob=URL.createObjectURL(new Blob(["'use strict';\nvar _seed=42;\nfunction setSeed(s){_seed=(s>>>0)||1;}\nfunction _rand(){_seed+=0x6D2B79F5;var t=_seed;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}\nfunction rn(){var u=0,v=0;while(!u)u=_rand();while(!v)v=_rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}\nfunction sN(m,s){return m+rn()*s;}\nfunction sLN(m,s){var v=s*s,ml=Math.log(m*m/Math.sqrt(v+m*m)),sl=Math.sqrt(Math.log(1+v/(m*m)));return Math.exp(ml+sl*rn());}\nfunction sTri(a,c,b){var u=_rand(),fc=(c-a)/(b-a);return u<fc?a+Math.sqrt(u*(b-a)*(c-a)):b-Math.sqrt((1-u)*(b-a)*(b-c));}\nfunction sBeta(a,b){var x=sGamma(a,1),y=sGamma(b,1);return x/(x+y);}\nfunction sGamma(a,sc){if(a<1)return sGamma(1+a,sc)*Math.pow(_rand(),1/a);var d=a-1/3,c2=1/Math.sqrt(9*d);for(;;){var x,v;do{x=rn();v=1+c2*x;}while(v<=0);v=v*v*v;if(_rand()<1-0.0331*x*x*x*x)return d*v*sc;if(Math.log(_rand())<0.5*x*x+d*(1-v+Math.log(v)))return d*v*sc;}}\nfunction draw(c){switch(c.dist){case 'normal':return Math.max(0,sN(+c.mean,+c.sd));case 'triangular':return Math.max(0,sTri(+c.min,+c.pref,+c.max));case 'beta':return Math.max(0,Math.min(1,sBeta(+c.alpha,+c.beta)));case 'lognormal':return Math.max(0,sLN(+c.mean,+c.sd));case 'uniform':return Math.max(0,+c.min+_rand()*(+c.max-+c.min));case 'gamma':return Math.max(0,sGamma(+c.shape,+c.scale));}return 0;}\nfunction pc(s,p){var idx=(p/100)*(s.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);if(lo===hi)return s[lo];return s[lo]+(s[hi]-s[lo])*(idx-lo);}\nself.onmessage=function(e){\n  var d=e.data;setSeed(d.seed||42);\n  var cfg=d.cfg,ss=d.S,dd=d.D,N=d.N,yrs=d.yrs;\n  var all=[],annuals={},done=0,CHUNK=500,popBase=dd.patVol[0]||1;\n  function step(){\n    var n=Math.min(CHUNK,N-done);\n    for(var i=0;i<n;i++){\n      var npCs=Math.max(0,draw(cfg.cost));\n      var ccs={};\n      ss.comparators.forEach(function(c){\n        var cc=cfg.compCost&&cfg.compCost[c.id];\n        ccs[c.id]=(d.varyComp&&cc&&cc.dist)?Math.max(0,draw(cc)):(dd.compAnn[c.id]||0);\n      });\n      var pY1=Math.max(1,draw(cfg.pop));\n      var baseY1=cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);\n      var drawnY1=Math.max(0,Math.min(1,draw(cfg.uptake)));\n      var uMult=baseY1>1e-9?drawnY1/baseY1:1.0;\n      var tot=0;\n      for(var y=0;y<Math.min(yrs,ss.years);y++){\n        var gr=popBase>0?(dd.patVol[y]||popBase)/popBase:1;\n        var pop=pY1*gr;\n        var schedUptake=(ss.npUptake[y]||ss.npUptake[0]||5)/100;\n        var uR=Math.min(1,Math.max(0,schedUptake*uMult));\n        var expR=(ss.expansionRates[y]||0)/100;\n        var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;\n        ss.comparators.forEach(function(c){\n          var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;\n          var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;\n          bef+=pop*bMs*ccs[c.id];\n          aft+=tPop*Math.max(0,bMs-uR*cP)*ccs[c.id];\n        });\n        var nbiY=(aft-bef);\n        tot+=nbiY;\n        if(!annuals[y])annuals[y]=[];\n        annuals[y].push(nbiY);\n      }\n      all.push(tot);\n    }\n    done+=n;self.postMessage({type:'progress',pct:Math.round(done/N*100)});\n    if(done<N){setTimeout(step,0);return;}\n    all.sort(function(a,b){return a-b;});\n    var mean=all.reduce(function(a,b){return a+b;},0)/all.length;\n    var std=Math.sqrt(all.reduce(function(a,v){return a+(v-mean)*(v-mean);},0)/all.length);\n    var annStats={};\n    for(var ay in annuals){\n      var arr=annuals[ay].slice().sort(function(a,b){return a-b;});\n      annStats[ay]={p5:pc(arr,5),p25:pc(arr,25),p50:pc(arr,50),p75:pc(arr,75),p95:pc(arr,95),\n        mean:arr.reduce(function(a,b){return a+b;},0)/arr.length};\n    }\n    self.postMessage({type:'done',results:{mean:mean,std:std,hist:all,\n      p5:pc(all,5),p25:pc(all,25),p50:pc(all,50),p75:pc(all,75),p80:pc(all,80),p90:pc(all,90),p95:pc(all,95),\n      min:all[0],max:all[all.length-1],annStats:annStats}});\n  }\n  step();\n};"],{type:'application/javascript'}));
 }
-
 function runSim(){
   if(busy)return;busy=true;
   var btn=$('run-btn'),pw=$('pw'),pf=$('pf');
@@ -1915,44 +1930,70 @@ function runSim(){
 // ==================== CHARTS ====================
 var HC=null,CC=null,BC=null;
 function renderHist(data,R){
-  if(HC)HC.destroy();
+  if(HC){HC.destroy();HC=null;}
+  var el=$('hist-chart');if(!el)return;
   var bins=50,mn=data[0],mx=data[data.length-1],bw=((mx-mn)||1)/bins;
-  var h=Array.from({length:bins},function(_,i){return {x:fmtM(mn+(i+.5)*bw),c:0};});
-  for(var i=0;i<data.length;i++){var idx=Math.max(0,Math.min(bins-1,Math.floor((data[i]-mn)/bw)));h[idx].c++;}
-  HC=new Chart($('histChart'),{type:'bar',
-    data:{labels:h.map(function(b){return b.x;}),datasets:[{data:h.map(function(b){return b.c;}),backgroundColor:'rgba(13,122,95,0.6)',borderColor:'#0d7a5f',borderWidth:.5}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,font:{size:9},color:'#64748b'},grid:{color:'#f1f5f9'}},y:{ticks:{font:{size:9},color:'#64748b'},grid:{color:'#f1f5f9'}}}}});
+  var counts=new Array(bins).fill(0);
+  data.forEach(function(v){var b=Math.min(bins-1,Math.floor((v-mn)/bw));counts[b]++;});
+  HC=new Chart(el,{type:'bar',
+    data:{labels:counts.map(function(_,i){return fmtM(mn+(i+.5)*bw);}),
+      datasets:[{label:'Iterations',data:counts,
+        backgroundColor:counts.map(function(_,i){return (mn+(i+.5)*bw)<0?'rgba(16,185,129,0.8)':'rgba(239,68,68,0.8)';}),
+        borderWidth:0,borderRadius:2,borderSkipped:false}]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{title:function(i){return 'NBI: '+i[0].label;},
+          label:function(i){return i.raw+' iterations ('+((i.raw/data.length)*100).toFixed(1)+'%)';}}}},
+      scales:{x:{ticks:{maxTicksLimit:7,maxRotation:0,font:{size:9}},grid:{display:false}},
+        y:{ticks:{font:{size:9}},grid:{color:'rgba(0,0,0,0.04)'}}},animation:{duration:500}}});
+  var ptbl=$('ptbl');if(ptbl){
+    ptbl.innerHTML='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px;">'+
+      [['P5',R.p5,'#10b981'],['P25',R.p25,'#34d399'],['P50',R.p50,'#0d7a5f'],
+       ['Mean',R.mean,'#3b82f6'],['P75',R.p75,'#f59e0b'],['P90',R.p90,'#ef4444'],['P95',R.p95,'#8b5cf6']]
+      .map(function(p){return '<div style="text-align:center;padding:8px 4px;background:var(--surface2);border-radius:6px;border-top:3px solid '+p[2]+';"><div style="font-size:9px;color:var(--ink4);font-weight:600;margin-bottom:3px;">'+p[0]+'</div><div style="font-size:12px;font-weight:700;color:'+p[2]+';">'+fmtM(p[1])+'</div></div>';}).join('')+'</div>';
+  }
 }
 function renderCDF(data){
-  if(CC)CC.destroy();
-  var pts=200,mn=data[0],mx=data[data.length-1],step=((mx-mn)||1)/pts;
-  var cdf=Array.from({length:pts+1},function(_,i){
+  if(CC){CC.destroy();CC=null;}
+  var el=$('cdf-chart');if(!el)return;
+  var pts=100,mn=data[0],mx=data[data.length-1],step=((mx-mn)||1)/pts;
+  var xs=[],ys=[];
+  for(var i=0;i<=pts;i++){
     var x=mn+i*step,lo=0,hi=data.length;
-    while(lo<hi){var m=(lo+hi)>>1;if(data[m]<x)lo=m+1;else hi=m;}
-    return {x:fmtM(x),p:lo/data.length*100};
-  });
-  CC=new Chart($('cdfChart'),{type:'line',
-    data:{labels:cdf.map(function(p){return p.x;}),datasets:[{data:cdf.map(function(p){return p.p;}),borderColor:'#0d7a5f',borderWidth:2.5,fill:true,backgroundColor:'rgba(13,122,95,0.08)',pointRadius:0,tension:0.3}]},
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{ticks:{maxTicksLimit:8,font:{size:9},color:'#64748b'},grid:{color:'#f1f5f9'}},y:{min:0,max:100,ticks:{callback:function(v){return v+'%';},font:{size:9},color:'#64748b'},grid:{color:'#f1f5f9'}}}}});
-  updConf();
+    while(lo<hi){var mid=(lo+hi)>>1;if(data[mid]<=x)lo=mid+1;else hi=mid;}
+    xs.push(fmtM(x));ys.push(+(lo/data.length*100).toFixed(2));
+  }
+  CC=new Chart(el,{type:'line',
+    data:{labels:xs,datasets:[{label:'Cumulative %',data:ys,
+      borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.08)',
+      borderWidth:2.5,pointRadius:0,fill:true,tension:0.3}]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{title:function(i){return 'NBI: '+i[0].label;},
+          label:function(i){return 'Prob ≤: '+i.raw.toFixed(1)+'%';}}}},
+      scales:{x:{ticks:{maxTicksLimit:7,maxRotation:0,font:{size:9}},grid:{display:false}},
+        y:{min:0,max:100,ticks:{font:{size:9},callback:function(v){return v+'%';}},
+          grid:{color:'rgba(0,0,0,0.04)'}}},animation:{duration:500}}});
 }
 function updConf(){if(!SIM)return;var p=+$('conf-r').value;$('conf-p').textContent=p+'%';$('conf-v').textContent=fmtM(pc(SIM.data,p));}
 function renderBox(R){
-  if(BC)BC.destroy();
-  BC=new Chart($('boxChart'),{type:'bar',
-    data:{labels:['Budget Impact'],datasets:[
-      {label:'Min\u2192P25',data:[[R.min,R.p25]],backgroundColor:'rgba(16,185,129,.18)',borderColor:'#10b981',borderWidth:1.5,borderSkipped:false},
-      {label:'IQR P25\u2013P75',data:[[R.p25,R.p75]],backgroundColor:'rgba(13,122,95,.22)',borderColor:'#0d7a5f',borderWidth:2,borderSkipped:false},
-      {label:'P75\u2192Max',data:[[R.p75,R.max]],backgroundColor:'rgba(16,185,129,.18)',borderColor:'#10b981',borderWidth:1.5,borderSkipped:false}
-    ]},
-    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:true,labels:{font:{size:9},color:'#64748b'}}},
-      scales:{x:{ticks:{callback:function(v){return fmtM(v);},font:{size:9},color:'#64748b'},grid:{color:'#f1f5f9'}},y:{ticks:{font:{size:9},color:'#64748b'}}}}});
-  $('ptbl').innerHTML=[5,10,25,50,75,90,95].map(function(p){
-    return '<div class="pc"><div class="pl">P'+p+'</div><div class="pv">'+fmtM(pc(R.data,p))+'</div></div>';
-  }).join('');
+  if(BC){BC.destroy();BC=null;}
+  var el=$('box-chart');if(!el)return;
+  BC=new Chart(el,{type:'bar',
+    data:{labels:['P5→P25','P25→Median','Median→P75','P75→P95'],
+      datasets:[{label:'NBI Range',
+        data:[[R.p5,R.p25],[R.p25,R.p50],[R.p50,R.p75],[R.p75,R.p95]],
+        backgroundColor:['rgba(16,185,129,0.55)','rgba(16,185,129,0.8)','rgba(239,68,68,0.8)','rgba(239,68,68,0.55)'],
+        borderColor:['#10b981','#10b981','#ef4444','#ef4444'],
+        borderWidth:1,borderRadius:3,borderSkipped:false}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:function(i){var v=i.raw;return Array.isArray(v)?fmtM(v[0])+' to '+fmtM(v[1]):fmtM(v);}}}},
+      scales:{x:{ticks:{font:{size:9},maxTicksLimit:6},grid:{color:'rgba(0,0,0,0.04)'}},
+        y:{ticks:{font:{size:9}},grid:{display:false}}},animation:{duration:500}}});
 }
 function showTab(name,el){
-  ['histogram','cdf','boxplot','vd'].forEach(function(t){$('tab-'+t).classList.toggle('active',t===name);});
+  ['hist','cdf','box','vd'].forEach(function(t){$('tab-'+t).classList.toggle('active',t===name);});
   document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('active');});
   el.classList.add('active');
 }
@@ -2750,6 +2791,7 @@ function renderCompactRanking(results, varFull){
     +'</div>';
   el.innerHTML=h;
 }
+
 
 </script>
 
