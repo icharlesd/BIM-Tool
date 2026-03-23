@@ -197,7 +197,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .bsr{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--ink3);}
 .bsr span b{color:var(--teal);font-weight:600;}
 .dc{background:#fff;border-radius:var(--radius);padding:14px;margin-bottom:10px;border:1px solid var(--border);border-top:3px solid var(--teal);transition:border-top-color .2s;box-shadow:var(--shadow-sm);}
-.dc-unc-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;padding:10px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);}
+.dc-unc-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:10px;padding:10px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);}
 .dc-unc-field label{display:block;font-size:9px;font-weight:600;color:var(--ink4);letter-spacing:.3px;margin-bottom:4px;text-transform:uppercase;}
 .dc-unc-inp{width:100%;padding:6px 8px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e293b;background:#fffbf2;outline:none;text-align:center;transition:all .15s;}
 .dc-unc-inp:focus{border-color:#e8920a;box-shadow:0 0 0 3px rgba(245,166,35,.18);background:#fff;}
@@ -295,13 +295,14 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .dc-reseed-field { display:flex; align-items:flex-end; }
 .reseed-btn {
   width:100%; padding:7px 10px;
-  background:#f0fdf9; border:1px solid var(--teal-mid);
-  border-radius:4px; color:var(--teal); font-size:11px;
+  background:var(--teal); border:1px solid var(--teal);
+  border-radius:4px; color:#fff; font-size:11px;
   font-weight:600; font-family:'Inter',sans-serif;
-  cursor:pointer; letter-spacing:.2px; transition:background .15s;
+  cursor:pointer; letter-spacing:.2px; transition:all .15s;
   white-space:nowrap;
 }
-.reseed-btn:hover { background:#d0f5eb; }
+.reseed-btn:hover { background:var(--teal-mid); transform:translateY(-1px); }
+.reseed-btn:active { transform:translateY(0); }
 
 /* ── Volume override toggle ── */
 .toggle-pill { display:inline-flex; align-items:center; cursor:pointer; margin-left:8px; vertical-align:middle; }
@@ -565,27 +566,27 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
         <div class="dc-unc-row">
           <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-cost" onchange="changeCard('cost')"><option value="gamma" selected>Gamma</option><option value="lognormal">Log-Normal</option><option value="normal">Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed from base</button></div>
+          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;"><label>Spread (&#177;%)</label><input type="number" id="spread-cost" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="Uncertainty spread as &#177;% of base value (90% CI)"/></div>
         </div>
-        
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><label style="font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;">Spread (&#177;%)</label><input type="number" id="spread-cost" value="30" min="1" max="99" step="1" style="width:58px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;"/><span style="font-size:9px;color:var(--ink5);">of base</span></div><div class="dchint" id="h-cost"></div><div class="dcf" id="f-cost"></div>
+        <div class="dchint" id="h-cost"></div><div class="dcf" id="f-cost"></div>
       </div>
       <div class="dc" id="dc-uptake">
         <div class="dch"><div class="dcd" id="dot-uptake"></div><span class="dcl" id="lbl-uptake">Uptake Rate</span></div>
         <div class="dc-unc-row">
           <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-uptake" onchange="changeCard('uptake')"><option value="beta" selected>Beta</option><option value="normal">Normal</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed from base</button></div>
+          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;"><label>Spread (&#177;%)</label><input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="Uncertainty spread as &#177;% of base value (90% CI)"/></div>
         </div>
-        
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><label style="font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;">Spread (&#177;%)</label><input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" style="width:58px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;"/><span style="font-size:9px;color:var(--ink5);">of base</span></div><div class="dchint" id="h-uptake"></div><div class="dcf" id="f-uptake"></div>
+        <div class="dchint" id="h-uptake"></div><div class="dcf" id="f-uptake"></div>
       </div>
       <div class="dc" id="dc-pop">
         <div class="dch"><div class="dcd" id="dot-pop"></div><span class="dcl">Population</span></div>
         <div class="dc-unc-row">
           <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-pop" onchange="changeCard('pop')"><option value="normal">Normal</option><option value="gamma">Gamma</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed from base</button></div>
+          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;"><label>Spread (&#177;%)</label><input type="number" id="spread-pop" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="Uncertainty spread as &#177;% of base value (90% CI)"/></div>
         </div>
-        
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><label style="font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;">Spread (&#177;%)</label><input type="number" id="spread-pop" value="30" min="1" max="99" step="1" style="width:58px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;"/><span style="font-size:9px;color:var(--ink5);">of base</span></div><div class="dchint" id="h-pop"></div><div class="dcf" id="f-pop"></div>
+        <div class="dchint" id="h-pop"></div><div class="dcf" id="f-pop"></div>
       </div>
       <div style="margin-top:16px;">
         <div style="font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">Comparator Cost Distributions</div>
@@ -696,7 +697,40 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
     </div>
     <div id="scenario-wrap">
       <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;">Click Update
+
+<!-- PAGE 5: THRESHOLD -->
+<div id="threshold-page" class="page">
+  <div class="inner">
+    <div class="sa-header">
+      <div><div class="sa-title">Threshold Analysis</div>
+      <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div></div>
+      <div class="sa-controls">
+        <div class="sa-ctrl-group"><label>Time Horizon (Years)</label><select id="threshold-yrs"></select></div>
+        <button class="run-sa-btn" onclick="runThreshold()">&#9654; Calculate</button>
+      </div>
+    </div>
+    <div class="thresh-grid" id="threshold-wrap"><div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div></div>
+  </div>
+</div>
+
 <script>
+/* ==================== REFERENCE TEST VECTORS ====================
+   Run these assertions to verify compute() correctness.
+   Paste into browser console or use with Jest/Jasmine.
+
+   var EXPECTED = {
+     "description": "Base case — 3yr, 2 comparators (x1/x2)",
+     "inputs": {
+       "prevUnit":1000000,"prevVal":1000,"popSizeM":100,
+       "diagPct":70,"eligPct":60,"accessPct":40,"capturePct":50,
+       "comparators":[{"id":"c1","name":"x1"},{"id":"c2","name":"x2"}],
+       "befMS":{"c1":[50,50,50],"c2":[50,50,50]},
+       "npUptake":[5,10,20],
+       "captureProp":{"c1":[40,40,40],"c2":[60,60,60]},
+       "expansionRates":[1,2,3],
+       "growthRates":[1,2],
+       "txCost":{
+         "np": {"packsize":40,"unitsPerPack":10,"pricePerPack"
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
    Paste into browser console or use with Jest/Jasmine.
@@ -1477,6 +1511,7 @@ function buildCfg(dist,base,unc,isRate){
 }
 
 function seedPSA(){
+  syncAll(); compute(); // ensure D is current before reading
   // Warn user if they had manually edited distribution params (those edits will be replaced)
   var warn=$('psa-reseed-warn');
   if(cfg._userEdited&&warn){
@@ -1484,7 +1519,7 @@ function seedPSA(){
     warn.textContent='\u26a0 Distribution parameters were re-seeded from the updated base scenario. Your manual edits have been replaced.';
   }
   cfg._userEdited=false;
-  var cd=gs('cost-dist','gamma'),ud=gs('uptake-dist','beta'),pd=gs('pop-dist','normal');
+  var cd=gs('d-cost','gamma'),ud=gs('d-uptake','beta'),pd=gs('d-pop','normal');
   var DEF_SPR=30; // default 30% spread used only for initial seeding
   cfg.cost  =Object.assign({dist:cd},buildCfg(cd,D.npAnn,DEF_SPR,false));
   // Uptake card: samples a MULTIPLIER (mean=1) applied to the whole scheduled ramp
@@ -2569,17 +2604,7 @@ function renderAnnualTable(annStats, yrs){
     +'</div>';
   el.innerHTML=h;
 }
-</script>
-<div id="chartjs-warn" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#7f1d1d;color:#fca5a5;padding:10px 20px;border-radius:6px;font-size:11px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);">&#9888; Chart.js unavailable (offline?). Histogram/CDF charts will not render. Base case calculations are unaffected.</div>
-</body>
-</html>
-<!-- =================== PAGE 5: THRESHOLD ANALYSIS =================== -->
-<div id="threshold-page" class="page">
-  <div class="inner">
-    <div class="sa-header">
-      <div><div class="sa-title">Threshold Analysis</div>
-      <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div></div>
-      <div class="sa-controls">
+ass="sa-controls">
         <div class="sa-ctrl-group"><label>Time Horizon (Years)</label><select id="threshold-yrs"></select></div>
         <button class="run-sa-btn" onclick="runThreshold()">&#9654; Calculate</button>
       </div>
