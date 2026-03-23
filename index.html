@@ -1979,39 +1979,44 @@ function runTornado(){
   });
   if(maxAbs===0) maxAbs=1;
 
-  // Render tornado bars (SVG-based for precision)
+  // Render tornado using DOM SVG (avoids innerHTML parse warnings)
   var W=700, LABEL=180, BAR_W=W-LABEL-80, MID=LABEL+BAR_W/2;
-  var ROW_H=36, ROWS=params.length, SVG_H=ROWS*ROW_H+60;
-
-  var svg='<svg viewBox="0 0 '+W+' '+SVG_H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:JetBrains Mono,monospace;">';
-  // Center line
-  svg+='<line x1="'+MID+'" y1="20" x2="'+MID+'" y2="'+(SVG_H-30)+'" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,3"/>';
-  // Base label
-  svg+='<text x="'+MID+'" y="15" text-anchor="middle" font-size="9" fill="#64748b">Base: '+fmtM(baseNet)+'</text>';
+  var ROW_H=36, SVG_H=params.length*ROW_H+60;
+  var NS='http://www.w3.org/2000/svg';
+  function svgEl(tag,attrs){
+    var el=document.createElementNS(NS,tag);
+    Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
+    return el;
+  }
+  var svgRoot=svgEl('svg',{viewBox:'0 0 '+W+' '+SVG_H,xmlns:NS,style:'width:100%;font-family:sans-serif;'});
+  svgRoot.appendChild(svgEl('line',{x1:MID,y1:20,x2:MID,y2:SVG_H-30,stroke:'#94a3b8','stroke-width':1,'stroke-dasharray':'4,3'}));
+  var baseLbl=svgEl('text',{x:MID,y:15,'text-anchor':'middle','font-size':9,fill:'#64748b'});
+  baseLbl.textContent='Base: '+fmtM(baseNet); svgRoot.appendChild(baseLbl);
 
   params.forEach(function(p,i){
     var y=30+i*ROW_H;
-    var pixPerUnit=(BAR_W/2)/maxAbs;
-    // Low bar (left of center if lo < base, right if lo > base)
-    var loD=p.lo-p.base; // deviation
-    var hiD=p.hi-p.base;
+    var pixPerUnit=maxAbs>0?(BAR_W/2)/maxAbs:1;
+    var loD=p.lo-p.base, hiD=p.hi-p.base;
     var loW=Math.abs(loD)*pixPerUnit, hiW=Math.abs(hiD)*pixPerUnit;
     var loX=loD<0?MID-loW:MID, hiX=hiD<0?MID-hiW:MID;
     var loColor=loD<0?'#10b981':'#ef4444', hiColor=hiD<0?'#10b981':'#ef4444';
 
-    // Label
-    svg+='<text x="'+(LABEL-6)+'" y="'+(y+13)+'" text-anchor="end" font-size="10" fill="#334155" font-family="Inter,sans-serif">'+esc(p.label)+'</text>';
-    // Low bar
-    if(loW>0) svg+='<rect x="'+loX+'" y="'+(y+2)+'" width="'+loW+'" height="22" rx="2" fill="'+loColor+'" opacity=".85"/>';
-    // High bar
-    if(hiW>0) svg+='<rect x="'+hiX+'" y="'+(y+2)+'" width="'+hiW+'" height="22" rx="2" fill="'+hiColor+'" opacity=".85"/>';
-    // Values
-    svg+='<text x="'+(MID+BAR_W/2+6)+'" y="'+(y+13)+'" font-size="9" fill="#64748b">'+fmtM(p.lo)+'</text>';
-    svg+='<text x="'+(MID+BAR_W/2+6)+'" y="'+(y+22)+'" font-size="9" fill="#64748b">'+fmtM(p.hi)+'</text>';
-  });
-  svg+='</svg>';
+    var lbl=svgEl('text',{x:LABEL-6,y:y+13,'text-anchor':'end','font-size':10,fill:'#334155','font-family':'sans-serif'});
+    lbl.textContent=(i+1)+'. '+p.label; svgRoot.appendChild(lbl);
 
-  $('tornado-chart-wrap').innerHTML=svg;
+    if(loW>0.5){var lb=svgEl('rect',{x:loX,y:y+2,width:loW,height:22,rx:2,fill:loColor,opacity:0.85}); svgRoot.appendChild(lb);}
+    if(hiW>0.5){var hb=svgEl('rect',{x:hiX,y:y+2,width:hiW,height:22,rx:2,fill:hiColor,opacity:0.85}); svgRoot.appendChild(hb);}
+
+    var vt=svgEl('text',{x:MID+BAR_W/2+6,y:y+13,'font-size':9,fill:'#64748b'});
+    vt.textContent=fmtM(p.lo); svgRoot.appendChild(vt);
+    var vt2=svgEl('text',{x:MID+BAR_W/2+6,y:y+22,'font-size':9,fill:'#64748b'});
+    vt2.textContent=fmtM(p.hi); svgRoot.appendChild(vt2);
+  });
+
+  var wrap=$('tornado-chart-wrap');
+  wrap.innerHTML='';
+  wrap.appendChild(svgRoot);
+
 
   // Detailed table
   var th='<table class="btbl" style="margin-top:16px;"><thead><tr><th style="text-align:left;">Parameter</th><th>Base NBI</th><th>Low (−'+varPct+'%)</th><th>High (+'+varPct+'%)</th><th>Range Width</th></tr></thead><tbody>';
@@ -2514,39 +2519,32 @@ function runVD(){
 
 function renderVD(results,varFull,varSum){
   var W=580,LABEL=190,BAR_W=W-LABEL-90;
-  var maxVar=results[0]?results[0].variance:1;
-  var ROW_H=40,SVG_H=results.length*ROW_H+50;
-  var colors=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
-  var svg='<svg viewBox="0 0 '+W+' '+SVG_H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;">';
-  svg+='<text x="'+(LABEL)+'" y="16" font-size="9" fill="#94a3b8" font-family="Inter,sans-serif">Partial SD ('+VD_N+' iter each) \u2192</text>';
-  results.forEach(function(r,i){
-    var y=26+i*ROW_H;
-    var bw=maxVar>0?(r.variance/maxVar)*(BAR_W*0.88):0;
-    var pct=varSum>0?(r.variance/varSum*100):0;
-    var col=colors[i%colors.length];
-    svg+='<text x="'+(LABEL-8)+'" y="'+(y+15)+'" text-anchor="end" font-size="10" fill="#334155" font-family="Inter,sans-serif">'+(i+1)+'. '+r.label+'</text>';
-    if(bw>0.5) svg+='<rect x="'+LABEL+'" y="'+(y+2)+'" width="'+bw+'" height="24" rx="3" fill="'+col+'" opacity=".85"/>';
-    svg+='<text x="'+(LABEL+bw+6)+'" y="'+(y+16)+'" font-size="10" fill="'+col+'" font-family="Inter,sans-serif" font-weight="700">'+fmtM(r.sd)+'</text>';
-    svg+='<text x="'+(W-4)+'" y="'+(y+16)+'" text-anchor="end" font-size="10" fill="#94a3b8" font-family="Inter,sans-serif">'+pct.toFixed(1)+'%</text>';
+  var maxVar2=results[0]?results[0].variance:1;
+  var ROW_H2=40,SVG_H2=results.length*ROW_H2+50;
+  var NS2='http://www.w3.org/2000/svg';
+  function svgEl2(tag,attrs){
+    var el=document.createElementNS(NS2,tag);
+    Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
+    return el;
+  }
+  var svgRoot2=svgEl2('svg',{viewBox:'0 0 '+W+' '+SVG_H2,style:'width:100%;max-width:680px;'});
+  var hdrT=svgEl2('text',{x:LABEL,y:16,'font-size':9,fill:'#94a3b8'});
+  hdrT.textContent='Partial SD ('+VD_N+' iter each) →'; svgRoot2.appendChild(hdrT);
+  var colors2=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
+  results.forEach(function(r2,i){
+    var y=26+i*ROW_H2;
+    var bw=maxVar2>0?(r2.variance/maxVar2)*(BAR_W*0.88):0;
+    var pct=varSum>0?(r2.variance/varSum*100):0;
+    var col=colors2[i%colors2.length];
+    var lbl2=svgEl2('text',{x:LABEL-8,y:y+15,'text-anchor':'end','font-size':10,fill:'#334155'});
+    lbl2.textContent=(i+1)+'. '+r2.label; svgRoot2.appendChild(lbl2);
+    if(bw>0.5){var bar=svgEl2('rect',{x:LABEL,y:y+2,width:bw,height:24,rx:3,fill:col,opacity:0.85}); svgRoot2.appendChild(bar);}
+    var vt3=svgEl2('text',{x:LABEL+bw+6,y:y+16,'font-size':10,fill:col,'font-weight':'700'});
+    vt3.textContent=fmtM(r2.sd); svgRoot2.appendChild(vt3);
+    var pct2=svgEl2('text',{x:W-4,y:y+16,'text-anchor':'end','font-size':10,fill:'#94a3b8'});
+    pct2.textContent=pct.toFixed(1)+'%'; svgRoot2.appendChild(pct2);
   });
-  svg+='</svg>';
-  var tbl='<table class="btbl" style="margin-top:16px;"><thead><tr>'
-    +'<th style="text-align:left;">Rank</th><th style="text-align:left;">Parameter</th>'
-    +'<th>Partial SD of NBI</th><th>% Share of Variance</th></tr></thead><tbody>';
-  results.forEach(function(r,i){
-    var pct=varSum>0?(r.variance/varSum*100):0;
-    tbl+='<tr class="dr"><td class="rl" style="color:var(--ink4);font-weight:700;">#'+(i+1)+'</td>'
-      +'<td class="rl">'+r.label+'</td>'
-      +'<td class="tc"><span class="cv">'+fmtM(r.sd)+'</span></td>'
-      +'<td class="tc"><span class="cv amb">'+pct.toFixed(1)+'%</span></td></tr>';
-  });
-  tbl+='</tbody></table>';
-  var note='<div style="font-size:10px;color:var(--ink5);margin-top:12px;line-height:1.6;padding:10px 12px;background:var(--surface2);border-radius:5px;">'
-    +'<strong>Method:</strong> Partial variance decomposition. Each parameter varied independently ('
-    +VD_N+' iterations) with all others held at base. SD = standard deviation of NBI under that parameter\'s uncertainty alone. '
-    +'% share normalised to sum of partial variances. Partial variances do not sum exactly to total variance due to interactions. '
-    +'Full PSA SD: <strong>'+fmtM(Math.sqrt(varFull))+'</strong>.</div>';
-  $('vd-wrap').innerHTML='<div class="cw">'
+  var svg=svgRoot2.outerHTML;
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
     +'<div><div style="font-size:13px;font-weight:700;color:var(--ink);">Parameter Influence Ranking</div>'
     +'<div style="font-size:11px;color:var(--ink4);margin-top:2px;">Which parameters drive the most uncertainty in NBI?</div></div>'
