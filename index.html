@@ -705,10 +705,23 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 <div id="threshold-page" class="page">
   <div class="inner">
     <div class="sa-header">
-      <div><div class="sa-title">Threshold Analysis</div>
-      <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div></div>
+      <div>
+        <div class="sa-title">Threshold Analysis</div>
+        <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div>
+      </div>
       <div class="sa-controls">
-        <div class="
+        <div class="sa-ctrl-group">
+          <label>Time Horizon (Years)</label>
+          <select id="threshold-yrs"></select>
+        </div>
+        <button class="run-sa-btn" onclick="runThreshold()">&#9654; Calculate</button>
+      </div>
+    </div>
+    <div class="thresh-grid" id="threshold-wrap">
+      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div>
+    </div>
+  </div>
+</div>
 <script>
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
