@@ -841,6 +841,8 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 
 
 
+
+
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
    Paste into browser console or use with Jest/Jasmine.
@@ -1784,7 +1786,9 @@ function reseedCompCard(cid){
   var d=sel.value;
   var dd=cfg._D||D;
   var base=(dd.compAnn&&dd.compAnn[cid])||0;
-  var params=buildCfg(d,base,30,false);
+  var sEl=$('spread-comp-'+cid);
+  var spr=sEl?Math.max(1,Math.min(99,parseFloat(sEl.value)||30)):30;
+  var params=buildCfg(d,base,spr,false);
   Object.assign(cfg.compCost[cid],params);
   var flds=DR[d].fields;
   flds.forEach(function(f){
@@ -1840,7 +1844,10 @@ function reseedCard(id){
   var ss=cfg._S||S,dd=cfg._D||D,isR=id==='uptake';
   var base=id==='cost'?(dd.npAnn||1000):id==='uptake'?((ss.npUptake[0]||5)/100):((dd.patVol&&dd.patVol[0])||100);
   var d=cfg[id]?cfg[id].dist:'gamma';
-  cfg[id]=Object.assign({dist:d},buildCfg(d,base,30,isR));
+  var sEl=$('spread-'+id);
+  var spr=sEl?Math.max(1,Math.min(99,parseFloat(sEl.value)||30)):30;
+  cfg[id]=Object.assign({dist:d},buildCfg(d,base,spr,isR));
+  if(id==='uptake') cfg[id]._baseY1=base;
   renderCard(id);
 }
 
@@ -2801,6 +2808,8 @@ function renderCompactRanking(results, varFull){
     +'</div>';
   el.innerHTML=h;
 }
+
+
 
 
 
