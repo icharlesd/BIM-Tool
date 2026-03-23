@@ -558,6 +558,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
     <div id="psa-l">
       <h2>PSA Configuration</h2>
       <p class="psub">Distributions pre-seeded from base scenario</p>
+      <div style="background:#f0fdf9;border:1px solid #a7f3d0;border-radius:5px;padding:9px 12px;margin-bottom:12px;font-size:10px;color:#065f46;line-height:1.6;"><strong>Fixed methodology:</strong> Costs &rarr; <strong>Gamma</strong> &nbsp;|&nbsp; Population &rarr; <strong>Normal</strong> &nbsp;|&nbsp; Uptake &rarr; <strong>Beta</strong><br/>Distributions seeded using method of moments with ±30% spread (90% CI). Replace with evidence-based parameters for formal submissions.</div>
       <div class="bstrip"><div class="bst">Base Scenario Summary</div><div class="bsr" id="strip-row"></div></div>
       <div class="dc" id="dc-cost">
         <div class="dch"><div class="dcd" id="dot-cost"></div><span class="dcl" id="lbl-cost">Annual Cost</span></div>
@@ -629,12 +630,14 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
           <button class="tbtn active" onclick="showTab('histogram',this)">Distribution</button>
           <button class="tbtn" onclick="showTab('cdf',this)">S-Curve (CDF)</button>
           <button class="tbtn" onclick="showTab('boxplot',this)">Box Plot</button>
+          <button class="tbtn" onclick="showTab('vd',this);runVD()">Variance Decomposition</button>
         </div>
         <div id="tab-histogram" class="cp active"><div class="cw"><canvas id="histChart" height="280"></canvas></div></div>
         <div id="tab-cdf" class="cp">
           <div id="cdf-ctrl"><label>CONFIDENCE LEVEL</label><input type="range" id="conf-r" min="5" max="99" value="80" oninput="updConf()"/><span id="conf-p">80%</span><span id="conf-v">&mdash;</span></div>
           <div class="cw"><canvas id="cdfChart" height="280"></canvas></div>
         </div>
+        <div id="tab-vd" class="cp"><div id="vd-wrap"><div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first, then click this tab.</div></div></div>
         <div id="tab-boxplot" class="cp"><div class="cw"><canvas id="boxChart" height="120"></canvas><div class="ptbl" id="ptbl"></div></div></div>
       </div>
     </div>
@@ -694,31 +697,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 </div>
 
 <!-- =================== PAGE 5: THRESHOLD ANALYSIS =================== -->
-<div id="threshold-page" class="page">
-  <div class="inner">
-    <div class="sa-header">
-      <div>
-        <div class="sa-title">Threshold Analysis</div>
-        <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div>
-      </div>
-      <div class="sa-controls">
-        <div class="sa-ctrl-group">
-          <label>Time Horizon (Years)</label>
-          <select id="threshold-yrs"></select>
-        </div>
-        <button class="run-sa-btn" onclick="runThreshold()">&#9654; Calculate</button>
-      </div>
-    </div>
-    <div class="thresh-grid" id="threshold-wrap">
-      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div>
-    </div>
-  </div>
-</div>
-
-
-<script>
-
-/* ==================== REFERENCE TEST VECTORS ====================
+<div id="threshold/* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
    Paste into browser console or use with Jest/Jasmine.
 
@@ -1433,10 +1412,10 @@ function onYearsChange(){
 
 // ==================== DISTRIBUTIONS ====================
 var DR={
-  beta:      {label:'Beta',      color:'#f59e0b',applies:['uptake'],hint:'Samples an uptake multiplier centred on 1.0 (= base trajectory). Values below 1.0 = slower uptake, above 1.0 = faster. Bounded [0,1] so re-seed with base=1.0 and adjust SD for uncertainty width. Note: the simulation bounds the multiplier so no uptake year exceeds 100%.',fields:[['alpha','Alpha (\u03b1)'],['beta','Beta (\u03b2)']]},
-  normal:    {label:'Normal',    color:'#3b82f6',applies:['cost','uptake','pop'],hint:'Symmetric bell curve. Can produce negative values which are clamped to zero \u2014 this causes a downward bias in mean cost if SD is large relative to the mean. For costs, prefer Log-Normal or Gamma which are always positive.',fields:[['mean','Mean'],['sd','Std Dev']]},
+  beta:      {label:'Beta',      color:'#f59e0b',applies:['uptake'],hint:'Beta distribution — used for the uptake trajectory multiplier (1.0 = base schedule). Alpha and Beta control the shape. Method of moments: seeded from your base uptake with 30% spread. Values <1.0 = slower ramp, >1.0 = faster. The simulation caps the multiplier so no year exceeds 100% uptake.',fields:[['alpha','Alpha (\u03b1)'],['beta','Beta (\u03b2)']]},
+  normal:    {label:'Normal',    color:'#3b82f6',applies:['cost','uptake','pop'],hint:'Normal distribution — used for patient population uncertainty. Mean = base case patient volume, SD reflects epidemiological estimation uncertainty (default: 30% spread \u2248 90% CI). Symmetric around the mean. Appropriate here because population estimates from registry data tend to be approximately normally distributed.',fields:[['mean','Mean'],['sd','Std Dev']]},
   lognormal: {label:'Log-Normal',color:'#ef4444',applies:['cost','uptake','pop'],hint:'Always positive with a right-skewed tail \u2014 recommended for costs. Reflects that costs can run high but not below zero. Enter the real-world mean and SD; log-space conversion is handled automatically.',fields:[['mean','Mean'],['sd','Std Dev']]},
-  gamma:     {label:'Gamma',     color:'#f97316',applies:['cost','pop'],hint:'Always positive and right-skewed. Good for costs and patient counts. More flexible than log-normal for heavily skewed data. Adjust Shape and Scale to control how peaked or spread-out the distribution is.',fields:[['shape','Shape (\u03b1)'],['scale','Scale (\u03b8)']]},
+  gamma:     {label:'Gamma',     color:'#f97316',applies:['cost','pop'],hint:'Gamma distribution — used for annual treatment costs. Always positive and right-skewed, reflecting that costs can run over budget but cannot be negative. Shape (\u03b1) and Scale (\u03b8) seeded by method of moments from your base annual cost with 30% spread. Mean = \u03b1\u00d7\u03b8. Replace default spread with a published confidence interval for formal submissions.',fields:[['shape','Shape (\u03b1)'],['scale','Scale (\u03b8)']]},
   triangular:{label:'Triangular',color:'#10b981',applies:['cost','uptake','pop'],hint:'Simple three-point estimate: your most likely value (Mode) plus a plausible low and high. Use when you can articulate a range from expert judgment but have no formal distribution. Transparent and easy to explain to stakeholders.',fields:[['min','Min'],['pref','Mode'],['max','Max']]},
   uniform:   {label:'Uniform',   color:'#8b5cf6',applies:['cost','uptake','pop'],hint:'Every value between Min and Max is equally likely. Use when you genuinely have no reason to favour one value over another within a range \u2014 or as a conservative worst-case width check.',fields:[['min','Min'],['max','Max']]}
 };
@@ -1521,7 +1500,7 @@ function seedPSA(){
   cfg._S=JSON.parse(JSON.stringify(S));
   cfg._D=JSON.parse(JSON.stringify(D));
   ['cost','uptake','pop'].forEach(function(id){
-    var distList=id==='uptake'?['beta','triangular','normal','lognormal','uniform']:['gamma','lognormal','triangular','normal','uniform'];
+    var distList=id==='uptake'?['beta']:id==='pop'?['normal']:['gamma'];
     var sel=$('d-'+id);
     sel.innerHTML=distList.map(function(d){return '<option value="'+d+'"'+(d===cfg[id].dist?' selected':'')+'>'+DR[d].label+'</option>';}).join('');
     renderCard(id);
@@ -1553,7 +1532,7 @@ function renderCompCostCards(){
     var ccfg=cfg.compCost[c.id]||{dist:'gamma'};
     if(!cfg.compCost[c.id]) cfg.compCost[c.id]=ccfg;
     var baseAnn=(dd.compAnn&&dd.compAnn[c.id])||0;
-    var distOpts=['gamma','lognormal','triangular','normal','uniform'];
+    var distOpts=['gamma'];
     var flds=DR[ccfg.dist].fields;
 
     var card=document.createElement('div');
@@ -1831,7 +1810,7 @@ function renderBox(R){
   }).join('');
 }
 function showTab(name,el){
-  ['histogram','cdf','boxplot'].forEach(function(t){$('tab-'+t).classList.toggle('active',t===name);});
+  ['histogram','cdf','boxplot','vd'].forEach(function(t){$('tab-'+t).classList.toggle('active',t===name);});
   document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('active');});
   el.classList.add('active');
 }
@@ -2442,6 +2421,109 @@ function updatePrintHeader(){
     ' \u00b7 Launch: '+S.launchYear+
     ' \u00b7 Population: '+Math.round((S.prevVal/Math.max(S.prevUnit,1))*S.popSizeM*1e6).toLocaleString()+
     ' \u00b7 BIA Tool v1.0';
+}
+
+// ==================== VARIANCE DECOMPOSITION ====================
+var VD_N=2000;
+function runVD(){
+  if(!SIM||!SIM.data||SIM.data.length===0){
+    $('vd-wrap').innerHTML='<div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first, then click this tab.</div>';
+    return;
+  }
+  $('vd-wrap').innerHTML='<div style="padding:24px;text-align:center;color:var(--ink4);font-size:11px;">Calculating\u2026 ('+VD_N+' iterations per parameter)</div>';
+  var ss=cfg._S||S,dd=cfg._D||D,yrs=+$('yr-range').value;
+  var seedVal=parseInt((($('psa-seed')||{}).value)||'42')||42;
+  var varFull=SIM.std*SIM.std;
+  var params=[
+    {id:'pop',label:'Patient Population'},
+    {id:'uptake',label:ss.npName+' Uptake Trajectory'},
+    {id:'cost_np',label:ss.npName+' Cost'}
+  ];
+  ss.comparators.forEach(function(c){
+    var cc=ss.comparators.find(function(x){return x.id===c.id;});
+    params.push({id:'cost_'+c.id,label:(cc?cc.name:c.id)+' Cost'});
+  });
+  var popBase=dd.patVol[0]||1;
+  var results=[];
+  params.forEach(function(p,pi){
+    setSeed(seedVal+pi*997);
+    var partial=[];
+    var maxS=0;
+    for(var _y=0;_y<Math.min(yrs,ss.years);_y++) maxS=Math.max(maxS,(ss.npUptake[_y]||0)/100);
+    var mxM=maxS>0?1/maxS:20;
+    for(var i=0;i<VD_N;i++){
+      var npCs=(p.id==='cost_np')?Math.max(0,draw(cfg.cost)):dd.npAnn;
+      var pY1=(p.id==='pop')?Math.max(1,draw(cfg.pop)):(dd.patVol[0]||1);
+      var uM=(p.id==='uptake')?Math.min(mxM,Math.max(0,draw(cfg.uptake))):1.0;
+      var ccs={};
+      ss.comparators.forEach(function(c){
+        var ccfg=cfg.compCost&&cfg.compCost[c.id];
+        ccs[c.id]=(p.id==='cost_'+c.id&&ccfg&&ccfg.dist)?Math.max(0,draw(ccfg)):(dd.compAnn[c.id]||0);
+      });
+      var tot=0;
+      for(var y=0;y<Math.min(yrs,ss.years);y++){
+        var gr=popBase>0?(dd.patVol[y]||popBase)/popBase:1;
+        var pop=pY1*gr,uY=(ss.npUptake[y]||ss.npUptake[0]||5)/100;
+        var uR=Math.min(1,Math.max(0,uY*uM)),expR=(ss.expansionRates[y]||0)/100;
+        var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;
+        ss.comparators.forEach(function(c){
+          var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;
+          var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;
+          bef+=pop*bMs*ccs[c.id];aft+=tPop*Math.max(0,bMs-uR*cP)*ccs[c.id];
+        });
+        tot+=(aft-bef);
+      }
+      partial.push(tot);
+    }
+    var mn=partial.reduce(function(a,b){return a+b;},0)/partial.length;
+    var v=partial.reduce(function(a,v){return a+(v-mn)*(v-mn);},0)/partial.length;
+    results.push({label:p.label,variance:v,sd:Math.sqrt(v)});
+  });
+  results.sort(function(a,b){return b.variance-a.variance;});
+  var varSum=results.reduce(function(a,r){return a+r.variance;},0)||1;
+  renderVD(results,varFull,varSum);
+}
+
+function renderVD(results,varFull,varSum){
+  var W=580,LABEL=190,BAR_W=W-LABEL-90;
+  var maxVar=results[0]?results[0].variance:1;
+  var ROW_H=40,SVG_H=results.length*ROW_H+50;
+  var colors=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
+  var svg='<svg viewBox="0 0 '+W+' '+SVG_H+'" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:680px;">';
+  svg+='<text x="'+(LABEL)+'" y="16" font-size="9" fill="#94a3b8" font-family="Inter,sans-serif">Partial SD ('+VD_N+' iter each) \u2192</text>';
+  results.forEach(function(r,i){
+    var y=26+i*ROW_H;
+    var bw=maxVar>0?(r.variance/maxVar)*(BAR_W*0.88):0;
+    var pct=varSum>0?(r.variance/varSum*100):0;
+    var col=colors[i%colors.length];
+    svg+='<text x="'+(LABEL-8)+'" y="'+(y+15)+'" text-anchor="end" font-size="10" fill="#334155" font-family="Inter,sans-serif">'+(i+1)+'. '+r.label+'</text>';
+    if(bw>0.5) svg+='<rect x="'+LABEL+'" y="'+(y+2)+'" width="'+bw+'" height="24" rx="3" fill="'+col+'" opacity=".85"/>';
+    svg+='<text x="'+(LABEL+bw+6)+'" y="'+(y+16)+'" font-size="10" fill="'+col+'" font-family="Inter,sans-serif" font-weight="700">'+fmtM(r.sd)+'</text>';
+    svg+='<text x="'+(W-4)+'" y="'+(y+16)+'" text-anchor="end" font-size="10" fill="#94a3b8" font-family="Inter,sans-serif">'+pct.toFixed(1)+'%</text>';
+  });
+  svg+='</svg>';
+  var tbl='<table class="btbl" style="margin-top:16px;"><thead><tr>'
+    +'<th style="text-align:left;">Rank</th><th style="text-align:left;">Parameter</th>'
+    +'<th>Partial SD of NBI</th><th>% Share of Variance</th></tr></thead><tbody>';
+  results.forEach(function(r,i){
+    var pct=varSum>0?(r.variance/varSum*100):0;
+    tbl+='<tr class="dr"><td class="rl" style="color:var(--ink4);font-weight:700;">#'+(i+1)+'</td>'
+      +'<td class="rl">'+r.label+'</td>'
+      +'<td class="tc"><span class="cv">'+fmtM(r.sd)+'</span></td>'
+      +'<td class="tc"><span class="cv amb">'+pct.toFixed(1)+'%</span></td></tr>';
+  });
+  tbl+='</tbody></table>';
+  var note='<div style="font-size:10px;color:var(--ink5);margin-top:12px;line-height:1.6;padding:10px 12px;background:var(--surface2);border-radius:5px;">'
+    +'<strong>Method:</strong> Partial variance decomposition. Each parameter varied independently ('
+    +VD_N+' iterations) with all others held at base. SD = standard deviation of NBI under that parameter\'s uncertainty alone. '
+    +'% share normalised to sum of partial variances. Partial variances do not sum exactly to total variance due to interactions. '
+    +'Full PSA SD: <strong>'+fmtM(Math.sqrt(varFull))+'</strong>.</div>';
+  $('vd-wrap').innerHTML='<div class="cw">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
+    +'<div><div style="font-size:13px;font-weight:700;color:var(--ink);">Parameter Influence Ranking</div>'
+    +'<div style="font-size:11px;color:var(--ink4);margin-top:2px;">Which parameters drive the most uncertainty in NBI?</div></div>'
+    +'<button class="run-sa-btn" onclick="runVD()" style="padding:6px 14px;">&#8635; Recalculate</button>'
+    +'</div>'+svg+tbl+note+'</div>';
 }
 </script>
 <div id="chartjs-warn" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#7f1d1d;color:#fca5a5;padding:10px 20px;border-radius:6px;font-size:11px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.3);">&#9888; Chart.js unavailable (offline?). Histogram/CDF charts will not render. Base case calculations are unaffected.</div>
