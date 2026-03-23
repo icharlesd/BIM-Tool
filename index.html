@@ -3,20 +3,19 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>BIA Tool v1.0</title>
+<meta name="description" content="Budget Impact Analysis PSA Tool v1.0"/>
+<title>BIA PSA Tool v1.0</title>
 <script>
 (function(){
   var s=document.createElement('script');
   s.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
-  s.crossOrigin='anonymous';
-  s.onerror=function(){var w=document.getElementById('chartjs-warn');if(w)w.style.display='block';};
+  s.onload=function(){if(document.getElementById('chartjs-warn'))document.getElementById('chartjs-warn').style.display='none';};
+  s.onerror=function(){if(document.getElementById('chartjs-warn'))document.getElementById('chartjs-warn').style.display='block';};
   document.head.appendChild(s);
   var l=document.createElement('link');
-  l.rel='preconnect';l.href='https://fonts.googleapis.com';document.head.appendChild(l);
-  var l2=document.createElement('link');
-  l2.rel='stylesheet';
-  l2.href='https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap';
-  document.head.appendChild(l2);
+  l.rel='stylesheet';
+  l.href='https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
+  document.head.appendChild(l);
 })();
 </script>
 <style>
@@ -416,11 +415,24 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 </head>
 <body>
 
-<div id="print-header"><h2 id="ph-title">Budget Impact Analysis</h2><p id="ph-meta"></p></div>
+<!-- =================== PRINT HEADER =================== -->
+<div id="print-header">
+  <h2 id="ph-title">Budget Impact Analysis</h2>
+  <p id="ph-meta"></p>
+</div>
 
+<!-- =================== HEADER =================== -->
 <div id="hdr">
-  <div id="hdr-brand"><div class="brand-mark">C</div>
+  <div id="hdr-l">
+    <div id="hdr-title">Budget Impact Analysis</div>
+    <div id="hdr-sub">Probabilistic Sensitivity Analysis Tool</div>
+  </div>
+  <div id="hdr-r">
+    <span style="font-size:10px;color:rgba(255,255,255,.5);font-family:'JetBrains Mono',monospace;">v1.0 &bull; auto-saves</span>
+  </div>
+</div>
 
+<!-- =================== NAV =================== -->
 <div id="nav">
   <button class="ntab active" onclick="gotoPage('base',this)">Base Scenario</button>
   <button class="ntab" id="nav-psa" onclick="gotoPage('psa',this)">PSA Configuration &amp; Results</button>
@@ -429,236 +441,329 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
   <button class="ntab" id="nav-threshold" onclick="gotoPage('threshold',this)">Threshold Analysis</button>
 </div>
 
-<div id="save-bar" style="display:flex;align-items:center;gap:6px;padding:5px 22px;background:var(--nav);border-bottom:1px solid rgba(255,255,255,.06);flex-wrap:wrap;">
-  <button onclick="saveScenario()" style="padding:4px 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:rgba(255,255,255,.7);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;">&#128190; Save</button>
-  <button onclick="loadScenario()" style="padding:4px 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:rgba(255,255,255,.7);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;">&#128194; Load</button>
-  <button onclick="exportJSON()" style="padding:4px 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:rgba(255,255,255,.7);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;">&#8659; Export</button>
-  <label style="padding:4px 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:rgba(255,255,255,.7);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;">&#8657; Import<input type="file" accept=".json" onchange="importJSON(this)" style="display:none;"/></label>
-  <button onclick="updatePrintHeader();window.print()" style="padding:4px 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:4px;color:rgba(255,255,255,.7);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;">&#128438; Print / PDF</button>
-  <button onclick="clearScenario()" style="padding:4px 11px;background:rgba(127,29,29,.35);border:1px solid rgba(252,165,165,.2);border-radius:4px;color:rgba(252,165,165,.8);font-family:inherit;font-size:10px;font-weight:600;cursor:pointer;letter-spacing:.3px;">&#8635; Reset</button>
-  <span id="save-ts" style="font-size:9px;color:rgba(255,255,255,.3);font-family:'JetBrains Mono',monospace;"></span>
-  <span id="save-flash" style="font-size:10px;font-weight:600;margin-left:4px;transition:opacity .5s;opacity:0;"></span>
-  <span style="margin-left:auto;font-size:9px;color:rgba(255,255,255,.22);font-family:'JetBrains Mono',monospace;">v1.0 &bull; auto-saves</span>
+<!-- =================== SAVE BAR =================== -->
+<div id="save-bar">
+  <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0;">
+    <button onclick="saveScenario()" class="sbbtn">&#128190; Save</button>
+    <button onclick="loadScenario()" class="sbbtn">&#128193; Load</button>
+    <button onclick="resetScenario()" class="sbbtn" style="color:#ef4444;">&#8635; Reset</button>
+    <span id="save-ts" style="font-size:10px;color:rgba(255,255,255,.5);font-family:'JetBrains Mono',monospace;"></span>
+  </div>
+  <div style="display:flex;align-items:center;gap:6px;">
+    <label class="sbbtn" style="cursor:pointer;">&#8657; Import<input type="file" accept=".json" onchange="importJSON(this)" style="display:none;"/></label>
+    <button onclick="updatePrintHeader();window.print();" class="sbbtn">&#128438; Print</button>
+    <button onclick="exportJSON()" class="sbbtn">&#8659; Export JSON</button>
+  </div>
 </div>
 
+<!-- ===================== PAGE 1: BASE SCENARIO ===================== -->
 <div id="base-page" class="page active">
-<div id="print-header"><h2 id="ph-title">Budget Impact Analysis</h2><p id="ph-meta"></p></div>
-  <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:9px 14px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);">
-    <span style="width:10px;height:10px;border-radius:3px;background:#f5a623;border:1px solid #e8920a;flex-shrink:0;display:inline-block;"></span>
-    <span style="font-size:10px;font-weight:600;color:var(--ink3);">Editable input fields</span>
-  </div>
+  <div class="inner">
 
-  <!-- 1. FORECAST SETUP -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">1</span>Forecast Period &amp; New Product</div>
-    <div class="sec-body">
-      <div class="fg fg-auto">
-        <div class="field"><label>New Product Name</label><input type="text" id="np-name" value="xx" oninput="onMeta()"/><span class="hint">Intervention being evaluated</span></div>
-        <div class="field"><label>Launch Year</label><input type="number" id="launch-year" class="inp-text" value="2025" min="2000" max="2050" oninput="d_rc()"/></div>
-        <div class="field"><label>Forecast Years</label><input type="number" id="cfg-years" class="inp-pop" value="3" min="1" max="10" oninput="onYearsChange()"/><span class="hint">1&ndash;10 years</span></div>
-      </div>
-    </div>
-  </div>
+    <!-- Validation banner -->
+    <div class="val-banner" id="val-banner" style="display:none;"></div>
 
-  <!-- 2. POPULATION CALCULATOR -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">2</span>Population Calculator</div>
-    <div class="sec-body">
-      <div class="fg fg-4">
-        <div class="field"><label>Prevalence Unit</label>
-          <select id="prev-unit" onchange="d_rc()">
-            <option value="1000">per 1,000 (ppt)</option>
-            <option value="1000000" selected>per 1,000,000 (ppm)</option>
-            <option value="100000">per 100,000 (pph)</option>
-          </select>
+    <!-- Section 1: Forecast Period -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">1</span>Forecast Period &amp; New Product</div>
+      <div class="sec-body">
+        <div class="fg fg-auto">
+          <div class="field"><label>New Product Name</label><input id="np-name" value="xx" oninput="onMeta()"/><span class="hint">Intervention being evaluated</span></div>
+          <div class="field"><label>Launch Year</label><input id="launch-year" type="number" value="2025" oninput="onMeta()"/></div>
+          <div class="field"><label>Forecast Years</label><input id="cfg-years" type="number" value="3" min="1" max="10" oninput="onMeta()"/><span class="hint">1–10 years</span></div>
         </div>
-        <div class="field"><label>Prevalence Value</label><input type="number" id="prev-val" class="inp-pop" value="1000" min="0" step="any" oninput="d_rc()"/></div>
-        <div class="field"><label>Population Size (millions)</label><input type="number" id="pop-size-m" class="inp-pop" value="100" min="0" step="any" oninput="d_rc()"/></div>
-        <div class="field"><label>Total Patient Pool</label><div class="cval-box" id="pop-total">&mdash;</div></div>
-      </div>
-      <div style="margin-top:16px;">
-        <div class="sec-sub" style="border-radius:4px;margin-bottom:10px;">Patient Funnel (each % applied to previous level)</div>
-        <div class="cascade" id="pop-cascade"></div>
-      </div>
-      <div style="margin-top:16px;">
-        <div class="sec-sub" style="border-radius:4px;margin-bottom:10px;">Capture Rate Growth Year-on-Year</div>
-        <div id="growth-fields" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;"></div>
       </div>
     </div>
-  </div>
 
-  <!-- 3. PATIENT VOLUME -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">3</span>Estimated Patient Volume
-      <label class="toggle-pill" title="Switch between funnel-derived and direct input">
-        <input type="checkbox" id="vol-override-toggle" onchange="onVolToggle()"/>
-        <span class="toggle-track"><span class="toggle-thumb"></span></span>
-      </label>
-      <span class="badge" id="vol-mode-label">Derived from funnel (read-only)</span>
+    <!-- Section 2: Population -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">2</span>Population Calculator</div>
+      <div class="sec-body">
+        <div class="fg fg-auto">
+          <div class="field"><label>Country Population (M)</label><input id="pop-size-m" type="number" value="100" step="0.1" oninput="updateCalcs()"/></div>
+          <div class="field"><label>Prevalence Unit</label>
+            <select id="prev-unit" onchange="updateCalcs()">
+              <option value="1000000">per million</option>
+              <option value="100000">per 100,000</option>
+              <option value="10000">per 10,000</option>
+              <option value="1000">per 1,000</option>
+            </select>
+          </div>
+          <div class="field"><label>Prevalence Value</label><input id="prev-val" type="number" value="1000" oninput="updateCalcs()"/></div>
+          <div class="field"><label>% Diagnosed</label><input id="pop-diag" type="number" value="70" min="0" max="100" oninput="updateCalcs()"/></div>
+          <div class="field"><label>% Eligible</label><input id="pop-elig" type="number" value="60" min="0" max="100" oninput="updateCalcs()"/></div>
+          <div class="field"><label>% Access</label><input id="pop-access" type="number" value="40" min="0" max="100" oninput="updateCalcs()"/></div>
+          <div class="field"><label>% Capture</label><input id="pop-capture" type="number" value="50" min="0" max="100" oninput="updateCalcs()"/></div>
+        </div>
+        <div id="pop-cascade" style="margin-top:14px;"></div>
+      </div>
     </div>
-    <div id="vol-container"></div>
-  </div>
 
-  <!-- 4. COMPARATORS -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">4</span>Comparators / Competitors</div>
-    <div class="sec-body" style="padding-bottom:4px;"><div id="comp-list" style="display:flex;flex-direction:column;gap:7px;margin-bottom:6px;"></div></div>
-    <button class="addbtn" onclick="addComparator()"><span style="font-size:15px;line-height:1;">+</span> Add Comparator</button>
-  </div>
+    <!-- Section 3: Patient Volume -->
+    <div class="sec">
+      <div class="sec-hdr">
+        <span class="step-num">3</span>Estimated Patient Volume
+        <label class="toggle-pill" style="margin-left:auto;cursor:pointer;" title="Override with direct patient volume inputs">
+          <input type="checkbox" id="vol-override-toggle" onchange="toggleVolOverride()"/>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+      </div>
+      <div class="sec-body">
+        <div id="vol-container"></div>
+      </div>
+    </div>
 
-  <!-- 5. MARKET SHARE BEFORE LAUNCH -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">5</span>Treatments Market Share &mdash; Before Launch</div>
-    <div id="bef-container"></div>
-  </div>
+    <!-- Section 4: Comparators -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">4</span>Comparators / Competitors</div>
+      <div class="sec-body">
+        <div id="comp-list"></div>
+        <button class="add-btn" onclick="addComparator()">+ Add Comparator</button>
+      </div>
+    </div>
 
-  <!-- 6. SUBSTITUTION -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">6</span>New Treatment Assumptions &mdash; Substitution</div>
-    <div id="subs-container"></div>
-  </div>
+    <!-- Section 5: Market Share Before -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">5</span>Treatments Market Share &mdash; Before Launch</div>
+      <div class="sec-body">
+        <div id="bef-container"></div>
+      </div>
+    </div>
 
-  <!-- 7. EXPANSION -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">7</span>New Treatment Assumptions &mdash; Market Expansion</div>
-    <div id="exp-container"></div>
-  </div>
+    <!-- Section 6: Substitution -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">6</span>New Treatment Assumptions &mdash; Substitution</div>
+      <div class="sec-body">
+        <div id="subs-container"></div>
+      </div>
+    </div>
 
-  <!-- 8. TREATMENT COSTS -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">8</span>Treatment Costs &amp; Annual Cost Per Patient</div>
-    <div id="tx-container"></div>
-  </div>
+    <!-- Section 7: Expansion -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">7</span>New Treatment Assumptions &mdash; Market Expansion</div>
+      <div class="sec-body">
+        <div id="exp-container"></div>
+        <div id="growth-fields" style="margin-top:12px;"></div>
+      </div>
+    </div>
 
-  <!-- 9. BUDGET IMPACT -->
-  <div class="sec">
-    <div class="sec-hdr"><span class="step-num">9</span>Budget Impact Summary &mdash; Base Case <span class="badge">Acquisition Cost</span></div>
-    <div id="bi-container"></div>
-  </div>
+    <!-- Section 8: Treatment Costs -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">8</span>Treatment Costs &amp; Annual Cost Per Patient</div>
+      <div class="sec-body">
+        <div id="tx-container"></div>
+      </div>
+    </div>
 
-  <div class="notebox">
-    <strong>Model logic:</strong>
-    Annual Cost per Patient = Dose per Admin &times; Dosage Period &times; Cost per Unit &nbsp;|&nbsp;
-    Substitution: after-launch share = before-launch share &minus; uptake rate &times; capture proportion &nbsp;|&nbsp;
-    Expansion: additional patients added before applying shares &nbsp;|&nbsp;
-    Net Budget Impact = Total After Launch &minus; Total Before Launch &nbsp;|&nbsp;
-    PSA uses Year 1 values as distribution base.
+    <!-- Section 9: Budget Impact Summary -->
+    <div class="sec">
+      <div class="sec-hdr"><span class="step-num">9</span>Budget Impact Summary &mdash; Base Case</div>
+      <div class="sec-body">
+        <div id="bi-container"></div>
+        <div id="annual-nbi-tbl"></div>
+        <div id="param-ranking"></div>
+      </div>
+    </div>
+
+    <div class="model-note">
+      <strong>Model logic:</strong> Annual Cost per Patient = Dose per Admin &times; Dosage Period &times; Cost per Unit &nbsp;|&nbsp;
+      Budget Impact = Total After Launch &ndash; Total Before Launch &nbsp;|&nbsp;
+      PSA uses Monte Carlo simulation with Gamma (costs), Normal (population), Beta (uptake).
+    </div>
+
+    <button id="run-btn" onclick="proceedToPSA()">Proceed to PSA Configuration &amp; Run &rarr;</button>
+
   </div>
-  <button class="procbtn" onclick="proceedToPSA()">Proceed to PSA Configuration &amp; Run &nbsp;&rarr;</button>
 </div>
 
-
+<!-- ===================== PAGE 2: PSA ===================== -->
 <div id="psa-page" class="page">
-  <div class="inner">
+  <div class="psa-layout">
+    <!-- Left: Config -->
     <div id="psa-l">
       <h2>PSA Configuration</h2>
       <p class="psub">Distributions pre-seeded from base scenario</p>
-      <div style="background:#f0fdf9;border:1px solid #a7f3d0;border-radius:5px;padding:9px 12px;margin-bottom:12px;font-size:10px;color:#065f46;line-height:1.6;"><strong>Fixed methodology:</strong> Costs &rarr; <strong>Gamma</strong> &nbsp;|&nbsp; Population &rarr; <strong>Normal</strong> &nbsp;|&nbsp; Uptake &rarr; <strong>Beta</strong><br/>Distributions seeded using method of moments with ±30% spread (90% CI). Replace with evidence-based parameters for formal submissions.</div>
+      <div style="background:#f0fdf9;border:1px solid #a7f3d0;border-radius:5px;padding:9px 12px;margin-bottom:12px;font-size:10px;color:#065f46;line-height:1.6;">
+        <strong>Recommended:</strong> Costs &rarr; <strong>Gamma</strong> &nbsp;|&nbsp; Population &rarr; <strong>Normal</strong> &nbsp;|&nbsp; Uptake &rarr; <strong>Beta</strong><br/>
+        Each card can be customised. Adjust <strong>Spread %</strong> and click <strong>&#8635; Re-seed</strong> to recalculate.
+      </div>
       <div class="bstrip"><div class="bst">Base Scenario Summary</div><div class="bsr" id="strip-row"></div></div>
+
+      <!-- NP Cost card -->
       <div class="dc" id="dc-cost">
         <div class="dch"><div class="dcd" id="dot-cost"></div><span class="dcl" id="lbl-cost">Annual Cost</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-cost" onchange="changeCard('cost')"><option value="gamma" selected>Gamma</option><option value="lognormal">Log-Normal</option><option value="normal">Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
-          <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed from base</button></div>
-          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;"><label>Spread (&#177;%)</label><input type="number" id="spread-cost" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="Uncertainty spread as &#177;% of base value (90% CI)"/></div>
+          <div class="dc-unc-field"><label>Distribution</label>
+            <select class="dcs" id="d-cost" onchange="changeCard('cost')">
+              <option value="gamma" selected>Gamma</option>
+              <option value="lognormal">Log-Normal</option>
+              <option value="normal">Normal</option>
+              <option value="triangular">Triangular</option>
+              <option value="uniform">Uniform</option>
+            </select>
+          </div>
+          <div class="dc-unc-field dc-reseed-field">
+            <button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed from base</button>
+          </div>
+          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;">
+            <label>Spread (&#177;%)</label>
+            <input type="number" id="spread-cost" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base value for 90% CI"/>
+          </div>
         </div>
-        <div class="dchint" id="h-cost"></div><div class="dcf" id="f-cost"></div>
+        <div class="dchint" id="h-cost"></div>
+        <div class="dcf" id="f-cost"></div>
       </div>
+
+      <!-- Uptake card -->
       <div class="dc" id="dc-uptake">
         <div class="dch"><div class="dcd" id="dot-uptake"></div><span class="dcl" id="lbl-uptake">Uptake Rate</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-uptake" onchange="changeCard('uptake')"><option value="beta" selected>Beta</option><option value="normal">Normal</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
-          <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed from base</button></div>
-          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;"><label>Spread (&#177;%)</label><input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="Uncertainty spread as &#177;% of base value (90% CI)"/></div>
+          <div class="dc-unc-field"><label>Distribution</label>
+            <select class="dcs" id="d-uptake" onchange="changeCard('uptake')">
+              <option value="beta" selected>Beta</option>
+              <option value="normal">Normal</option>
+              <option value="lognormal">Log-Normal</option>
+              <option value="triangular">Triangular</option>
+              <option value="uniform">Uniform</option>
+            </select>
+          </div>
+          <div class="dc-unc-field dc-reseed-field">
+            <button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed from base</button>
+          </div>
+          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;">
+            <label>Spread (&#177;%)</label>
+            <input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base value for 90% CI"/>
+          </div>
         </div>
-        <div class="dchint" id="h-uptake"></div><div class="dcf" id="f-uptake"></div>
+        <div class="dchint" id="h-uptake"></div>
+        <div class="dcf" id="f-uptake"></div>
       </div>
+
+      <!-- Population card -->
       <div class="dc" id="dc-pop">
         <div class="dch"><div class="dcd" id="dot-pop"></div><span class="dcl">Population</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-pop" onchange="changeCard('pop')"><option value="normal">Normal</option><option value="gamma">Gamma</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
-          <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed from base</button></div>
-          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;"><label>Spread (&#177;%)</label><input type="number" id="spread-pop" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="Uncertainty spread as &#177;% of base value (90% CI)"/></div>
+          <div class="dc-unc-field"><label>Distribution</label>
+            <select class="dcs" id="d-pop" onchange="changeCard('pop')">
+              <option value="normal" selected>Normal</option>
+              <option value="lognormal">Log-Normal</option>
+              <option value="gamma">Gamma</option>
+              <option value="triangular">Triangular</option>
+              <option value="uniform">Uniform</option>
+            </select>
+          </div>
+          <div class="dc-unc-field dc-reseed-field">
+            <button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed from base</button>
+          </div>
+          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;">
+            <label>Spread (&#177;%)</label>
+            <input type="number" id="spread-pop" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base value for 90% CI"/>
+          </div>
         </div>
-        <div class="dchint" id="h-pop"></div><div class="dcf" id="f-pop"></div>
+        <div class="dchint" id="h-pop"></div>
+        <div class="dcf" id="f-pop"></div>
       </div>
+
+      <!-- Comparator costs -->
       <div style="margin-top:16px;">
-        <div style="font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);">Comparator Cost Distributions
-          <label class="toggle-pill" style="margin-left:auto;cursor:pointer;" title="Toggle probabilistic comparator costs"><input type="checkbox" id="vary-comp-toggle" onchange="toggleVaryComp(this)"/><span class="toggle-track"><span class="toggle-thumb"></span></span></label></div>
-        <div id="comp-cost-note" style="font-size:10px;color:var(--ink4);margin-bottom:8px;line-height:1.5;">Comparator costs are held fixed at base case values (recommended for known list prices). Toggle ON to vary them probabilistically using Gamma distributions.</div>
+        <div style="font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.4px;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;">
+          Comparator Cost Distributions
+          <label class="toggle-pill" style="margin-left:auto;cursor:pointer;" title="Toggle probabilistic comparator costs">
+            <input type="checkbox" id="vary-comp-toggle" onchange="toggleVaryComp(this)"/>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div id="comp-cost-note" style="font-size:10px;color:var(--ink4);margin-bottom:8px;line-height:1.5;">
+          Comparator costs held fixed at base values (recommended). Toggle ON to vary probabilistically.
+        </div>
         <div id="comp-cost-section" style="opacity:0.45;pointer-events:none;transition:opacity .2s;">
-        <div id="comp-cost-cards"></div>
+          <div id="comp-cost-cards"></div>
         </div>
       </div>
-      <div class="yrc"><label>Time Horizon (Years)</label><div class="yrr"><input type="range" id="yr-range" min="1" max="10" value="3" oninput="document.getElementById('yr-val').textContent=this.value"/><span id="yr-val">3</span></div></div>
-      <div class="lgc">
-        <div class="lgt">Distribution Reference</div>
-        <div class="lgr"><span class="lgd" style="background:#00c9a7;"></span>Triangular &mdash; Min/Mode/Max</div>
-        <div class="lgr"><span class="lgd" style="background:#4e9af1;"></span>Normal &mdash; &mu;, &sigma;</div>
-        <div class="lgr"><span class="lgd" style="background:#f7b731;"></span>Beta &mdash; &alpha;, &beta; (uptake only)</div>
-        <div class="lgr"><span class="lgd" style="background:#fc5c65;"></span>Log-Normal &mdash; &mu;, &sigma;</div>
-        <div class="lgr"><span class="lgd" style="background:#a55eea;"></span>Uniform &mdash; Min/Max</div>
-        <div class="lgr"><span class="lgd" style="background:#ff9f43;"></span>Gamma &mdash; &alpha;, &beta; (cost/pop)</div>
-      </div>
-      <div style="margin-bottom:8px;"><label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink4);display:block;margin-bottom:3px;">Iterations</label><select id="psa-n" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:11px;color:var(--ink);background:var(--surface2);"><option value="1000">1,000 — quick check</option><option value="5000">5,000</option><option value="10000" selected>10,000 — standard</option><option value="50000">50,000 — precise tail</option></select></div>
-      <div id="psa-reseed-warn" style="display:none;background:#fff7ed;border:1px solid #f97316;border-radius:4px;padding:8px 10px;font-size:10px;color:#c2410c;margin-bottom:8px;line-height:1.4;"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <div style="flex:1;">
-          <label style="font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--ink4);display:block;margin-bottom:3px;">RNG Seed</label>
-          <input type="number" id="psa-seed" value="42" min="1" step="1" style="width:100%;padding:6px 10px;border:1px solid var(--border);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink);outline:none;" oninput="setSeed(parseInt(this.value)||42)"/>
+
+      <!-- PSA Controls -->
+      <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border);">
+        <div id="psa-reseed-warn" style="display:none;background:#fef3c7;border:1px solid #f59e0b;border-radius:4px;padding:7px 10px;font-size:10px;color:#92400e;margin-bottom:10px;"></div>
+        <div class="yrc">
+          <label>Time Horizon (Years)</label>
+          <div class="yr-wrap">
+            <input type="range" id="yr-range" min="1" max="3" value="3" oninput="$('yr-val').textContent=this.value"/>
+            <span id="yr-val" class="yr-val">3</span>
+          </div>
         </div>
-        <button style="align-self:flex-end;padding:7px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;color:var(--ink4);" onclick="var s=Math.floor(_rand()*999999)+1;setSeed(s);document.getElementById('psa-seed').value=s;" title="Random seed">&#8645;</button>
+        <div class="fg fg-auto" style="margin-bottom:10px;">
+          <div class="field"><label>RNG Seed</label><input type="number" id="psa-seed" value="42" min="0" step="1"/></div>
+          <div class="field"><label>Iterations</label>
+            <select id="psa-n">
+              <option value="1000">1,000</option>
+              <option value="5000">5,000</option>
+              <option value="10000" selected>10,000</option>
+              <option value="50000">50,000</option>
+            </select>
+          </div>
+        </div>
+        <button id="run-psa-btn" onclick="runSim()" class="run-psa-full-btn">&#9654; RUN PSA (10,000 ITERATIONS)</button>
+        <div id="pw" style="display:none;margin-top:10px;">
+          <div style="font-size:11px;color:var(--ink4);margin-bottom:4px;">Running simulation&hellip;</div>
+          <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden;">
+            <div id="pf" style="height:100%;width:0%;background:var(--teal);transition:width .2s;border-radius:3px;"></div>
+          </div>
+          <div id="pp" style="font-size:10px;color:var(--ink4);margin-top:4px;font-family:'JetBrains Mono',monospace;">0%</div>
+        </div>
       </div>
-      <button id="run-btn" onclick="runSim()">&#9654; RUN PSA (10,000 ITERATIONS)</button>
-      <div id="pw"><div id="pf"></div></div>
     </div>
+
+    <!-- Right: Results -->
     <div id="psa-r">
-      <div id="idle"><div class="ico">&#9711;</div><h3>Ready to Simulate</h3><p style="font-size:10px;color:#aac4b4;">Configure distributions on the left then click Run PSA</p></div>
-      <div id="res">
-        <div class="krow" id="kpi-row"></div>
+      <div id="idle" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--ink4);font-size:12px;gap:12px;padding:60px 0;">
+        <div style="font-size:40px;">&#9654;</div>
+        <div>Configure distributions and click <strong>Run PSA</strong></div>
+      </div>
+      <div id="res" style="display:none;">
         <div id="bann">
-          <div class="bi2"><label>90% CI (P5&ndash;P95)</label><div class="bvv" id="b-ci">&mdash;</div></div><div class="bsep"></div><div class="bi2"><label>P80 Budget Impact</label><div class="bvv" id="b-p80">&mdash;</div></div>
+          <div class="bi2"><label>90% CI (P5&ndash;P95)</label><div class="bvv" id="b-ci">&mdash;</div></div>
+          <div class="bsep"></div>
+          <div class="bi2"><label>P80 Budget Impact</label><div class="bvv" id="b-p80">&mdash;</div></div>
           <div class="bsep"></div>
           <div class="bi2"><label>Deterministic Base</label><div class="bss" id="b-base">&mdash;</div></div>
           <div class="bsep"></div>
           <div class="bi2"><label>Range</label><div class="bss" id="b-range">&mdash;</div></div>
           <div class="bsep"></div>
-          <div class="bi2"><label>Std Deviation</label><div class="bss" id="b-std">&mdash;</div></div>
-          <div id="binfo"></div>
-        <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;font-style:italic;padding:0 2px;"></div>
+          <div class="bi2"><label>Std Dev</label><div class="bss" id="b-std">&mdash;</div></div>
         </div>
+        <div class="krow" id="kpi-row"></div>
         <div class="tabs">
-          <button class="tbtn active" onclick="showTab('histogram',this)">Distribution</button>
-          <button class="tbtn" onclick="showTab('cdf',this)">S-Curve (CDF)</button>
-          <button class="tbtn" onclick="showTab('boxplot',this)">Box Plot</button>
+          <button class="tbtn active" onclick="showTab('hist',this)">Histogram</button>
+          <button class="tbtn" onclick="showTab('cdf',this)">CDF</button>
+          <button class="tbtn" onclick="showTab('box',this)">Box Plot</button>
           <button class="tbtn" onclick="showTab('vd',this);runVD()">Variance Decomposition</button>
         </div>
-        <div id="tab-histogram" class="cp active"><div class="cw"><canvas id="histChart" height="280"></canvas></div></div>
-        <div id="tab-cdf" class="cp">
-          <div id="cdf-ctrl"><label>CONFIDENCE LEVEL</label><input type="range" id="conf-r" min="5" max="99" value="80" oninput="updConf()"/><span id="conf-p">80%</span><span id="conf-v">&mdash;</span></div>
-          <div class="cw"><canvas id="cdfChart" height="280"></canvas></div>
-        </div>
-        <div id="tab-vd" class="cp"><div id="vd-wrap"><div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first, then click this tab.</div></div></div>
-        <div id="tab-boxplot" class="cp"><div class="cw"><canvas id="boxChart" height="120"></canvas><div class="ptbl" id="ptbl"></div>
+        <div class="tab-panel active" id="tab-hist"><canvas id="hist-chart"></canvas></div>
+        <div class="tab-panel" id="tab-cdf"><canvas id="cdf-chart"></canvas></div>
+        <div class="tab-panel" id="tab-box"><canvas id="box-chart"></canvas></div>
+        <div class="tab-panel" id="tab-vd"><div id="vd-wrap"></div></div>
+        <div class="ptbl" id="ptbl"></div>
         <div id="annual-nbi-tbl"></div>
-        <div id="param-ranking"></div></div></div>
+        <div id="param-ranking"></div>
+        <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
+        <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
       </div>
     </div>
   </div>
 </div>
 
-
+<!-- ===================== PAGE 3: TORNADO ===================== -->
 <div id="tornado-page" class="page">
   <div class="inner">
     <div class="sa-header">
       <div>
         <div class="sa-title">One-Way Sensitivity Analysis &mdash; Tornado Diagram</div>
-        <div class="sa-sub">Each parameter varied independently ±% from base. Bars show resulting NBI range. Widest = most influential.</div>
+        <div class="sa-sub">Each parameter varied independently &plusmn;% from base. Bars show resulting NBI range.</div>
       </div>
       <div class="sa-controls">
         <div class="sa-ctrl-group">
-          <label>Variation (±%)</label>
-          <input type="number" id="tornado-var" value="20" min="1" max="100" step="1"/>
+          <label>Variation (&plusmn;%)</label>
+          <input type="number" id="tornado-var" value="20" min="1" max="100" class="sa-inp"/>
         </div>
         <div class="sa-ctrl-group">
           <label>Time Horizon (Years)</label>
@@ -667,43 +772,52 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
         <button class="run-sa-btn" onclick="runTornado()">&#9654; Run</button>
       </div>
     </div>
-    <div class="tornado-legend">
-      <span><i style="background:#10b981"></i> Saves budget vs base</span>
-      <span><i style="background:#ef4444"></i> Costs budget vs base</span>
-    </div>
-    <div class="tornado-wrap" id="tornado-chart-wrap">
-      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;">Click Run to generate the tornado diagram.</div>
-    </div>
-    <div id="tornado-tbl-wrap"></div>
+    <div id="tornado-chart-wrap" style="margin-top:16px;overflow-x:auto;"></div>
+    <div id="tornado-tbl-wrap" style="margin-top:16px;"></div>
   </div>
 </div>
 
-
+<!-- ===================== PAGE 4: SCENARIO ===================== -->
 <div id="scenario-page" class="page">
   <div class="inner">
     <div class="sa-header">
-      <div><div class="sa-title">Scenario Analysis</div>
-      <div class="sa-sub">Compare Base, Low, and High scenarios side-by-side.</div></div>
+      <div>
+        <div class="sa-title">Scenario Analysis</div>
+        <div class="sa-sub">Compare Base, Low, and High scenarios side-by-side.</div>
+      </div>
       <div class="sa-controls">
-        <div class="sa-ctrl-group"><label>Time Horizon (Years)</label><select id="scenario-yrs"></select></div>
+        <div class="sa-ctrl-group">
+          <label>Time Horizon (Years)</label>
+          <select id="scenario-yrs"></select>
+        </div>
         <button class="run-sa-btn" onclick="runScenario()">&#9654; Update</button>
       </div>
     </div>
-    <div id="scenario-wrap"><div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;">Click Update to generate.</div></div>
+    <div id="scenario-wrap">
+      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;">Click Update to generate scenario comparison.</div>
+    </div>
   </div>
 </div>
 
+<!-- ===================== PAGE 5: THRESHOLD ===================== -->
 <div id="threshold-page" class="page">
   <div class="inner">
     <div class="sa-header">
-      <div><div class="sa-title">Threshold Analysis</div>
-      <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div></div>
+      <div>
+        <div class="sa-title">Threshold Analysis</div>
+        <div class="sa-sub">Find the break-even value at which cumulative Net Budget Impact = $0.</div>
+      </div>
       <div class="sa-controls">
-        <div class="sa-ctrl-group"><label>Time Horizon (Years)</label><select id="threshold-yrs"></select></div>
+        <div class="sa-ctrl-group">
+          <label>Time Horizon (Years)</label>
+          <select id="threshold-yrs"></select>
+        </div>
         <button class="run-sa-btn" onclick="runThreshold()">&#9654; Calculate</button>
       </div>
     </div>
-    <div class="thresh-grid" id="threshold-wrap"><div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div></div>
+    <div class="thresh-grid" id="threshold-wrap">
+      <div style="font-size:11px;color:var(--ink4);text-align:center;padding:40px 0;grid-column:1/-1;">Click Calculate to find thresholds.</div>
+    </div>
   </div>
 </div>
 
@@ -2638,6 +2752,8 @@ function renderCompactRanking(results, varFull){
 }
 
 </script>
-<div id="chartjs-warn" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#7f1d1d;color:#fca5a5;padding:10px 20px;border-radius:6px;font-size:11px;font-weight:600;z-index:9999;">&#9888; Chart.js unavailable.</div>
+
+<div id="chartjs-warn" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#7f1d1d;color:#fca5a5;padding:10px 20px;border-radius:6px;font-size:11px;font-weight:600;z-index:9999;">&#9888; Chart.js unavailable. Charts will not render. Calculations unaffected.</div>
+
 </body>
 </html>
