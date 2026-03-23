@@ -184,7 +184,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .procbtn:hover{background:var(--teal-mid);box-shadow:0 6px 20px rgba(13,122,95,.4);transform:translateY(-1px);}
 
 /* ── PSA PAGE ─────────────────────────────── */
-#psa-page .inner{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 112px);}
+#psa-page .inner{display:grid;grid-template-columns:420px 1fr;height:calc(100vh - 112px);}
 #psa-l{background:var(--surface2);border-right:1px solid var(--border);padding:20px 18px;overflow-y:auto;height:100%;}
 #psa-r{padding:24px 28px;overflow-y:auto;background:var(--bg);height:100%;}
 #psa-l h2{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:3px;letter-spacing:-.2px;}
@@ -194,14 +194,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--i
 .bsr{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--ink3);}
 .bsr span b{color:var(--teal);font-weight:600;}
 .dc{background:#fff;border-radius:var(--radius);padding:14px;margin-bottom:10px;border:1px solid var(--border);border-top:3px solid var(--teal);transition:border-top-color .2s;box-shadow:var(--shadow-sm);}
-.dc-unc-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;margin-bottom:10px;padding:10px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);}
+.dc-unc-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;margin-bottom:8px;padding:10px 12px;background:var(--surface2);border-radius:5px;border:1px solid var(--border);}
 .dc-unc-field label{display:block;font-size:9px;font-weight:600;color:var(--ink4);letter-spacing:.3px;margin-bottom:4px;text-transform:uppercase;}
+.spread-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:4px 12px;}
+.spread-row label{font-size:9px;font-weight:600;color:var(--ink4);letter-spacing:.3px;text-transform:uppercase;white-space:nowrap;min-width:80px;}
+.spread-row input{width:64px;}
+
 .dc-unc-inp{width:100%;padding:6px 8px;border:1px solid #f5a623;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#1e293b;background:#fffbf2;outline:none;text-align:center;transition:all .15s;}
 .dc-unc-inp:focus{border-color:#e8920a;box-shadow:0 0 0 3px rgba(245,166,35,.18);background:#fff;}
 .dch{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
 .dcd{width:10px;height:10px;border-radius:3px;flex-shrink:0;transition:background .2s;}
 .dcl{font-size:10px;font-weight:600;color:var(--ink);letter-spacing:.3px;flex:1;}
-.dcs{padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:11px;color:var(--ink2);background:var(--surface2);outline:none;cursor:pointer;}
+.dcs{width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:4px;font-family:inherit;font-size:11px;color:var(--ink2);background:var(--surface2);outline:none;cursor:pointer;}
 .dchint{font-size:10px;color:var(--ink4);margin-bottom:10px;line-height:1.5;}
 .dcf{display:grid;gap:8px;}
 .dff label{display:block;font-size:10px;font-weight:600;color:var(--ink4);letter-spacing:.2px;margin-bottom:4px;}
@@ -413,7 +417,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 #print-header p  { font-size:10px; color:#64748b; }
 
 /* ── PSA two-panel layout ───────────── */
-.psa-layout{display:grid;grid-template-columns:340px 1fr;height:calc(100vh - 98px);overflow:hidden;}
+.psa-layout{display:grid;grid-template-columns:420px 1fr;height:calc(100vh - 98px);overflow:hidden;}
 @media(max-width:900px){.psa-layout{grid-template-columns:1fr;height:auto;}}
 /* ── Tab panels ─────────────────────── */
 .tab-panel{display:none;padding:16px 0;}
@@ -615,13 +619,12 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
               <option value="uniform">Uniform</option>
             </select>
           </div>
-          <div class="dc-unc-field dc-reseed-field">
-            <button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed from base</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px;">
+          <div style="flex:1;"><label style="display:block;font-size:9px;font-weight:600;color:var(--ink4);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;">Spread (&#177;%)</label>
+            <input type="number" id="spread-cost" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base (90% CI)"/>
           </div>
-          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;">
-            <label>Spread (&#177;%)</label>
-            <input type="number" id="spread-cost" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base value for 90% CI"/>
-          </div>
+          <button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed</button>
         </div>
         <div class="dchint" id="h-cost"></div>
         <div class="dcf" id="f-cost"></div>
@@ -640,13 +643,12 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
               <option value="uniform">Uniform</option>
             </select>
           </div>
-          <div class="dc-unc-field dc-reseed-field">
-            <button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed from base</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px;">
+          <div style="flex:1;"><label style="display:block;font-size:9px;font-weight:600;color:var(--ink4);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;">Spread (&#177;%)</label>
+            <input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base (90% CI)"/>
           </div>
-          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;">
-            <label>Spread (&#177;%)</label>
-            <input type="number" id="spread-uptake" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base value for 90% CI"/>
-          </div>
+          <button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed</button>
         </div>
         <div class="dchint" id="h-uptake"></div>
         <div class="dcf" id="f-uptake"></div>
@@ -665,13 +667,12 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
               <option value="uniform">Uniform</option>
             </select>
           </div>
-          <div class="dc-unc-field dc-reseed-field">
-            <button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed from base</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:6px;">
+          <div style="flex:1;"><label style="display:block;font-size:9px;font-weight:600;color:var(--ink4);letter-spacing:.3px;text-transform:uppercase;margin-bottom:4px;">Spread (&#177;%)</label>
+            <input type="number" id="spread-pop" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base (90% CI)"/>
           </div>
-          <div class="dc-unc-field" style="display:flex;flex-direction:column;gap:4px;">
-            <label>Spread (&#177;%)</label>
-            <input type="number" id="spread-pop" value="30" min="1" max="99" step="1" class="dc-unc-inp" title="&#177;% of base value for 90% CI"/>
-          </div>
+          <button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed</button>
         </div>
         <div class="dchint" id="h-pop"></div>
         <div class="dcf" id="f-pop"></div>
@@ -835,6 +836,10 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
 </div>
 
 <script>
+
+
+
+
 
 /* ==================== REFERENCE TEST VECTORS ====================
    Run these assertions to verify compute() correctness.
@@ -2612,13 +2617,14 @@ function updatePrintHeader(){
 }
 
 // ==================== VARIANCE DECOMPOSITION ====================
-var VD_N=2000;
+var VD_N=500;
 function runVD(){
   if(!SIM||!SIM.data||SIM.data.length===0){
     $('vd-wrap').innerHTML='<div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first, then click this tab.</div>';
     return;
   }
   $('vd-wrap').innerHTML='<div style="padding:24px;text-align:center;color:var(--ink4);font-size:11px;">Calculating\u2026 ('+VD_N+' iterations per parameter)</div>';
+  setTimeout(function(){
   var ss=cfg._S||S,dd=cfg._D||D,yrs=+$('yr-range').value;
   var seedVal=parseInt((($('psa-seed')||{}).value)||'42')||42;
   var varFull=SIM.std*SIM.std;
@@ -2636,13 +2642,13 @@ function runVD(){
   params.forEach(function(p,pi){
     setSeed(seedVal+pi*997);
     var partial=[];
-    var maxS=0;
-    for(var _y=0;_y<Math.min(yrs,ss.years);_y++) maxS=Math.max(maxS,(ss.npUptake[_y]||0)/100);
-    var mxM=maxS>0?1/maxS:20;
+    // uMult is now drawnY1/baseY1 - no need for max multiplier bound
     for(var i=0;i<VD_N;i++){
       var npCs=(p.id==='cost_np')?Math.max(0,draw(cfg.cost)):dd.npAnn;
       var pY1=(p.id==='pop')?Math.max(1,draw(cfg.pop)):(dd.patVol[0]||1);
-      var uM=(p.id==='uptake')?Math.min(mxM,Math.max(0,draw(cfg.uptake))):1.0;
+      var baseY1vd=cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);
+      var drawnY1vd=(p.id==='uptake')?Math.max(0,Math.min(1,draw(cfg.uptake))):baseY1vd;
+      var uM=baseY1vd>1e-9?drawnY1vd/baseY1vd:1.0;
       var ccs={};
       ss.comparators.forEach(function(c){
         var ccfg=cfg.compCost&&cfg.compCost[c.id];
@@ -2671,41 +2677,45 @@ function runVD(){
   var varSum=results.reduce(function(a,r){return a+r.variance;},0)||1;
   renderVD(results,varFull,varSum);
   renderCompactRanking(results,varFull);
+  },50); // end setTimeout - allows 'Calculating...' to paint
 }
 
 function renderVD(results,varFull,varSum){
-  var W=580,LABEL=190,BAR_W=W-LABEL-90;
-  var maxVar2=results[0]?results[0].variance:1;
-  var ROW_H2=40,SVG_H2=results.length*ROW_H2+50;
-  var NS2='http://www.w3.org/2000/svg';
-  function svgEl2(tag,attrs){
-    var el=document.createElementNS(NS2,tag);
-    Object.keys(attrs).forEach(function(k){el.setAttribute(k,attrs[k]);});
-    return el;
+  var el=$('vd-wrap');
+  if(!el) return;
+  if(!results||results.length===0){
+    el.innerHTML='<div style="padding:30px;text-align:center;color:var(--ink5);">No results.</div>';
+    return;
   }
-  var svgRoot2=svgEl2('svg',{viewBox:'0 0 '+W+' '+SVG_H2,style:'width:100%;max-width:680px;'});
-  var hdrT=svgEl2('text',{x:LABEL,y:16,'font-size':9,fill:'#94a3b8'});
-  hdrT.textContent='Partial SD ('+VD_N+' iter each) →'; svgRoot2.appendChild(hdrT);
-  var colors2=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
-  results.forEach(function(r2,i){
-    var y=26+i*ROW_H2;
-    var bw=maxVar2>0?(r2.variance/maxVar2)*(BAR_W*0.88):0;
-    var pct=varSum>0?(r2.variance/varSum*100):0;
-    var col=colors2[i%colors2.length];
-    var lbl2=svgEl2('text',{x:LABEL-8,y:y+15,'text-anchor':'end','font-size':10,fill:'#334155'});
-    lbl2.textContent=(i+1)+'. '+r2.label; svgRoot2.appendChild(lbl2);
-    if(bw>0.5){var bar=svgEl2('rect',{x:LABEL,y:y+2,width:bw,height:24,rx:3,fill:col,opacity:0.85}); svgRoot2.appendChild(bar);}
-    var vt3=svgEl2('text',{x:LABEL+bw+6,y:y+16,'font-size':10,fill:col,'font-weight':'700'});
-    vt3.textContent=fmtM(r2.sd); svgRoot2.appendChild(vt3);
-    var pct2=svgEl2('text',{x:W-4,y:y+16,'text-anchor':'end','font-size':10,fill:'#94a3b8'});
-    pct2.textContent=pct.toFixed(1)+'%'; svgRoot2.appendChild(pct2);
-  });
-  var svg=svgRoot2.outerHTML;
-    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
-    +'<div><div style="font-size:13px;font-weight:700;color:var(--ink);">Parameter Influence Ranking</div>'
-    +'<div style="font-size:11px;color:var(--ink4);margin-top:2px;">Which parameters drive the most uncertainty in NBI?</div></div>'
+  var colors=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
+  var h='<div style="margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'
+    +'<div style="font-size:13px;font-weight:700;color:var(--ink);">Parameter Influence Ranking</div>'
     +'<button class="run-sa-btn" onclick="runVD()" style="padding:6px 14px;">&#8635; Recalculate</button>'
-    +'</div>'+svg+tbl+note+'</div>';
+    +'</div>';
+  h+='<table class="btbl"><thead><tr>'
+    +'<th style="text-align:left;">Rank</th><th style="text-align:left;">Parameter</th>'
+    +'<th>Partial SD</th><th>% Share</th><th style="min-width:120px;">Influence Bar</th>'
+    +'</tr></thead><tbody>';
+  results.forEach(function(r,i){
+    var pct=varSum>0?(r.variance/varSum*100):0;
+    var col=colors[i%colors.length];
+    h+='<tr class="dr">'
+      +'<td class="rl"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:'+col+';color:#fff;font-size:9px;font-weight:700;">'+( i+1)+'</span></td>'
+      +'<td class="rl" style="font-weight:600;color:var(--ink);">'+r.label+'</td>'
+      +'<td class="tc"><span class="cv" style="color:'+col+';">'+fmtM(r.sd)+'</span></td>'
+      +'<td class="tc"><span style="font-weight:700;color:'+col+';">'+pct.toFixed(1)+'%</span></td>'
+      +'<td><div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;">'
+      +'<div style="height:100%;width:'+pct.toFixed(1)+'%;background:'+col+';border-radius:5px;"></div>'
+      +'</div></td>'
+      +'</tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div style="font-size:9px;color:var(--ink5);margin-top:10px;padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.6;">'
+    +'Partial variance decomposition. Each parameter varied independently ('
+    +VD_N+' iterations) with all others held at base. '
+    +'Full PSA SD: <strong>'+fmtM(Math.sqrt(varFull))+'</strong>.'
+    +'</div>';
+  el.innerHTML=h;
 }
 
 function renderAnnualTable(annStats, yrs){
@@ -2791,6 +2801,10 @@ function renderCompactRanking(results, varFull){
     +'</div>';
   el.innerHTML=h;
 }
+
+
+
+
 
 
 </script>
