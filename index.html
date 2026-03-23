@@ -563,7 +563,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       <div class="dc" id="dc-cost">
         <div class="dch"><div class="dcd" id="dot-cost"></div><span class="dcl" id="lbl-cost">Annual Cost</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-cost" onchange="changeCard('cost')"><option value="gamma">Gamma</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="normal">Normal</option><option value="uniform">Uniform</option></select></div>
+          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-cost" onchange="changeCard('cost')"><option value="gamma" selected>Gamma</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('cost')">&#8635; Re-seed from base</button></div>
         </div>
         <div class="dchint" id="h-cost"></div><div class="dcf" id="f-cost"></div>
@@ -571,7 +571,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       <div class="dc" id="dc-uptake">
         <div class="dch"><div class="dcd" id="dot-uptake"></div><span class="dcl" id="lbl-uptake">Uptake Rate</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-uptake" onchange="changeCard('uptake')"><option value="beta">Beta</option><option value="triangular">Triangular</option><option value="normal">Normal</option><option value="lognormal">Log-Normal</option><option value="uniform">Uniform</option></select></div>
+          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-uptake" onchange="changeCard('uptake')"><option value="beta" selected>Beta</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('uptake')">&#8635; Re-seed from base</button></div>
         </div>
         <div class="dchint" id="h-uptake"></div><div class="dcf" id="f-uptake"></div>
@@ -579,7 +579,7 @@ canvas.sa-chart { width:100% !important; max-height:340px; }
       <div class="dc" id="dc-pop">
         <div class="dch"><div class="dcd" id="dot-pop"></div><span class="dcl">Population</span></div>
         <div class="dc-unc-row">
-          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-pop" onchange="changeCard('pop')"><option value="normal">Normal</option><option value="gamma">Gamma</option><option value="lognormal">Log-Normal</option><option value="triangular">Triangular</option><option value="uniform">Uniform</option></select></div>
+          <div class="dc-unc-field"><label>Distribution</label><select class="dcs" id="d-pop" onchange="changeCard('pop')"><option value="normal" selected>Normal</option></select></div>
           <div class="dc-unc-field dc-reseed-field"><button class="reseed-btn" onclick="reseedCard('pop')">&#8635; Re-seed from base</button></div>
         </div>
         <div class="dchint" id="h-pop"></div><div class="dcf" id="f-pop"></div>
