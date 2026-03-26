@@ -562,7 +562,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
                   style="width:90px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;"
                   oninput="_riskDebounced()"/>
               </div>
-              <div id="thr-risk-result" style="flex:1;min-width:200px;"></div>
+              <div id="thr-risk-result" style="display:none;"></div>
             </div>
           </div>
 
@@ -815,7 +815,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
                   style="width:90px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;"
                   oninput="_riskDebounced()"/>
               </div>
-              <div id="thr-risk-result" style="flex:1;min-width:200px;"></div>
+              <div id="thr-risk-result" style="display:none;"></div>
             </div>
           </div>
 
@@ -2476,6 +2476,10 @@ function renderThresholdSection(){
   var thrVal=thrM*1e6;  // convert £M to £
 
   var npCost=D.npAnn||cfg._D&&cfg._D.npAnn||0;
+  // List price = price per pack (what manufacturer negotiates)
+  var npTx=(S.txCost&&S.txCost.np)||{};
+  var listPackPrice=parseFloat(npTx.pricePerPack)||0;
+  var packDesc=(npTx.packsize||1)+'x'+(npTx.unitsPerPack||1)+' packs @ £'+listPackPrice.toFixed(2)+'/pack';
   var yrs=S.years||3;
   var annData=SIM.annStats;
 
@@ -2575,30 +2579,30 @@ function renderThresholdSection(){
     var cards=[
       {
         label:'1. Median (P50) Breakeven',
-        formula:'List Price × (Threshold / worst-year P50 NBI)',
+        formula:'List Price × (Threshold / P50 BIA) = £'+npCost.toFixed(2)+' × (£'+thrM+'M / '+fmtM(worstP50)+')',
         price:beMedian,
         discount:((npCost-beMedian)/npCost*100),
-        desc:'Price at which half of simulations stay under the annual threshold in the worst forecast year. More robust than mean when distribution is skewed.',
+        desc:'The price at which half of simulations stay under the annual threshold. Uses the P50 of the annual BIA distribution (binding year). More robust than mean when distribution is skewed.',
         col:'#0d7a5f',
-        badge:'Balanced'
+        badge:'1 — Balanced'
       },
       {
         label:'2. 95th Percentile Breakeven',
-        formula:'List Price × (Threshold / worst-year P95 NBI)',
+        formula:'List Price × (Threshold / P95 BIA) = £'+npCost.toFixed(2)+' × (£'+thrM+'M / '+fmtM(worstP95)+')',
         price:be95th,
         discount:((npCost-be95th)/npCost*100),
-        desc:'Price at which even the worst-case scenario (top 5%) stays under threshold in the binding year. This is what a risk-averse payer wants — near-certainty of staying affordable.',
+        desc:'The price at which even the worst-case scenario (top 5%) stays under threshold. This is what a risk-averse payer wants — near-certainty of staying affordable. Drives MEA negotiations.',
         col:'#be123c',
-        badge:'Conservative — Recommended for MEA'
+        badge:'2 — Conservative (Recommended)'
       },
       {
-        label:'3. Risk Tolerance Breakeven',
-        formula:'Price where Prob > Threshold = '+riskPct+'%',
+        label:'3. Prob > Threshold = '+riskPct+'% — Inverse',
+        formula:'Find price where Prob(annual BIA > £'+thrM+'M) ≤ '+riskPct+'%',
         price:beRisk,
         discount:((npCost-beRisk)/npCost*100),
-        desc:'At this price, only '+riskPct+'% of simulations breach the annual threshold. Directly links pricing to the payer’s risk appetite. Adjust the tolerance input to explore.',
+        desc:'Rather than fixing a percentile, asks: at what price does the probability of breaching the annual threshold drop to '+riskPct+'%? Directly links pricing to the payer’s risk tolerance.',
         col:'#9333ea',
-        badge:'Risk-Based (Inverse)'
+        badge:'3 — Risk-Based (Inverse)'
       }
     ];
 
@@ -2614,27 +2618,30 @@ function renderThresholdSection(){
         discStr='&#9650; '+Math.abs(disc).toFixed(1)+'% headroom above list price';
         discCol='var(--teal)';
       }
+      // Compute pack price for this breakeven
+      var bePackPrice=listPackPrice>0?listPackPrice*(c.price/npCost):0;
+      var packLine=listPackPrice>0
+        ?('<div style="margin-top:6px;font-size:10px;color:var(--ink4);">'
+           +'<span style="color:var(--ink3);font-weight:600;">Pack price:</span> '
+           +'<span style="font-family:var(--mono);font-weight:700;color:'+c.col+';">'+'£'+bePackPrice.toFixed(2)+'/pack</span>'
+           +' &nbsp;&bull;&nbsp; Annual cost/pt: <span style="font-family:var(--mono);">'+fmtM(c.price)+'/yr</span>'
+           +'</div>')
+        :'';
       return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid '+c.col+';">'
         +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:'+c.col+';margin-bottom:2px;">'+c.badge+'</div>'
         +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3;">'+c.label+'</div>'
         +'<div style="font-family:var(--mono);font-size:10px;color:var(--ink5);margin-bottom:10px;background:var(--surface2);padding:4px 8px;border-radius:4px;">'+c.formula+'</div>'
-        +'<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;margin-bottom:4px;">'+fmtM(c.price)+'</div>'
-        +'<div style="font-size:11px;font-weight:600;color:'+discCol+';margin-bottom:8px;">'+discStr+'</div>'
+        +'<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;margin-bottom:2px;">'
+          +(listPackPrice>0?'£'+bePackPrice.toFixed(2)+'/pack':fmtM(c.price)+'/yr')+'</div>'
+        +(listPackPrice>0?packLine:'')
+        +'<div style="font-size:11px;font-weight:600;color:'+discCol+';margin-top:6px;margin-bottom:8px;">'+discStr+'</div>'
         +'<div style="font-size:10px;color:var(--ink4);line-height:1.5;">'+c.desc+'</div>'
         +'</div>';
     }).join('');
 
     var el2=$('thr-breakeven-cards');if(el2) el2.innerHTML=cardsHtml;
 
-    // Risk tolerance result
-    var el3=$('thr-risk-result');
-    if(el3){
-      el3.innerHTML='<div style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);">'
-        +'<div style="font-size:10px;color:var(--ink4);margin-bottom:4px;">At <strong style="color:var(--ink3);">'+riskPct+'%</strong> risk tolerance — breakeven price:</div>'
-        +'<div style="font-family:var(--mono);font-size:18px;font-weight:800;color:#9333ea;">'+fmtM(beRisk)+'</div>'
-        +'<div style="font-size:10px;color:var(--ink4);margin-top:3px;">Only '+riskPct+'% of scenarios breach the threshold at this price</div>'
-        +'</div>';
-    }
+    // thr-risk-result removed (now shown in card 3)
   }
 }
 
