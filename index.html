@@ -694,7 +694,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         <div class="fg fg-auto" style="margin-bottom:10px;">
           <div class="field"><label>RNG Seed</label><input type="number" id="psa-seed" value="42" min="0" step="1"/></div>
           <div class="field"><label>Iterations</label>
-            <select id="psa-n">
+            <select id="psa-n" onchange="var btn=$('run-psa-btn');if(btn)btn.textContent='&#9654; RUN PSA ('+parseInt(this.value).toLocaleString()+' ITERATIONS)'">
               <option value="1000">1,000</option>
               <option value="5000">5,000</option>
               <option value="10000" selected>10,000</option>
@@ -1987,6 +1987,8 @@ function runSim(){
   var seedVal=parseInt((($('psa-seed')||{}).value)||'42')||42;
   var nVal=parseInt((($('psa-n')||{}).value)||'10000')||10000;
   N=nVal; setSeed(seedVal);
+  var btnLbl=$('run-psa-btn');
+  if(btnLbl) btnLbl.textContent='▶ RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
   _getWorker();
   if(_worker)_worker.terminate();
   _worker=new Worker(_wBlob);
@@ -2297,6 +2299,8 @@ function renderThresholdSection(){
   if(!SIM||!SIM.data||SIM.data.length===0) return;
   var sec=$('threshold-psa-section');
   if(sec) sec.style.display='block';
+  // Ensure section scrolls into view first time
+  if(sec&&sec._first!==false){sec._first=false;sec.scrollIntoView&&sec.scrollIntoView({behavior:'smooth',block:'nearest'});}
 
   var thrInp=$('psa-threshold-inp');
   var thrM=parseFloat((thrInp&&thrInp.value)||'20')||20;
@@ -2311,21 +2315,23 @@ function renderThresholdSection(){
   for(var y=0;y<yrs;y++){
     var as=annData&&annData[y];
     if(!as) continue;
-    var sorted=as._sorted;
-    // Count how many exceed threshold
-    var exceed=0;
-    if(SIM.annRaw&&SIM.annRaw[y]){
-      SIM.annRaw[y].forEach(function(v){if(v>thrVal)exceed++;});
+    // Use raw annual data if available, else interpolate from percentiles
+    var exceed=0,total=SIM.data.length;
+    var rawY=SIM.annRaw&&(SIM.annRaw[y]||SIM.annRaw[String(y)]);
+    if(rawY&&rawY.length){
+      rawY.forEach(function(v){if(v>thrVal)exceed++;});
     } else {
-      // Estimate from percentiles: interpolate
+      // Interpolate from annual percentiles
       var pctExceed=0;
       if(thrVal<=as.p5) pctExceed=95;
       else if(thrVal>=as.p95) pctExceed=5;
-      else if(thrVal<=as.p50) pctExceed=50+(as.p50-thrVal)/(as.p50-as.p5)*45;
-      else pctExceed=50-(thrVal-as.p50)/(as.p95-as.p50)*45;
-      exceed=Math.round(pctExceed*SIM.data.length/100);
+      else if(thrVal<=as.p25) pctExceed=75+(as.p25-thrVal)/(as.p25-as.p5)*20;
+      else if(thrVal<=as.p50) pctExceed=50+(as.p50-thrVal)/(as.p50-as.p25)*25;
+      else if(thrVal<=as.p75) pctExceed=25+(as.p75-thrVal)/(as.p75-as.p50)*25;
+      else if(thrVal<=as.p95) pctExceed=(as.p95-thrVal)/(as.p95-as.p75)*25;
+      exceed=Math.round(pctExceed*total/100);
     }
-    var pct=(exceed/SIM.data.length*100);
+    var pct=(exceed/total*100);
     var risk=pct>=50?'high':pct>=20?'med':'low';
     var riskCol=pct>=50?'var(--red)':pct>=20?'var(--gold-mid)':'var(--teal)';
     var riskLbl=pct>=50?'High Risk':pct>=20?'Moderate':'Low Risk';
