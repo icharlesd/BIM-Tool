@@ -611,16 +611,17 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
 
 <!-- =================== SAVE BAR =================== -->
 <div id="save-bar">
-  <div style="display:flex;align-items:center;gap:5px;">
-    <button onclick="saveScenario()" class="sbbtn sbbtn-save">&#128190; Save</button>
-    <button onclick="loadScenario()" class="sbbtn">&#128193; Load</button>
-    <span class="sbbtn-sep"></span>
-    <label class="sbbtn" style="cursor:pointer;">&#8657; Import JSON<input type="file" accept=".json" onchange="importJSON(this)" style="display:none;"/></label>
-    <button onclick="exportJSON()" class="sbbtn">&#8659; Export JSON</button>
-    <span class="sbbtn-sep"></span>
+  <div class="sb-group">
+    <button onclick="saveScenario()" class="sbbtn sbbtn-primary" title="Save to browser storage">&#128190; Save</button>
+    <button onclick="loadScenario()" class="sbbtn" title="Restore last saved scenario">&#128193; Load</button>
+    <span class="sb-sep"></span>
+    <label class="sbbtn" style="cursor:pointer;" title="Import from JSON file">&#8657; Import<input type="file" accept=".json" onchange="importJSON(this)" style="display:none;"/></label>
+    <button onclick="exportJSON()" class="sbbtn" title="Download as JSON">&#8659; Export</button>
+    <span class="sb-sep"></span>
     <button onclick="updatePrintHeader();window.print();" class="sbbtn">&#128438; Print</button>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;">
+  <div class="sb-group">
+    <span id="save-flash" style="font-size:11px;font-weight:600;opacity:0;transition:opacity .4s;font-family:var(--mono);color:var(--green);"></span>
     <span id="save-ts"></span>
     <button onclick="resetScenario()" class="sbbtn sbbtn-danger">&#8635; Reset</button>
   </div>
@@ -747,18 +748,20 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
       </div>
     </div>
 
-    <!-- param ranking (compact, below sections) -->
-    <div id="bi-container" style="display:none;"></div>
-    <div id="annual-nbi-tbl" style="display:none;"></div>
-    <div id="param-ranking"></div>
-
     <div class="model-note">
-      <strong>Model logic:</strong> Annual Cost per Patient = Dose per Admin &times; Dosage Period &times; Cost per Unit &nbsp;|&nbsp;
-      Budget Impact = Total After Launch &ndash; Total Before Launch &nbsp;|&nbsp;
-      PSA uses Monte Carlo simulation with Gamma (costs), Normal (population), Beta (uptake).
+      <strong>Model logic:</strong> Annual Cost per Patient = Dose per Admin &times; Dosage Period &times; Cost per Unit &nbsp;&nbsp;|&nbsp;&nbsp;
+      Budget Impact = Total After Launch &minus; Total Before Launch &nbsp;&nbsp;|&nbsp;&nbsp;
+      PSA uses Monte Carlo with Gamma (costs), Normal (population), Beta (uptake).
     </div>
 
-    <button id="run-btn" onclick="proceedToPSA()">Proceed to PSA Configuration &amp; Run &rarr;</button>
+    <button id="run-btn" onclick="proceedToPSA()">
+      &#9654;&nbsp; Proceed to PSA &mdash; Run Monte Carlo Simulation
+    </button>
+
+    <!-- Hidden containers used by JS (kept in DOM but invisible here) -->
+    <div id="bi-container" style="display:none;"></div>
+    <div id="annual-nbi-tbl" style="display:none;"></div>
+    <div id="param-ranking" style="display:none;"></div>
 
   </div>
 </div>
