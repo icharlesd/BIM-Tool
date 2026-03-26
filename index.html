@@ -2511,57 +2511,98 @@ function renderThresholdSection(){
   var el=$('thr-prob-table');if(el) el.innerHTML=tbl;
 
   // ── Breakeven cards ────────────────────────────────────────
+  // Threshold is per year — use the WORST (highest NBI) year's percentile
+  // NBI scales proportionally with drug price, so:
+  //   breakeven_price = list_price × (threshold / worst_annual_NBI_at_percentile)
   if(npCost>0){
-    var beMedian=npCost*(thrVal/(SIM.p50||1));
-    var be95th  =npCost*(thrVal/(SIM.p95||1));
+    // Find worst-year P50 and P95 across all forecast years
+    var worstP50=0, worstP95=0;
+    for(var wy=0;wy<yrs;wy++){
+      var was=annData&&annData[wy];
+      if(!was) continue;
+      if(was.p50>worstP50) worstP50=was.p50;
+      if(was.p95>worstP95) worstP95=was.p95;
+    }
+    // Fallback to cumulative if no annual data available
+    if(worstP50<=0) worstP50=SIM.p50||1;
+    if(worstP95<=0) worstP95=SIM.p95||1;
 
+    var beMedian = npCost*(thrVal/worstP50);
+    var be95th   = npCost*(thrVal/worstP95);
+
+    // Risk tolerance: find price where % of simulations breaching threshold = riskPct%
+    // Uses worst annual year raw data
     var riskInpEl=$('psa-risk-inp');
     var riskPct=parseFloat((riskInpEl&&riskInpEl.value)||'10')||10;
-    // Find price where Prob > threshold = riskPct%
-    // Binary search: scale price → scale NBI proportionally → find where pct breaches = riskPct
     var beRisk=npCost;
-    // NBI ∝ drug cost, so scaling price by factor f scales NBI by f
-    // We want: fraction of simulations where NBI*f > thrVal = riskPct/100
-    // i.e. fraction where NBI > thrVal/f = riskPct/100
-    // Sort cumNBI (SIM.data is sorted), find value at (1-riskPct/100) percentile
-    var targetPct=(1-riskPct/100);
-    var targetNBI=SIM.data[Math.min(SIM.data.length-1,Math.floor(targetPct*SIM.data.length))];
-    if(targetNBI>0) beRisk=npCost*(thrVal/targetNBI);
+    // Find worst year raw data (highest median year)
+    var worstYearIdx=0;
+    var worstMed=0;
+    for(var wy2=0;wy2<yrs;wy2++){
+      var was2=annData&&annData[wy2];
+      if(was2&&was2.p50>worstMed){worstMed=was2.p50;worstYearIdx=wy2;}
+    }
+    var rawWorst=SIM.annRaw&&(SIM.annRaw[worstYearIdx]||SIM.annRaw[String(worstYearIdx)]);
+    if(rawWorst&&rawWorst.length){
+      // Sort the worst year data
+      var sortedWorst=rawWorst.slice().sort(function(a,b){return a-b;});
+      // Find NBI value at (1 - riskPct/100) percentile
+      // If riskPct% of sims breach threshold, then (100-riskPct)% are below threshold
+      // Breakeven = price × threshold / NBI_at_(1-riskPct)_percentile
+      var targetIdx=Math.floor((1-riskPct/100)*sortedWorst.length);
+      targetIdx=Math.min(Math.max(0,targetIdx),sortedWorst.length-1);
+      var targetNBI=sortedWorst[targetIdx];
+      if(targetNBI>0) beRisk=npCost*(thrVal/targetNBI);
+    } else {
+      // Fallback: use percentile approach on sorted cumulative data
+      var sortedAll=SIM.data; // already sorted
+      var tIdx=Math.floor((1-riskPct/100)*sortedAll.length);
+      var tNBI=sortedAll[Math.min(tIdx,sortedAll.length-1)];
+      if(tNBI>0) beRisk=npCost*(thrVal/tNBI);
+    }
 
     var cards=[
       {
-        label:'Median (P50) Breakeven',
-        formula:'List Price × (Threshold / P50)',
+        label:'1. Median (P50) Breakeven',
+        formula:'List Price × (Threshold / worst-year P50 NBI)',
         price:beMedian,
         discount:((npCost-beMedian)/npCost*100),
-        desc:'Price at which half of simulations stay under threshold. Robust when distribution is skewed.',
+        desc:'Price at which half of simulations stay under the annual threshold in the worst forecast year. More robust than mean when distribution is skewed.',
         col:'#0d7a5f',
         badge:'Balanced'
       },
       {
-        label:'95th Percentile Breakeven',
-        formula:'List Price × (Threshold / P95)',
+        label:'2. 95th Percentile Breakeven',
+        formula:'List Price × (Threshold / worst-year P95 NBI)',
         price:be95th,
         discount:((npCost-be95th)/npCost*100),
-        desc:'Price giving near-certainty of staying affordable. Drives managed entry agreement negotiations.',
+        desc:'Price at which even the worst-case scenario (top 5%) stays under threshold in the binding year. This is what a risk-averse payer wants — near-certainty of staying affordable.',
         col:'#be123c',
-        badge:'Conservative — Recommended'
+        badge:'Conservative — Recommended for MEA'
       },
       {
-        label:'Risk Tolerance Breakeven',
-        formula:'At '+riskPct+'% breach probability',
+        label:'3. Risk Tolerance Breakeven',
+        formula:'Price where Prob > Threshold = '+riskPct+'%',
         price:beRisk,
         discount:((npCost-beRisk)/npCost*100),
-        desc:'Price at which only '+riskPct+'% of simulations breach the threshold. Links price to risk appetite.',
+        desc:'At this price, only '+riskPct+'% of simulations breach the annual threshold. Directly links pricing to the payer’s risk appetite. Adjust the tolerance input to explore.',
         col:'#9333ea',
-        badge:'Risk-Based'
+        badge:'Risk-Based (Inverse)'
       }
     ];
 
     var cardsHtml=cards.map(function(c){
       var disc=c.discount;
-      var discStr=disc>0?'&#9660; '+disc.toFixed(1)+'% discount from list':'&#9650; '+Math.abs(disc).toFixed(1)+'% above list';
-      var discCol=disc>0?'var(--red)':'var(--teal)';
+      var discStr, discCol;
+      if(disc>0){
+        // Breakeven BELOW list price — discount required
+        discStr='&#9660; '+disc.toFixed(1)+'% discount required';
+        discCol='var(--red)';
+      } else {
+        // Breakeven ABOVE list price — headroom available
+        discStr='&#9650; '+Math.abs(disc).toFixed(1)+'% headroom above list price';
+        discCol='var(--teal)';
+      }
       return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid '+c.col+';">'
         +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:'+c.col+';margin-bottom:2px;">'+c.badge+'</div>'
         +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3;">'+c.label+'</div>'
