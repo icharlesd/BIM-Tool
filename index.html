@@ -2347,6 +2347,36 @@ function showTab(name,el){
     });
   }
 })();
+// ── resetScenario ─────────────────────────────────────────────
+function resetScenario(){
+  if(!confirm('Reset all inputs to defaults? This cannot be undone.')) return;
+  try{localStorage.removeItem('bia_scenario_v1');}catch(e){}
+  S.npName='New Product'; S.launchYear=2025; S.years=3;
+  S.prevUnit=1000000; S.prevVal=1000; S.popSizeM=100;
+  S.diagPct=70; S.eligPct=60; S.accessPct=40; S.capturePct=50;
+  S.growthRates=new Array(10).fill(1);
+  S.usePatVolOverride=false; S.patVolOverride=new Array(10).fill(0);
+  S.comparators=[{id:'c1',name:'x1'},{id:'c2',name:'x2'}];
+  S.befMS={c1:new Array(10).fill(50),c2:new Array(10).fill(50)};
+  S.npUptake=new Array(10).fill(5);
+  S.captureProp={c1:new Array(10).fill(50),c2:new Array(10).fill(50)};
+  S.expansionRates=new Array(10).fill(0);
+  S.txCost={};
+  renderFromS();
+  flashSave('Reset to defaults','#f59e0b');
+}
+
+// ── toggleVolOverride ──────────────────────────────────────────
+function toggleVolOverride(){
+  var cb=$('vol-override-toggle');
+  S.usePatVolOverride=!!(cb&&cb.checked);
+  renderAll();
+}
+
+// ── fmtP (percentage formatter) ───────────────────────────────
+function fmtP(v){return (parseFloat(v)||0).toFixed(1)+'%';}
+
+
 renderAll();
 updateCalcs();
 
