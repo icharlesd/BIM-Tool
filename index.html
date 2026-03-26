@@ -602,7 +602,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
 
 <!-- =================== NAV =================== -->
 <div id="nav">
-  <button class="ntab active" onclick="gotoPage('base',this)"><span class="ntab-num">1</span>Base Scenario</button>
+  <button class="ntab active" onclick="gotoPage('base',this)"><span class="ntab-num">1</span>Base Scenario<span id="nav-base-badge" style="display:none;margin-left:6px;font-size:9px;font-weight:700;background:var(--teal);color:#0b2828;border-radius:99px;padding:2px 7px;font-family:var(--mono);"></span></button>
   <button class="ntab" id="nav-psa" onclick="gotoPage('psa',this)"><span class="ntab-num">2</span>PSA</button>
   <button class="ntab" id="nav-tornado" onclick="gotoPage('tornado',this)"><span class="ntab-num">3</span>One-Way SA</button>
   <button class="ntab" id="nav-scenario" onclick="gotoPage('scenario',this)"><span class="ntab-num">4</span>Scenarios</button>
@@ -651,6 +651,24 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
         <div class="bi-tk"><div class="bi-tk-lbl">Direction</div><div class="bi-tk-val" id="bts-dir">&mdash;</div></div>
       </div>
       <div id="bi-annual-top"></div>
+
+      <!-- PSA NBI summary row — hidden until PSA is run -->
+      <div id="psa-bi-row" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;padding:11px 20px;background:rgba(20,184,166,.08);border-top:1px solid rgba(20,184,166,.18);border-bottom:1px solid rgba(20,184,166,.12);">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;display:inline-block;"></span>
+          <span style="font-size:11px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.4px;">PSA &mdash; Probabilistic Net Budget Impact</span>
+          <span style="font-size:10px;color:var(--ink4);margin-left:4px;">Monte Carlo simulation results (N=10,000)</span>
+        </div>
+        <div id="bi-psa-kpis" style="display:flex;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+          <div class="bi-tk"><div class="bi-tk-lbl">P5 (Lower 90% CI)</div><div class="bi-tk-val mono" id="psa-p5-val">&mdash;</div></div>
+          <div class="bi-tk"><div class="bi-tk-lbl">P25</div><div class="bi-tk-val mono" id="psa-p25-val">&mdash;</div></div>
+          <div class="bi-tk bi-tk-net"><div class="bi-tk-lbl">P50 Median</div><div class="bi-tk-val mono" id="psa-p50-val">&mdash;</div></div>
+          <div class="bi-tk"><div class="bi-tk-lbl">Mean</div><div class="bi-tk-val mono" id="psa-mean-val">&mdash;</div></div>
+          <div class="bi-tk"><div class="bi-tk-lbl">P75</div><div class="bi-tk-val mono" id="psa-p75-val">&mdash;</div></div>
+          <div class="bi-tk"><div class="bi-tk-lbl">P95 (Upper 90% CI)</div><div class="bi-tk-val mono" id="psa-p95-val">&mdash;</div></div>
+          <div class="bi-tk"><div class="bi-tk-lbl">Std Dev</div><div class="bi-tk-val mono" id="psa-sd-val">&mdash;</div></div>
+        </div>
+      </div>
     </div>
 
     <!-- Section 1: Forecast Period -->
@@ -759,9 +777,10 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
     </button>
 
     <!-- Hidden containers used by JS (kept in DOM but invisible here) -->
-    <div id="bi-container" style="display:none;"></div>
-    <div id="annual-nbi-tbl" style="display:none;"></div>
-    <div id="param-ranking" style="display:none;"></div>
+    <!-- Ghost divs — prevent JS errors, content never shown here -->
+    <div id="bi-container" style="display:none!important;"></div>
+    <div id="annual-nbi-tbl-base" style="display:none!important;"></div>
+    <div id="param-ranking-base" style="display:none!important;"></div>
 
   </div>
 </div>
@@ -930,7 +949,16 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
         <div class="tab-panel" id="tab-box"><canvas id="box-chart"></canvas></div>
         <div class="tab-panel" id="tab-vd"><div id="vd-wrap"></div></div>
         <div class="ptbl" id="ptbl"></div>
-        <div id="annual-nbi-tbl"></div>
+        <div id="psa-nbi-section" style="display:none;margin-top:20px;">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 16px;background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.2);border-radius:8px;border-left:3px solid var(--teal);">
+              <span style="font-size:14px;">&#127914;</span>
+              <div>
+                <div style="font-size:12px;font-weight:800;color:var(--teal);text-transform:uppercase;letter-spacing:.3px;">PSA &mdash; Annual Net Budget Impact Distribution</div>
+                <div style="font-size:10px;color:var(--ink4);margin-top:2px;">Probabilistic year-by-year NBI percentiles from Monte Carlo simulation (N=10,000)</div>
+              </div>
+            </div>
+            <div id="annual-nbi-tbl"></div>
+          </div>
         <div id="param-ranking"></div>
         <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
         <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
@@ -1009,6 +1037,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.3;}
 </div>
 
 <script>
+
 
 
 
@@ -1706,9 +1735,13 @@ function renderBITable(){
 
   h+='</tbody></table>';
   $('bi-container').innerHTML=h;
-  // Mirror into top card detail
+  // Mirror ONLY the detailed table (not the bi-sum cards) into top card
   var _top=$('bi-annual-top');
-  if(_top) _top.innerHTML=h;
+  if(_top){
+    // Strip the bi-sum div — only show detailed breakdown table
+    var tableOnly=h.replace(/<div class="bi-sum">[\s\S]*?<\/div>\s*<\/div>\s*<\/div>\s*<\/div>\s*<\/div>/,'');
+    _top.innerHTML=tableOnly;
+  }
 }
 
 // ==================== COMPARATOR MANAGEMENT ====================
@@ -2131,6 +2164,31 @@ function runSim(){
     if(fn)fn.textContent='* P95 uses ~'+(Math.round(N*0.05)).toLocaleString()+' tail obs at n='+N.toLocaleString()+'. Treat as indicative for n<50,000.';
     $('idle').style.display='none';$('res').style.display='block';
     renderHist(all,SIM);renderCDF(all);renderBox(SIM);renderAnnualTable(SIM.annStats,yrs);
+    // Populate PSA NBI row in base page BI summary card
+    var psaRow=$('psa-bi-row');
+    if(psaRow){
+      psaRow.style.display='block';
+      // Scroll into view smoothly so user sees it when returning to base page
+      setTimeout(function(){
+        var topCard=$('bi-top-card');
+        if(topCard) topCard.scrollIntoView({behavior:'smooth',block:'nearest'});
+      },300);
+    }
+    var _sv=function(id,v,cls){
+      var el=$('psa-'+id+'-val');
+      if(el){el.textContent=v;if(cls)el.className='bi-tk-val mono '+cls;}
+    };
+    var _c=function(v){return v>0?'increase':'saving';};
+    _sv('p5',fmtM(SIM.p5),_c(SIM.p5));
+    _sv('p25',fmtM(SIM.p25),_c(SIM.p25));
+    _sv('p50',fmtM(SIM.p50),_c(SIM.p50));
+    _sv('mean',fmtM(SIM.mean),_c(SIM.mean));
+    _sv('p75',fmtM(SIM.p75),_c(SIM.p75));
+    _sv('p95',fmtM(SIM.p95),_c(SIM.p95));
+    _sv('sd',fmtM(SIM.std),'');
+    // Add PSA done badge to base tab
+    var baseTab=$('nav-base-badge');
+    if(baseTab){baseTab.style.display='inline-flex';baseTab.textContent='PSA ✓';}
     // Auto-run variance decomposition
     setTimeout(function(){runVD();},100);
     btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
@@ -3011,6 +3069,9 @@ function renderVD(results,varFull,varSum){
 function renderAnnualTable(annStats, yrs){
   var el=$('annual-nbi-tbl');
   if(!el) return;
+  // Show the PSA NBI section header
+  var sec=$('psa-nbi-section');
+  if(sec) sec.style.display=(annStats&&Object.keys(annStats).length>0)?'block':'none';
   if(!annStats||Object.keys(annStats).length===0){
     el.innerHTML=''; return;
   }
@@ -3091,6 +3152,7 @@ function renderCompactRanking(results, varFull){
     +'</div>';
   el.innerHTML=h;
 }
+
 
 
 
