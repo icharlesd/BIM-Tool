@@ -1825,7 +1825,7 @@ function renderCompCostCards(){
     var sRow=document.createElement('div');sRow.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px;';
     var sLbl=document.createElement('label');sLbl.style.cssText='font-size:9px;font-weight:700;color:var(--ink4);letter-spacing:.4px;text-transform:uppercase;white-space:nowrap;';sLbl.textContent='Spread (\u00b1%)';
     var sInp=document.createElement('input');sInp.type='number';sInp.value='30';sInp.min='1';sInp.max='99';sInp.step='1';sInp.id='spread-comp-'+c.id;
-    sInp.style.cssText='width:58px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:\'JetBrains Mono\',monospace;font-size:11px;background:#fffbf2;color:var(--ink);outline:none;';
+    sInp.style.cssText='width:58px;padding:4px 7px;border:1px solid #f5a623;border-radius:4px;font-family:var(--mono);font-size:11px;background:#fffbf2;color:var(--ink);outline:none;';
     var sNote=document.createElement('span');sNote.style.cssText='font-size:9px;color:var(--ink5);';sNote.textContent='of base';
     sRow.appendChild(sLbl);sRow.appendChild(sInp);sRow.appendChild(sNote);card.appendChild(sRow);
 
@@ -3190,27 +3190,32 @@ function runVD(){
     $('vd-wrap').innerHTML='<div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first, then click this tab.</div>';
     return;
   }
-  $('vd-wrap').innerHTML='<div style="padding:24px;text-align:center;color:var(--ink4);font-size:11px;">Calculating\u2026 ('+VD_N+' iterations per parameter)</div>';
+  var VD_N_ACTUAL=2000; // Increased from 500 for more stable estimates
+  $('vd-wrap').innerHTML='<div style="padding:24px;text-align:center;color:var(--ink4);font-size:11px;">Calculating… ('+VD_N_ACTUAL+' iterations per parameter)</div>';
   setTimeout(function(){
   var ss=cfg._S||S,dd=cfg._D||D,yrs=+$('yr-range').value;
   var seedVal=parseInt((($('psa-seed')||{}).value)||'42')||42;
   var varFull=SIM.std*SIM.std;
   var params=[
-    {id:'pop',label:'Patient Population'},
-    {id:'uptake',label:ss.npName+' Uptake Trajectory'},
+    {id:'pop',    label:'Patient Population'},
+    {id:'uptake', label:ss.npName+' Uptake Trajectory'},
     {id:'cost_np',label:ss.npName+' Cost'}
   ];
-  ss.comparators.forEach(function(c){
-    var cc=ss.comparators.find(function(x){return x.id===c.id;});
-    params.push({id:'cost_'+c.id,label:(cc?cc.name:c.id)+' Cost'});
-  });
+  // Only include comparator costs if they are being varied in the PSA
+  if(varyCompCosts){
+    ss.comparators.forEach(function(c){
+      var cc=ss.comparators.find(function(x){return x.id===c.id;});
+      params.push({id:'cost_'+c.id,label:(cc?cc.name:c.id)+' Cost'});
+    });
+  }
   var popBase=dd.patVol[0]||1;
   var results=[];
-  params.forEach(function(p,pi){
-    setSeed(seedVal+pi*997);
+  params.forEach(function(p){
+    // FIX 1: Use SAME seed for every parameter — ensures fair comparison
+    // Same random stream, only the varied parameter changes
+    setSeed(seedVal);
     var partial=[];
-    // uMult is now drawnY1/baseY1 - no need for max multiplier bound
-    for(var i=0;i<VD_N;i++){
+    for(var i=0;i<VD_N_ACTUAL;i++){
       var npCs=(p.id==='cost_np')?Math.max(0,draw(cfg.cost)):dd.npAnn;
       var pY1=(p.id==='pop')?Math.max(1,draw(cfg.pop)):(dd.patVol[0]||1);
       var baseY1vd=cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);
@@ -3241,10 +3246,22 @@ function runVD(){
     results.push({label:p.label,variance:v,sd:Math.sqrt(v)});
   });
   results.sort(function(a,b){return b.variance-a.variance;});
+
+  // FIX 3: Use varFull (total PSA variance) as denominator, not sum of partials
+  // This gives true "% of total variance explained" per parameter
+  // Residual = interaction effects + unexplained variance
   var varSum=results.reduce(function(a,r){return a+r.variance;},0)||1;
-  renderVD(results,varFull,varSum);
+  var residual=Math.max(0,varFull-varSum);
+  var denom=varFull>0?varFull:varSum; // use total PSA variance if available
+
+  // Add residual row to show interaction/unexplained
+  if(varFull>0&&residual/varFull>0.01){
+    results.push({label:'Interactions / Residual',variance:residual,sd:Math.sqrt(residual),isResidual:true});
+  }
+
+  renderVD(results,varFull,denom);
   renderCompactRanking(results,varFull);
-  },50); // end setTimeout - allows 'Calculating...' to paint
+  },50);
 }
 
 function renderVD(results,varFull,varSum){
@@ -3340,34 +3357,37 @@ function toggleVaryComp(cb){
 function renderCompactRanking(results, varFull){
   var el=$('param-ranking');
   if(!el||!results||results.length===0) return;
-  var varSum=results.reduce(function(a,r){return a+r.variance;},0)||1;
+  // FIX: use varFull (total PSA variance) as denominator — true % of total explained
+  var denom=varFull>0?varFull:(results.reduce(function(a,r){return a+r.variance;},0)||1);
   var colors=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444','#f59e0b','#10b981'];
-  var h='<div style="margin-top:16px;">'
-    +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'
-    +'<span>&#127942; Parameter Influence Ranking</span>'
-    +'<span style="font-size:10px;font-weight:400;color:var(--ink4);">Ranked by contribution to NBI uncertainty</span>'
-    +'</div>';
+  var rankIdx=0;
+  var h='<div style="margin-top:16px;">'    +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;">'    +'<span>&#127942; Parameter Influence Ranking</span>'    +'<span style="font-size:10px;font-weight:400;color:var(--ink4);">% of total NBI variance</span>'    +'</div>';
   results.forEach(function(r,i){
-    var pct=varSum>0?(r.variance/varSum*100):0;
-    var barW=Math.round(pct);
-    var col=colors[i%colors.length];
-    h+='<div style="margin-bottom:8px;">'
+    var pct=denom>0?(r.variance/denom*100):0;
+    var barW=Math.min(100,Math.round(pct));
+    var isRes=r.isResidual;
+    var col=isRes?'var(--ink5)':colors[rankIdx%colors.length];
+    var badge=isRes
+      ?'<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--ink5);font-size:9px;font-weight:700;text-align:center;line-height:18px;margin-right:6px;">~</span>'
+      :'<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+col+';color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:18px;margin-right:6px;">'+(rankIdx+1)+'</span>';
+    if(!isRes) rankIdx++;
+    h+='<div style="margin-bottom:8px;'+(isRes?'opacity:.7;':'')+'">'
       +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">'
-      +'<span style="font-size:11px;font-weight:600;color:var(--ink);">'
-      +'<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:'+col
-      +';color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:18px;margin-right:6px;">'+(i+1)+'</span>'
-      +r.label+'</span>'
-      +'<span style="font-size:11px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:'+col+';">'+pct.toFixed(1)+'%</span>'
+      +'<span style="font-size:11px;font-weight:600;color:'+(isRes?'var(--ink4)':'var(--ink')+');">'
+      +badge+r.label+'</span>'
+      +'<span style="font-size:11px;font-weight:700;font-family:var(--mono);color:'+col+';">'+pct.toFixed(1)+'%</span>'
       +'</div>'
       +'<div style="height:8px;background:var(--border);border-radius:4px;overflow:hidden;">'
-      +'<div style="height:100%;width:'+barW+'%;background:'+col+';border-radius:4px;transition:width .5s ease;"></div>'
+      +'<div style="height:100%;width:'+barW+'%;background:'+(isRes?'var(--border2)':col)+';border-radius:4px;transition:width .5s ease;"></div>'
       +'</div>'
-      +'<div style="font-size:9px;color:var(--ink5);margin-top:2px;">Partial SD: '+fmtM(r.sd)+'</div>'
+      +(isRes
+        ?'<div style="font-size:9px;color:var(--ink5);margin-top:2px;">Parameter interactions and unexplained residual</div>'
+        :'<div style="font-size:9px;color:var(--ink5);margin-top:2px;">Partial SD: '+fmtM(r.sd)+'</div>')
       +'</div>';
   });
   h+='<div style="font-size:9px;color:var(--ink5);margin-top:8px;padding:8px;background:var(--surface2);border-radius:4px;">'
-    +'&#8505; Partial variance decomposition — each parameter varied independently ('
-    +VD_N+' iterations). % = share of total explained variance.</div>'
+    +'&#8505; Post-hoc partial variance decomposition. Each parameter varied independently (2,000 iterations, same seed). '
+    +'% = share of total PSA variance. Residual = interactions between parameters.</div>'
     +'</div>';
   el.innerHTML=h;
 }
