@@ -739,7 +739,8 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
           <button class="tbtn active" onclick="showTab('hist',this)">Histogram</button>
           <button class="tbtn" onclick="showTab('cdf',this)">CDF</button>
           <button class="tbtn" onclick="showTab('box',this)">Box Plot</button>
-          <button class="tbtn" onclick="showTab('vd',this);runVD()">Variance Decomposition</button>
+          <button class="tbtn" onclick="showTab('vd',this);runVD()">Variance Decomposition (OAT)</button>
+          <button class="tbtn" onclick="showTab('vd',this);runSobol()" style="color:var(--teal);">Sobol Indices &#946;</button>
         </div>
         <div class="tab-panel active" id="tab-hist"><canvas id="hist-chart"></canvas></div>
         <div class="tab-panel" id="tab-cdf"><canvas id="cdf-chart"></canvas></div>
@@ -2643,6 +2644,248 @@ function renderThresholdSection(){
 
     // thr-risk-result removed (now shown in card 3)
   }
+}
+
+
+// ══ SOBOL GLOBAL SENSITIVITY ANALYSIS ════════════════════════════
+// Saltelli (2002) estimator with Jansen (1999) total-order formula
+// N × (2k+2) model evaluations, k = number of uncertain parameters
+// S1ᵢ = first-order (main effect): variance from parameter i alone
+// STᵢ = total-order (total effect): includes all interactions with i
+
+function _evalBIM(npCs, pY1, drawnY1vd, ss, dd, yrs, popBase){
+  // Single BIM iteration — shared between OAT and Sobol
+  var baseY1=cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);
+  var uM=baseY1>1e-9?drawnY1vd/baseY1:1.0;
+  var tot=0;
+  for(var y=0;y<Math.min(yrs,ss.years);y++){
+    var gr=popBase>0?(dd.patVol[y]||popBase)/popBase:1;
+    var pop=pY1*gr;
+    var uY=(ss.npUptake[y]||ss.npUptake[0]||5)/100;
+    var uR=Math.min(1,Math.max(0,uY*uM));
+    var expR=(ss.expansionRates[y]||0)/100;
+    var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;
+    ss.comparators.forEach(function(c){
+      var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;
+      var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;
+      var cc=dd.compAnn[c.id]||0;
+      bef+=pop*bMs*cc;
+      aft+=tPop*Math.max(0,bMs-uR*cP)*cc;
+    });
+    tot+=(aft-bef);
+  }
+  return tot;
+}
+
+function _drawParam(id, cfg, dd){
+  // Draw a single parameter value from its distribution
+  if(id==='cost_np') return Math.max(0,draw(cfg.cost));
+  if(id==='pop')     return Math.max(1,draw(cfg.pop));
+  if(id==='uptake')  return Math.max(0,Math.min(1,draw(cfg.uptake)));
+  return 0;
+}
+
+function _baseParam(id, dd, ss){
+  // Base (deterministic) value for a parameter
+  if(id==='cost_np') return dd.npAnn;
+  if(id==='pop')     return dd.patVol[0]||1;
+  if(id==='uptake')  return cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);
+  return 0;
+}
+
+function runSobol(){
+  if(!SIM||!SIM.data||SIM.data.length===0){
+    $('vd-wrap').innerHTML='<div style="padding:40px;text-align:center;color:var(--ink5);font-size:11px;">Run the PSA first.</div>';
+    return;
+  }
+
+  var N=2000; // N samples per matrix — total runs = N×(2k+2)
+  var ss=cfg._S||S, dd=cfg._D||D, yrs=+$('yr-range').value;
+  var popBase=dd.patVol[0]||1;
+  var varFull=SIM.std*SIM.std;
+  var seedVal=parseInt((($('psa-seed')||{}).value)||'42')||42;
+
+  var params=[
+    {id:'cost_np', label:ss.npName+' Cost'},
+    {id:'pop',     label:'Patient Population'},
+    {id:'uptake',  label:ss.npName+' Uptake'}
+  ];
+  var k=params.length;
+
+  $('vd-wrap').innerHTML='<div style="padding:24px;text-align:center;color:var(--ink4);font-size:11px;">'+
+    'Running Sobol… ('+N+'×'+(2*k+2)+'='+(N*(2*k+2)).toLocaleString()+' model evaluations)</div>';
+
+  setTimeout(function(){
+    setSeed(seedVal);
+
+    // ── Step 1: Generate sample matrices A and B (N×k) ────────────
+    // Each column is N independent draws from parameter i's distribution
+    var A=[], B=[];
+    for(var n=0;n<N;n++){
+      var rowA=[], rowB=[];
+      for(var ki=0;ki<k;ki++){
+        rowA.push(_drawParam(params[ki].id, cfg, dd));
+        rowB.push(_drawParam(params[ki].id, cfg, dd));
+      }
+      A.push(rowA);
+      B.push(rowB);
+    }
+
+    // ── Step 2: Evaluate model on A and B ─────────────────────────
+    var fA=[], fB=[];
+    for(var n=0;n<N;n++){
+      // A row: [cost, pop, uptake]
+      fA.push(_evalBIM(A[n][0], A[n][1], A[n][2], ss, dd, yrs, popBase));
+      fB.push(_evalBIM(B[n][0], B[n][1], B[n][2], ss, dd, yrs, popBase));
+    }
+
+    // Total variance from combined A+B sample
+    var allAB=fA.concat(fB);
+    var meanAB=allAB.reduce(function(a,b){return a+b;},0)/allAB.length;
+    var varAB=allAB.reduce(function(a,v){return a+(v-meanAB)*(v-meanAB);},0)/allAB.length;
+    var Vref=varAB>0?varAB:varFull;
+
+    // ── Step 3: For each parameter i, build Cᵢ and evaluate ───────
+    // Cᵢ = A with column i replaced by column i of B
+    var sobolResults=[];
+
+    for(var ki=0;ki<k;ki++){
+      var fCi=[];
+      for(var n=0;n<N;n++){
+        // Build Cᵢ row: copy A, replace column ki with B[ki]
+        var ci0=(ki===0)?B[n][0]:A[n][0];  // cost_np
+        var ci1=(ki===1)?B[n][1]:A[n][1];  // pop
+        var ci2=(ki===2)?B[n][2]:A[n][2];  // uptake
+        fCi.push(_evalBIM(ci0, ci1, ci2, ss, dd, yrs, popBase));
+      }
+
+      // ── Saltelli S1 estimator (first-order) ────────────────────
+      // S1ᵢ = (1/N) Σ f(B)[f(Cᵢ)-f(A)] / V
+      var s1_num=0;
+      for(var n=0;n<N;n++) s1_num+=fB[n]*(fCi[n]-fA[n]);
+      var S1=s1_num/(N*Vref);
+
+      // ── Jansen ST estimator (total-order) ──────────────────────
+      // STᵢ = (1/2N) Σ [f(A)-f(Cᵢ)]² / V
+      var st_num=0;
+      for(var n=0;n<N;n++) st_num+=Math.pow(fA[n]-fCi[n],2);
+      var ST=st_num/(2*N*Vref);
+
+      // Clamp to [0,1] — numerical noise can give tiny negatives
+      S1=Math.max(0,Math.min(1,S1));
+      ST=Math.max(0,Math.min(1,ST));
+
+      sobolResults.push({
+        label:params[ki].label,
+        S1:S1, ST:ST,
+        interaction:Math.max(0,ST-S1)
+      });
+    }
+
+    // Sort by ST (total effect) descending
+    sobolResults.sort(function(a,b){return b.ST-a.ST;});
+
+    renderSobolResults(sobolResults, Vref, N, k);
+  }, 50);
+}
+
+function renderSobolResults(results, Vref, N, k){
+  var el=$('vd-wrap');
+  if(!el) return;
+  var colors=['#0d7a5f','#3b82f6','#f97316','#8b5cf6','#ef4444'];
+
+  var h='<div style="margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'
+    +'<div>'
+    +'<div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px;">Sobol Global Sensitivity Analysis</div>'
+    +'<div style="font-size:10px;color:var(--ink4);">Saltelli (2002) estimator · '+N.toLocaleString()+'×'+(2*k+2)+'='+(N*(2*k+2)).toLocaleString()+' model evaluations</div>'
+    +'</div>'
+    +'<div style="display:flex;gap:6px;">'
+    +'<button class="run-sa-btn" onclick="runSobol()" style="padding:6px 14px;">↻ Recalculate</button>'
+    +'<button class="run-sa-btn" onclick="runVD()" style="padding:6px 14px;background:var(--surface);color:var(--teal);border:1px solid var(--teal);">OAT View</button>'
+    +'</div>'
+    +'</div>';
+
+  // Legend
+  h+='<div style="display:flex;gap:16px;margin-bottom:14px;font-size:10px;color:var(--ink4);">'
+    +'<div style="display:flex;align-items:center;gap:5px;">'
+    +'<div style="width:14px;height:14px;border-radius:3px;background:#0d7a5f;"></div>'
+    +'<span><strong>S1</strong> = First-order (main effect only)</span></div>'
+    +'<div style="display:flex;align-items:center;gap:5px;">'
+    +'<div style="width:14px;height:14px;border-radius:3px;background:#3b82f6;opacity:.5;"></div>'
+    +'<span><strong>ST-S1</strong> = Interaction contribution</span></div>'
+    +'<div style="display:flex;align-items:center;gap:5px;">'
+    +'<div style="width:14px;height:14px;border-radius:3px;border:2px solid var(--ink4);"></div>'
+    +'<span><strong>ST</strong> = Total effect (outer bar)</span></div>'
+    +'</div>';
+
+  // Table
+  h+='<table class="btbl"><thead><tr>'
+    +'<th>Rank</th><th>Parameter</th>'
+    +'<th title="First-order Sobol index: fraction of variance from this parameter alone">S1 (Main Effect)</th>'
+    +'<th title="Total-order Sobol index: includes all interactions involving this parameter">ST (Total Effect)</th>'
+    +'<th title="ST - S1: variance from interactions">Interaction</th>'
+    +'<th style="min-width:180px;">S1 vs ST</th>'
+    +'</tr></thead><tbody>';
+
+  results.forEach(function(r,i){
+    var col=colors[i%colors.length];
+    var s1pct=(r.S1*100).toFixed(1);
+    var stpct=(r.ST*100).toFixed(1);
+    var intpct=(r.interaction*100).toFixed(1);
+    var stW=Math.min(100,r.ST*100);
+    var s1W=Math.min(stW,r.S1*100);
+
+    h+='<tr class="dr">'
+      +'<td class="rl"><span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:'+col+';color:#fff;font-size:9px;font-weight:700;">'+(i+1)+'</span></td>'
+      +'<td style="font-weight:600;color:var(--ink);">'+r.label+'</td>'
+      +'<td class="tc"><span style="font-weight:700;font-family:var(--mono);color:'+col+';">'+s1pct+'%</span></td>'
+      +'<td class="tc"><span style="font-weight:700;font-family:var(--mono);color:'+col+';">'+stpct+'%</span></td>'
+      +'<td class="tc"><span style="font-weight:600;font-family:var(--mono);color:var(--ink4);">'+intpct+'%</span></td>'
+      +'<td>'
+      // Stacked bar: ST as background (lighter), S1 as foreground (solid)
+      +'<div style="position:relative;height:10px;background:var(--border);border-radius:5px;overflow:hidden;">'
+      +'<div style="position:absolute;height:100%;width:'+stW.toFixed(1)+'%;background:'+col+';opacity:.3;border-radius:5px;"></div>'
+      +'<div style="position:absolute;height:100%;width:'+s1W.toFixed(1)+'%;background:'+col+';border-radius:5px;"></div>'
+      +'</div>'
+      +'<div style="font-size:9px;color:var(--ink5);margin-top:2px;">S1='+s1pct+'% │ ST='+stpct+'%</div>'
+      +'</td>'
+      +'</tr>';
+  });
+
+  h+='</tbody></table>';
+
+  // Sum check
+  var s1sum=results.reduce(function(a,r){return a+r.S1;},0);
+  var stsum=results.reduce(function(a,r){return a+r.ST;},0);
+  var interactionTotal=Math.max(0,stsum-s1sum);
+
+  h+='<div style="margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">'
+    +'<div style="padding:10px;background:var(--surface2);border-radius:6px;text-align:center;">'
+    +'<div style="font-size:9px;color:var(--ink5);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Sum of S1</div>'
+    +'<div style="font-size:16px;font-weight:800;font-family:var(--mono);color:var(--teal);">'+(s1sum*100).toFixed(1)+'%</div>'
+    +'<div style="font-size:9px;color:var(--ink5);">If ≈100%: no interactions</div>'
+    +'</div>'
+    +'<div style="padding:10px;background:var(--surface2);border-radius:6px;text-align:center;">'
+    +'<div style="font-size:9px;color:var(--ink5);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Interaction Variance</div>'
+    +'<div style="font-size:16px;font-weight:800;font-family:var(--mono);color:#9333ea;">'+(interactionTotal*100).toFixed(1)+'%</div>'
+    +'<div style="font-size:9px;color:var(--ink5);">ST - S1 summed</div>'
+    +'</div>'
+    +'<div style="padding:10px;background:var(--surface2);border-radius:6px;text-align:center;">'
+    +'<div style="font-size:9px;color:var(--ink5);text-transform:uppercase;letter-spacing:.3px;margin-bottom:4px;">Sum of ST</div>'
+    +'<div style="font-size:16px;font-weight:800;font-family:var(--mono);color:#3b82f6;">'+(stsum*100).toFixed(1)+'%</div>'
+    +'<div style="font-size:9px;color:var(--ink5);">If ≥100%: interactions exist</div>'
+    +'</div>'
+    +'</div>';
+
+  h+='<div style="font-size:9px;color:var(--ink5);margin-top:10px;padding:8px 10px;background:var(--surface2);border-radius:4px;line-height:1.7;">'
+    +'<strong>S1 (First-order):</strong> Fraction of total NBI variance explained by this parameter alone, averaging over all values of other parameters. '
+    +'<strong>ST (Total-order):</strong> Fraction that would be eliminated if this parameter were known exactly — includes all its interactions. '
+    +'If Sum(S1) ≈ 100%, parameters are independent and OAT gives the same answer. '
+    +'If Sum(ST) ≫ 100%, significant interactions exist. '
+    +'Method: Saltelli (2002) S1 estimator, Jansen (1999) ST estimator.'
+    +'</div>';
+
+  el.innerHTML=h;
 }
 
 function runTornado(){
