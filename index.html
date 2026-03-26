@@ -738,7 +738,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         <div class="tabs">
           <button class="tbtn active" onclick="showTab('hist',this)">Histogram</button>
           <button class="tbtn" onclick="showTab('cdf',this)">CDF</button>
-          <button class="tbtn" onclick="showTab('box',this)">Box Plot</button>
+          <button class="tbtn" onclick="showTab('box',this)">Box &amp; Whisker</button>
           <button class="tbtn" onclick="showTab('vd',this);runVD()">Variance Decomposition (OAT)</button>
           <button class="tbtn" onclick="showTab('vd',this);runSobol()" style="color:var(--teal);">Sobol Indices &#946;</button>
         </div>
@@ -2222,7 +2222,34 @@ function renderHist(data,R){
         y:{ticks:{font:{size:9,family:'JetBrains Mono'},color:'#8496a9'},
            grid:{color:'rgba(0,0,0,0.04)'},border:{display:false}}
       },
-      animation:{duration:500}
+      animation:{duration:500},
+      plugins:{
+        afterDraw: function(chart){
+          var ctx=chart.ctx, xScale=chart.scales.x, yScale=chart.scales.y;
+          var drawLine=function(val,col,lbl){
+            // Find x pixel for this value
+            var binIdx=Math.min(49,Math.floor((val-mn)/bw));
+            var x=xScale.getPixelForValue(binIdx);
+            if(x<xScale.left||x>xScale.right) return;
+            ctx.save();
+            ctx.beginPath();
+            ctx.moveTo(x,yScale.top);
+            ctx.lineTo(x,yScale.bottom);
+            ctx.strokeStyle=col;
+            ctx.lineWidth=2;
+            ctx.setLineDash([5,3]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle=col;
+            ctx.font='600 9px JetBrains Mono';
+            ctx.textAlign='center';
+            ctx.fillText(lbl,x,yScale.top-4);
+            ctx.restore();
+          };
+          drawLine(R.p50,'#0d7a5f','P50');
+          if(R.baseTotal) drawLine(R.baseTotal,'#d97706','Det.');
+        }
+      }
     }
   });
   var ptbl=$('ptbl');if(ptbl){
@@ -2285,45 +2312,116 @@ function updConf(){if(!SIM)return;var p=+$('conf-r').value;$('conf-p').textConte
 function renderBox(R){
   if(BC){BC.destroy();BC=null;}
   var el=$('box-chart');if(!el)return;
-  BC=new Chart(el,{type:'bar',
-    data:{
-      labels:['P5 → P25','P25 → Median','Median → P75','P75 → P95'],
-      datasets:[{
-        label:'NBI Range',
-        data:[[R.p5,R.p25],[R.p25,R.p50],[R.p50,R.p75],[R.p75,R.p95]],
-        backgroundColor:[
-          'rgba(10,107,81,0.40)','rgba(10,107,81,0.75)',
-          'rgba(185,28,28,0.75)','rgba(185,28,28,0.40)'
-        ],
-        borderColor:['#0a6b51','#0a6b51','#b91c1c','#b91c1c'],
-        borderWidth:1.5,borderRadius:5,borderSkipped:false
-      }]
-    },
-    options:{
-      indexAxis:'y',responsive:true,maintainAspectRatio:true,
-      layout:{padding:{right:12,top:4}},
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1c2635',titleColor:'#fff',
-          bodyColor:'rgba(255,255,255,.75)',padding:11,cornerRadius:8,
-          callbacks:{
-            label:function(i){
-              var v=i.raw;
-              return Array.isArray(v)?'  '+fmtM(v[0])+' → '+fmtM(v[1]):fmtM(v);
-            }
-          }
-        }
-      },
-      scales:{
-        x:{ticks:{font:{size:9,family:'JetBrains Mono'},maxTicksLimit:6,color:'#8496a9'},
-           grid:{color:'rgba(0,0,0,0.04)'},border:{display:false}},
-        y:{ticks:{font:{size:10.5,family:'Inter',weight:'600'},color:'#374357'},
-           grid:{display:false},border:{display:false}}
-      },
-      animation:{duration:500}
-    }
+  // Render a proper box-and-whisker plot using SVG (Chart.js lacks native support)
+  var W=el.parentElement?el.parentElement.offsetWidth||600:600;
+  var H=200;
+  var pad={l:90,r:30,t:30,b:40};
+  var plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+
+  // Data points
+  var pts=[R.p5,R.p25,R.p50,R.p75,R.p95,R.mean,R.baseTotal||0];
+  var dmin=R.p5, dmax=R.p95;
+  var range=dmax-dmin||1;
+  // Include mean and base in range
+  if(R.mean>dmax) dmax=R.mean;
+  if(R.mean<dmin) dmin=R.mean;
+  if(R.baseTotal&&R.baseTotal>dmax) dmax=R.baseTotal;
+  if(R.baseTotal&&R.baseTotal<dmin) dmin=R.baseTotal;
+  // Add 5% padding
+  var pad5=(dmax-dmin)*0.08||Math.abs(dmax)*0.08||1000;
+  dmin-=pad5; dmax+=pad5;
+  range=dmax-dmin;
+
+  function xp(v){return pad.l+((v-dmin)/range)*plotW;}
+
+  var cy=pad.t+plotH/2;  // vertical centre
+  var bh=44;             // box height
+  var wh=bh*0.35;        // whisker half-height
+
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" xmlns="http://www.w3.org/2000/svg" '
+    +'style="width:100%;font-family:var(--font);">';
+
+  // ── Grid lines ───────────────────────────────────────────────
+  var ticks=5;
+  for(var t=0;t<=ticks;t++){
+    var tv=dmin+(range/ticks)*t;
+    var tx=xp(tv);
+    svg+='<line x1="'+tx+'" y1="'+pad.t+'" x2="'+tx+'" y2="'+(H-pad.b)+'" stroke="var(--border)" stroke-width="1"/>';
+    svg+='<text x="'+tx+'" y="'+(H-pad.b+14)+'" text-anchor="middle" font-size="9" fill="var(--ink5)">'+fmtM(tv)+'</text>';
+  }
+
+  // ── Whiskers (P5 → P95) ──────────────────────────────────────
+  svg+='<line x1="'+xp(R.p5)+'" y1="'+cy+'" x2="'+xp(R.p95)+'" y2="'+cy
+    +'" stroke="var(--ink4)" stroke-width="2"/>';
+  // Whisker caps
+  svg+='<line x1="'+xp(R.p5)+'" y1="'+(cy-wh)+'" x2="'+xp(R.p5)+'" y2="'+(cy+wh)
+    +'" stroke="var(--ink4)" stroke-width="2"/>';
+  svg+='<line x1="'+xp(R.p95)+'" y1="'+(cy-wh)+'" x2="'+xp(R.p95)+'" y2="'+(cy+wh)
+    +'" stroke="var(--ink4)" stroke-width="2"/>';
+
+  // ── IQR Box (P25 → P75) ──────────────────────────────────────
+  var bx=xp(R.p25), bx2=xp(R.p75);
+  // Split box at median: green (P25→P50) and red (P50→P75)
+  svg+='<rect x="'+bx+'" y="'+(cy-bh/2)+'" width="'+(xp(R.p50)-bx)+'" height="'+bh
+    +'" fill="rgba(13,122,95,0.25)" stroke="var(--teal)" stroke-width="1.5" rx="2"/>';
+  svg+='<rect x="'+xp(R.p50)+'" y="'+(cy-bh/2)+'" width="'+(bx2-xp(R.p50))+'" height="'+bh
+    +'" fill="rgba(190,18,60,0.18)" stroke="var(--red)" stroke-width="1.5" rx="2"/>';
+
+  // ── Median line (P50) ─────────────────────────────────────────
+  svg+='<line x1="'+xp(R.p50)+'" y1="'+(cy-bh/2)+'" x2="'+xp(R.p50)+'" y2="'+(cy+bh/2)
+    +'" stroke="var(--ink)" stroke-width="3"/>';
+
+  // ── Mean marker (diamond) ─────────────────────────────────────
+  var mx2=xp(R.mean), ds=7;
+  svg+='<polygon points="'+mx2+','+(cy-ds)+' '+(mx2+ds)+','+cy+' '+mx2+','+(cy+ds)+' '+(mx2-ds)+','+cy+'"'
+    +' fill="#3b82f6" stroke="#fff" stroke-width="1.5"/>';
+
+  // ── Deterministic base (vertical dash) ───────────────────────
+  if(R.baseTotal&&R.baseTotal>=dmin&&R.baseTotal<=dmax){
+    var bx3=xp(R.baseTotal);
+    svg+='<line x1="'+bx3+'" y1="'+(cy-bh/2-8)+'" x2="'+bx3+'" y2="'+(cy+bh/2+8)
+      +'" stroke="var(--gold-mid)" stroke-width="2" stroke-dasharray="4,3"/>';
+    svg+='<text x="'+bx3+'" y="'+(cy-bh/2-12)+'" text-anchor="middle" font-size="9" fill="var(--gold-mid)" font-weight="600">Det.</text>';
+  }
+
+  // ── Labels ────────────────────────────────────────────────────
+  var labels=[
+    [R.p5,  'P5',    -10,'var(--teal)',    'end'],
+    [R.p25, 'P25',   -10,'var(--teal)',    'middle'],
+    [R.p50, 'P50',   -10,'var(--ink)',     'middle'],
+    [R.p75, 'P75',   -10,'var(--red)',     'middle'],
+    [R.p95, 'P95',   -10,'var(--red)',     'start'],
+    [R.mean,'Mean',  bh/2+18,'#3b82f6',   'middle']
+  ];
+  labels.forEach(function(lb){
+    if(lb[0]<dmin||lb[0]>dmax) return;
+    svg+='<text x="'+xp(lb[0])+'" y="'+(cy+lb[2])+'" text-anchor="'+lb[4]
+      +'" font-size="9" fill="'+lb[3]+'" font-weight="600">'+lb[1]+'</text>';
   });
+
+  svg+='</svg>';
+
+  // Replace canvas with SVG
+  el.style.display='none';
+  var wrap=el.parentElement;
+  var oldSvg=wrap.querySelector('svg.box-svg');
+  if(oldSvg) oldSvg.remove();
+  var div=document.createElement('div');
+  div.className='box-svg';
+  div.innerHTML=svg;
+  wrap.appendChild(div);
+
+  // Legend
+  var leg=wrap.querySelector('.box-legend');
+  if(!leg){leg=document.createElement('div');leg.className='box-legend';wrap.appendChild(leg);}
+  leg.innerHTML='<div style="display:flex;gap:14px;flex-wrap:wrap;font-size:10px;color:var(--ink4);margin-top:8px;padding:8px;background:var(--surface2);border-radius:4px;">'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:20px;height:3px;background:var(--ink4);"></span>Whiskers: P5–P95</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:14px;height:10px;background:rgba(13,122,95,.3);border:1.5px solid var(--teal);border-radius:2px;"></span>IQR lower: P25–P50</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:14px;height:10px;background:rgba(190,18,60,.2);border:1.5px solid var(--red);border-radius:2px;"></span>IQR upper: P50–P75</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:3px;height:14px;background:var(--ink);"></span>Median (P50)</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><svg width="12" height="12"><polygon points="6,0 12,6 6,12 0,6" fill="#3b82f6"/></svg>Mean</span>'
+    +'<span style="display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:14px;height:2px;background:var(--gold-mid);border-top:2px dashed var(--gold-mid);"></span>Deterministic base</span>'
+    +'</div>';
 }
 
 
