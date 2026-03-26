@@ -2006,8 +2006,10 @@ function onNChange(v){
 
 function runSim(){
   if(busy)return;busy=true;
-  var btn=$('run-btn'),pw=$('pw'),pf=$('pf');
-  btn.disabled=true;pw.style.display='block';pf.style.width='0%';
+  var btn=$('run-psa-btn'),pw=$('pw'),pf=$('pf');  // PSA run button
+  if(btn){btn.disabled=true;btn.textContent='Preparing…';}
+  if(pw) pw.style.display='block';
+  if(pf) pf.style.width='0%';
   var yrs=+$('yr-range').value;
   // Re-sync any manually edited distribution param fields into cfg
   ['cost','uptake','pop'].forEach(function(cid){
@@ -2024,20 +2026,19 @@ function runSim(){
   var seedVal=parseInt((($('psa-seed')||{}).value)||'42')||42;
   var nVal=parseInt((($('psa-n')||{}).value)||'10000')||10000;
   N=nVal; setSeed(seedVal);
-  var btnLbl=$('run-psa-btn');
-  if(btnLbl) btnLbl.textContent='▶ RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
+  if(btn) btn.textContent='▶ RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
   _getWorker();
   if(_worker)_worker.terminate();
   _worker=new Worker(_wBlob);
   _worker.onerror=function(err){
     console.error('PSA Worker:',err);
-    btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
-    pw.style.display='none';busy=false;
+    if(btn){btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';}
+    if(pw)pw.style.display='none';busy=false;
     alert('Simulation error: '+(err.message||'unknown')+'. Check browser console.');
   };
   _worker.onmessage=function(e){
     var msg=e.data;
-    if(msg.type==='progress'){pf.style.width=msg.pct+'%';btn.textContent='SIMULATING '+msg.pct+'%';return;}
+    if(msg.type==='progress'){pf.style.width=msg.pct+'%';if(btn)btn.textContent='SIMULATING '+msg.pct+'%';return;}
     var r=msg.results,all=r.hist;
     SIM={data:all,mean:r.mean,std:r.std,baseTotal:baseTotal,
       p5:r.p5,p25:r.p25,p50:r.p50,p75:r.p75,p80:r.p80,p90:r.p90,p95:r.p95,min:r.min,max:r.max,
@@ -2096,8 +2097,8 @@ function runSim(){
     renderThresholdSection();
     // Auto-run variance decomposition
     setTimeout(function(){runVD();},100);
-    btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
-    pw.style.display='none';busy=false;
+    if(btn){btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';}
+    if(pw)pw.style.display='none';busy=false;
   };
   _worker.postMessage({cfg:JSON.parse(JSON.stringify(cfg)),S:JSON.parse(JSON.stringify(ss)),D:JSON.parse(JSON.stringify(dd)),N:N,yrs:yrs,seed:seedVal,varyComp:varyCompCosts});
 }
