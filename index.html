@@ -2143,33 +2143,11 @@ function runSim(){
     if(fn)fn.textContent='* P95 uses ~'+(Math.round(N*0.05)).toLocaleString()+' tail obs at n='+N.toLocaleString()+'. Treat as indicative for n<50,000.';
     $('idle').style.display='none';$('res').style.display='block';
     renderHist(all,SIM);renderCDF(all);renderBox(SIM);renderAnnualTable(SIM.annStats,yrs);
-    // Store raw annual data for threshold analysis
-    SIM.annRaw=annuals;
+    // annRaw already set from r.annRaw in SIM={} above
     setTimeout(function(){renderThresholdSection();},100);
     // Populate PSA NBI row in base page BI summary card
-    if(psaRow){
-      psaRow.style.display='block';
-      // Scroll into view smoothly so user sees it when returning to base page
-      setTimeout(function(){
-        var topCard=$('bi-top-card');
-        if(topCard) topCard.scrollIntoView({behavior:'smooth',block:'nearest'});
-      },300);
-    }
-    var _sv=function(id,v,cls){
-      var el=$('psa-'+id+'-val');
-      if(el){el.textContent=v;if(cls)el.className='bi-tk-val mono '+cls;}
-    };
-    var _c=function(v){return v>0?'increase':'saving';};
-    _sv('p5',fmtM(SIM.p5),_c(SIM.p5));
-    _sv('p25',fmtM(SIM.p25),_c(SIM.p25));
-    _sv('p50',fmtM(SIM.p50),_c(SIM.p50));
-    _sv('mean',fmtM(SIM.mean),_c(SIM.mean));
-    _sv('p75',fmtM(SIM.p75),_c(SIM.p75));
-    _sv('p95',fmtM(SIM.p95),_c(SIM.p95));
-    _sv('sd',fmtM(SIM.std),'');
-    // Add PSA done badge to base tab
-    var baseTab=$('nav-base-badge');
-    if(baseTab){baseTab.style.display='inline-flex';baseTab.textContent='PSA ✓';}
+    // (psa-bi-row removed)
+    // (psa summary values removed)
     // Render threshold section
     renderThresholdSection();
     // Auto-run variance decomposition
