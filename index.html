@@ -188,6 +188,8 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .btbl td.rl{font-weight:600;color:var(--ink2);}
 .cv{font-family:var(--mono);font-size:13px;font-weight:600;}
 .cv.grn{color:var(--teal);}
+.warn{color:var(--gold-mid)!important;}
+.cv.warn{color:var(--gold-mid);}
 .cv.neg{color:var(--red);}
 .model-note{font-size:11px;color:var(--ink4);line-height:1.7;padding:11px 15px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:16px;}
 .model-note strong{color:var(--ink3);}
@@ -501,6 +503,76 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         <div id="bi-container"></div>
         <div id="annual-nbi-tbl"></div>
         <div id="param-ranking"></div>
+
+        <!-- ══ PROB > BUDGET IMPACT THRESHOLD — BY YEAR ══ -->
+        <div id="threshold-psa-section" style="display:none;margin-top:24px;">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.2px;margin-bottom:4px;">
+                Prob &gt; Budget Impact Threshold &mdash; By Year
+              </div>
+              <div style="font-size:11px;color:var(--ink4);max-width:560px;line-height:1.6;">
+                Countries have budget impact thresholds (e.g. £20M/yr in the UK). If the annual budget impact
+                exceeds this, it may trigger price negotiations or delay launch.
+                These probabilities show the proportion of simulation runs where the annual NBI exceeds your threshold.
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;flex-shrink:0;">
+              <div class="field" style="margin:0;">
+                <label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;">Threshold (£M/yr)</label>
+                <input type="number" id="psa-threshold-inp" value="20" min="0.1" step="0.5"
+                  style="width:110px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;font-weight:700;outline:none;"
+                  oninput="renderThresholdSection()" title="Annual budget impact threshold in £ millions"/>
+              </div>
+              <button onclick="renderThresholdSection()"
+                style="height:34px;padding:0 16px;background:var(--teal);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">
+                &#8635; Update
+              </button>
+            </div>
+          </div>
+
+          <!-- Prob by year table -->
+          <div id="thr-prob-table" style="margin-bottom:20px;"></div>
+
+          <!-- Breakeven section -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price Analysis</div>
+            <div style="font-size:11px;color:var(--ink4);line-height:1.6;margin-bottom:14px;">
+              At what list price would the budget impact stay within the threshold?
+              Three approaches — each answering a different commercial question.
+            </div>
+          </div>
+          <div id="thr-breakeven-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+
+          <!-- Risk tolerance inverse -->
+          <div id="thr-risk-section" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;">
+              Prob &gt; Threshold = X% &nbsp;<span style="font-weight:400;color:var(--ink4);font-size:11px;">(Inverse — risk tolerance approach)</span>
+            </div>
+            <div style="font-size:11px;color:var(--ink4);margin-bottom:12px;line-height:1.6;">
+              At what price does the probability of breaching the threshold drop to your acceptable risk level?
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+              <div class="field" style="margin:0;">
+                <label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;">Risk Tolerance (%)</label>
+                <input type="number" id="psa-risk-inp" value="10" min="1" max="50" step="1"
+                  style="width:90px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;"
+                  oninput="renderThresholdSection()"/>
+              </div>
+              <div id="thr-risk-result" style="flex:1;min-width:200px;"></div>
+            </div>
+          </div>
+
+          <!-- Footer note -->
+          <div style="font-size:10px;color:var(--ink5);line-height:1.7;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:8px;">
+            <strong style="color:var(--ink4);">For commercial planning:</strong>
+            The 95th percentile breakeven is the most actionable — it gives the NHS near-certainty that
+            the budget impact stays controlled, which is what drives managed entry agreement (MEA) negotiations.
+            The median breakeven is more robust when the distribution is skewed.
+          </div>
+        </div>
       </div>
     </div>
 
@@ -682,6 +754,77 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
             <div id="annual-nbi-tbl"></div>
           </div>
         <div id="param-ranking"></div>
+
+        <!-- ══ PROB > BUDGET IMPACT THRESHOLD — BY YEAR ══ -->
+        <div id="threshold-psa-section" style="display:none;margin-top:24px;">
+
+          <!-- Header -->
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+            <div>
+              <div style="font-size:14px;font-weight:800;color:var(--ink);letter-spacing:-.2px;margin-bottom:4px;">
+                Prob &gt; Budget Impact Threshold &mdash; By Year
+              </div>
+              <div style="font-size:11px;color:var(--ink4);max-width:560px;line-height:1.6;">
+                Countries have budget impact thresholds (e.g. £20M/yr in the UK). If the annual budget impact
+                exceeds this, it may trigger price negotiations or delay launch.
+                These probabilities show the proportion of simulation runs where the annual NBI exceeds your threshold.
+              </div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;flex-shrink:0;">
+              <div class="field" style="margin:0;">
+                <label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;">Threshold (£M/yr)</label>
+                <input type="number" id="psa-threshold-inp" value="20" min="0.1" step="0.5"
+                  style="width:110px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;font-weight:700;outline:none;"
+                  oninput="renderThresholdSection()" title="Annual budget impact threshold in £ millions"/>
+              </div>
+              <button onclick="renderThresholdSection()"
+                style="height:34px;padding:0 16px;background:var(--teal);color:#fff;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:11px;font-weight:700;cursor:pointer;">
+                &#8635; Update
+              </button>
+            </div>
+          </div>
+
+          <!-- Prob by year table -->
+          <div id="thr-prob-table" style="margin-bottom:20px;"></div>
+
+          <!-- Breakeven section -->
+          <div style="margin-bottom:8px;">
+            <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price Analysis</div>
+            <div style="font-size:11px;color:var(--ink4);line-height:1.6;margin-bottom:14px;">
+              At what list price would the budget impact stay within the threshold?
+              Three approaches — each answering a different commercial question.
+            </div>
+          </div>
+          <div id="thr-breakeven-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+
+          <!-- Risk tolerance inverse -->
+          <div id="thr-risk-section" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;">
+            <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;">
+              Prob &gt; Threshold = X% &nbsp;<span style="font-weight:400;color:var(--ink4);font-size:11px;">(Inverse — risk tolerance approach)</span>
+            </div>
+            <div style="font-size:11px;color:var(--ink4);margin-bottom:12px;line-height:1.6;">
+              At what price does the probability of breaching the threshold drop to your acceptable risk level?
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+              <div class="field" style="margin:0;">
+                <label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;">Risk Tolerance (%)</label>
+                <input type="number" id="psa-risk-inp" value="10" min="1" max="50" step="1"
+                  style="width:90px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;"
+                  oninput="renderThresholdSection()"/>
+              </div>
+              <div id="thr-risk-result" style="flex:1;min-width:200px;"></div>
+            </div>
+          </div>
+
+          <!-- Footer note -->
+          <div style="font-size:10px;color:var(--ink5);line-height:1.7;padding:10px 14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:8px;">
+            <strong style="color:var(--ink4);">For commercial planning:</strong>
+            The 95th percentile breakeven is the most actionable — it gives the NHS near-certainty that
+            the budget impact stays controlled, which is what drives managed entry agreement (MEA) negotiations.
+            The median breakeven is more robust when the distribution is skewed.
+          </div>
+        </div>
+        <div id="psa-threshold-section"></div>
         <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
         <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
       </div>
@@ -759,6 +902,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 </div>
 
 <script>
+
 
 
 
@@ -1831,7 +1975,7 @@ var N=10000,SIM=null,busy=false;
 // ── PSA Web Worker (runs off main thread) ──
 var _wBlob=null,_worker=null;
 function _getWorker(){
-  if(!_wBlob)_wBlob=URL.createObjectURL(new Blob(["'use strict';\nvar _seed=42;\nfunction setSeed(s){_seed=(s>>>0)||1;}\nfunction _rand(){_seed+=0x6D2B79F5;var t=_seed;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}\nfunction rn(){var u=0,v=0;while(!u)u=_rand();while(!v)v=_rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}\nfunction sN(m,s){return m+rn()*s;}\nfunction sLN(m,s){var v=s*s,ml=Math.log(m*m/Math.sqrt(v+m*m)),sl=Math.sqrt(Math.log(1+v/(m*m)));return Math.exp(ml+sl*rn());}\nfunction sTri(a,c,b){var u=_rand(),fc=(c-a)/(b-a);return u<fc?a+Math.sqrt(u*(b-a)*(c-a)):b-Math.sqrt((1-u)*(b-a)*(b-c));}\nfunction sBeta(a,b){var x=sGamma(a,1),y=sGamma(b,1);return x/(x+y);}\nfunction sGamma(a,sc){if(a<1)return sGamma(1+a,sc)*Math.pow(_rand(),1/a);var d=a-1/3,c2=1/Math.sqrt(9*d);for(;;){var x,v;do{x=rn();v=1+c2*x;}while(v<=0);v=v*v*v;if(_rand()<1-0.0331*x*x*x*x)return d*v*sc;if(Math.log(_rand())<0.5*x*x+d*(1-v+Math.log(v)))return d*v*sc;}}\nfunction draw(c){switch(c.dist){case 'normal':return Math.max(0,sN(+c.mean,+c.sd));case 'triangular':return Math.max(0,sTri(+c.min,+c.pref,+c.max));case 'beta':return Math.max(0,Math.min(1,sBeta(+c.alpha,+c.beta)));case 'lognormal':return Math.max(0,sLN(+c.mean,+c.sd));case 'uniform':return Math.max(0,+c.min+_rand()*(+c.max-+c.min));case 'gamma':return Math.max(0,sGamma(+c.shape,+c.scale));}return 0;}\nfunction pc(s,p){var idx=(p/100)*(s.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);if(lo===hi)return s[lo];return s[lo]+(s[hi]-s[lo])*(idx-lo);}\nself.onmessage=function(e){\n  var d=e.data;setSeed(d.seed||42);\n  var cfg=d.cfg,ss=d.S,dd=d.D,N=d.N,yrs=d.yrs;\n  var all=[],annuals={},done=0,CHUNK=500,popBase=dd.patVol[0]||1;\n  function step(){\n    var n=Math.min(CHUNK,N-done);\n    for(var i=0;i<n;i++){\n      var npCs=Math.max(0,draw(cfg.cost));\n      var ccs={};\n      ss.comparators.forEach(function(c){\n        var cc=cfg.compCost&&cfg.compCost[c.id];\n        ccs[c.id]=(d.varyComp&&cc&&cc.dist)?Math.max(0,draw(cc)):(dd.compAnn[c.id]||0);\n      });\n      var pY1=Math.max(1,draw(cfg.pop));\n      var baseY1=cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);\n      var drawnY1=Math.max(0,Math.min(1,draw(cfg.uptake)));\n      var uMult=baseY1>1e-9?drawnY1/baseY1:1.0;\n      var tot=0;\n      for(var y=0;y<Math.min(yrs,ss.years);y++){\n        var gr=popBase>0?(dd.patVol[y]||popBase)/popBase:1;\n        var pop=pY1*gr;\n        var schedUptake=(ss.npUptake[y]||ss.npUptake[0]||5)/100;\n        var uR=Math.min(1,Math.max(0,schedUptake*uMult));\n        var expR=(ss.expansionRates[y]||0)/100;\n        var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;\n        ss.comparators.forEach(function(c){\n          var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;\n          var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;\n          bef+=pop*bMs*ccs[c.id];\n          aft+=tPop*Math.max(0,bMs-uR*cP)*ccs[c.id];\n        });\n        var nbiY=(aft-bef);\n        tot+=nbiY;\n        if(!annuals[y])annuals[y]=[];\n        annuals[y].push(nbiY);\n      }\n      all.push(tot);\n    }\n    done+=n;self.postMessage({type:'progress',pct:Math.round(done/N*100)});\n    if(done<N){setTimeout(step,0);return;}\n    all.sort(function(a,b){return a-b;});\n    var mean=all.reduce(function(a,b){return a+b;},0)/all.length;\n    var std=Math.sqrt(all.reduce(function(a,v){return a+(v-mean)*(v-mean);},0)/all.length);\n    var annStats={};\n    for(var ay in annuals){\n      var arr=annuals[ay].slice().sort(function(a,b){return a-b;});\n      annStats[ay]={p5:pc(arr,5),p25:pc(arr,25),p50:pc(arr,50),p75:pc(arr,75),p95:pc(arr,95),\n        mean:arr.reduce(function(a,b){return a+b;},0)/arr.length};\n    }\n    self.postMessage({type:'done',results:{mean:mean,std:std,hist:all,\n      p5:pc(all,5),p25:pc(all,25),p50:pc(all,50),p75:pc(all,75),p80:pc(all,80),p90:pc(all,90),p95:pc(all,95),\n      min:all[0],max:all[all.length-1],annStats:annStats}});\n  }\n  step();\n};"],{type:'application/javascript'}));
+  if(!_wBlob)_wBlob=URL.createObjectURL(new Blob(["'use strict';\nvar _seed=42;\nfunction setSeed(s){_seed=(s>>>0)||1;}\nfunction _rand(){_seed+=0x6D2B79F5;var t=_seed;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;}\nfunction rn(){var u=0,v=0;while(!u)u=_rand();while(!v)v=_rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}\nfunction sN(m,s){return m+rn()*s;}\nfunction sLN(m,s){var v=s*s,ml=Math.log(m*m/Math.sqrt(v+m*m)),sl=Math.sqrt(Math.log(1+v/(m*m)));return Math.exp(ml+sl*rn());}\nfunction sTri(a,c,b){var u=_rand(),fc=(c-a)/(b-a);return u<fc?a+Math.sqrt(u*(b-a)*(c-a)):b-Math.sqrt((1-u)*(b-a)*(b-c));}\nfunction sBeta(a,b){var x=sGamma(a,1),y=sGamma(b,1);return x/(x+y);}\nfunction sGamma(a,sc){if(a<1)return sGamma(1+a,sc)*Math.pow(_rand(),1/a);var d=a-1/3,c2=1/Math.sqrt(9*d);for(;;){var x,v;do{x=rn();v=1+c2*x;}while(v<=0);v=v*v*v;if(_rand()<1-0.0331*x*x*x*x)return d*v*sc;if(Math.log(_rand())<0.5*x*x+d*(1-v+Math.log(v)))return d*v*sc;}}\nfunction draw(c){switch(c.dist){case 'normal':return Math.max(0,sN(+c.mean,+c.sd));case 'triangular':return Math.max(0,sTri(+c.min,+c.pref,+c.max));case 'beta':return Math.max(0,Math.min(1,sBeta(+c.alpha,+c.beta)));case 'lognormal':return Math.max(0,sLN(+c.mean,+c.sd));case 'uniform':return Math.max(0,+c.min+_rand()*(+c.max-+c.min));case 'gamma':return Math.max(0,sGamma(+c.shape,+c.scale));}return 0;}\nfunction pc(s,p){var idx=(p/100)*(s.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);if(lo===hi)return s[lo];return s[lo]+(s[hi]-s[lo])*(idx-lo);}\nself.onmessage=function(e){\n  var d=e.data;setSeed(d.seed||42);\n  var cfg=d.cfg,ss=d.S,dd=d.D,N=d.N,yrs=d.yrs;\n  var all=[],annuals={},done=0,CHUNK=500,popBase=dd.patVol[0]||1;\n  function step(){\n    var n=Math.min(CHUNK,N-done);\n    for(var i=0;i<n;i++){\n      var npCs=Math.max(0,draw(cfg.cost));\n      var ccs={};\n      ss.comparators.forEach(function(c){\n        var cc=cfg.compCost&&cfg.compCost[c.id];\n        ccs[c.id]=(d.varyComp&&cc&&cc.dist)?Math.max(0,draw(cc)):(dd.compAnn[c.id]||0);\n      });\n      var pY1=Math.max(1,draw(cfg.pop));\n      var baseY1=cfg.uptake._baseY1||((ss.npUptake[0]||5)/100);\n      var drawnY1=Math.max(0,Math.min(1,draw(cfg.uptake)));\n      var uMult=baseY1>1e-9?drawnY1/baseY1:1.0;\n      var tot=0;\n      for(var y=0;y<Math.min(yrs,ss.years);y++){\n        var gr=popBase>0?(dd.patVol[y]||popBase)/popBase:1;\n        var pop=pY1*gr;\n        var schedUptake=(ss.npUptake[y]||ss.npUptake[0]||5)/100;\n        var uR=Math.min(1,Math.max(0,schedUptake*uMult));\n        var expR=(ss.expansionRates[y]||0)/100;\n        var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;\n        ss.comparators.forEach(function(c){\n          var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;\n          var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;\n          bef+=pop*bMs*ccs[c.id];\n          aft+=tPop*Math.max(0,bMs-uR*cP)*ccs[c.id];\n        });\n        var nbiY=(aft-bef);\n        tot+=nbiY;\n        if(!annuals[y])annuals[y]=[];\n        annuals[y].push(nbiY);\n      }\n      all.push(tot);\n    }\n    done+=n;self.postMessage({type:'progress',pct:Math.round(done/N*100)});\n    if(done<N){setTimeout(step,0);return;}\n    all.sort(function(a,b){return a-b;});\n    var mean=all.reduce(function(a,b){return a+b;},0)/all.length;\n    var std=Math.sqrt(all.reduce(function(a,v){return a+(v-mean)*(v-mean);},0)/all.length);\n    var annStats={};\n    for(var ay in annuals){\n      var arr=annuals[ay].slice().sort(function(a,b){return a-b;});\n      annStats[ay]={p5:pc(arr,5),p25:pc(arr,25),p50:pc(arr,50),p75:pc(arr,75),p95:pc(arr,95),\n        mean:arr.reduce(function(a,b){return a+b;},0)/arr.length};\n    }\n    self.postMessage({type:'done',results:{mean:mean,std:std,hist:all,\n      p5:pc(all,5),p25:pc(all,25),p50:pc(all,50),p75:pc(all,75),p80:pc(all,80),p90:pc(all,90),p95:pc(all,95),\n      min:all[0],max:all[all.length-1],annStats:annStats,annRaw:annuals}});\n  }\n  step();\n};"],{type:'application/javascript'}));
 }
 function runSim(){
   if(busy)return;busy=true;
@@ -1858,7 +2002,7 @@ function runSim(){
     var r=msg.results,all=r.hist;
     SIM={data:all,mean:r.mean,std:r.std,baseTotal:baseTotal,
       p5:r.p5,p25:r.p25,p50:r.p50,p75:r.p75,p80:r.p80,p90:r.p90,p95:r.p95,min:r.min,max:r.max,
-      annStats:r.annStats||{}};
+      annStats:r.annStats||{},annRaw:r.annRaw||{}};
     $('kpi-row').innerHTML=[
       {l:'P5 (lower 90% CI)',v:fmtM(SIM.p5),c:'#10b981'},
       {l:'P25',v:fmtM(SIM.p25),c:'#34d399'},
@@ -1881,6 +2025,9 @@ function runSim(){
     if(fn)fn.textContent='* P95 uses ~'+(Math.round(N*0.05)).toLocaleString()+' tail obs at n='+N.toLocaleString()+'. Treat as indicative for n<50,000.';
     $('idle').style.display='none';$('res').style.display='block';
     renderHist(all,SIM);renderCDF(all);renderBox(SIM);renderAnnualTable(SIM.annStats,yrs);
+    // Store raw annual data for threshold analysis
+    SIM.annRaw=annuals;
+    setTimeout(function(){renderThresholdSection();},100);
     // Populate PSA NBI row in base page BI summary card
     if(psaRow){
       psaRow.style.display='block';
@@ -1905,6 +2052,8 @@ function runSim(){
     // Add PSA done badge to base tab
     var baseTab=$('nav-base-badge');
     if(baseTab){baseTab.style.display='inline-flex';baseTab.textContent='PSA ✓';}
+    // Render threshold section
+    renderThresholdSection();
     // Auto-run variance decomposition
     setTimeout(function(){runVD();},100);
     btn.disabled=false;btn.textContent='\u25b6 RUN PSA ('+N.toLocaleString()+' ITERATIONS)';
@@ -2142,6 +2291,137 @@ function populateSaYrSelects(){
 }
 
 // ==================== TORNADO ====================
+
+// ══════ PSA THRESHOLD ANALYSIS ════════════════════════════════
+function renderThresholdSection(){
+  if(!SIM||!SIM.data||SIM.data.length===0) return;
+  var sec=$('threshold-psa-section');
+  if(sec) sec.style.display='block';
+
+  var thrInp=$('psa-threshold-inp');
+  var thrM=parseFloat((thrInp&&thrInp.value)||'20')||20;
+  var thrVal=thrM*1e6;  // convert £M to £
+
+  var npCost=D.npAnn||cfg._D&&cfg._D.npAnn||0;
+  var yrs=S.years||3;
+  var annData=SIM.annStats;
+
+  // ── Per-year prob table ────────────────────────────────────
+  var probRows='';
+  for(var y=0;y<yrs;y++){
+    var as=annData&&annData[y];
+    if(!as) continue;
+    var sorted=as._sorted;
+    // Count how many exceed threshold
+    var exceed=0;
+    if(SIM.annRaw&&SIM.annRaw[y]){
+      SIM.annRaw[y].forEach(function(v){if(v>thrVal)exceed++;});
+    } else {
+      // Estimate from percentiles: interpolate
+      var pctExceed=0;
+      if(thrVal<=as.p5) pctExceed=95;
+      else if(thrVal>=as.p95) pctExceed=5;
+      else if(thrVal<=as.p50) pctExceed=50+(as.p50-thrVal)/(as.p50-as.p5)*45;
+      else pctExceed=50-(thrVal-as.p50)/(as.p95-as.p50)*45;
+      exceed=Math.round(pctExceed*SIM.data.length/100);
+    }
+    var pct=(exceed/SIM.data.length*100);
+    var risk=pct>=50?'high':pct>=20?'med':'low';
+    var riskCol=pct>=50?'var(--red)':pct>=20?'var(--gold-mid)':'var(--teal)';
+    var riskLbl=pct>=50?'High Risk':pct>=20?'Moderate':'Low Risk';
+    probRows+='<tr class="dr">'
+      +'<td class="rl">Year '+(y+1)+'</td>'
+      +'<td class="tc"><span class="cv" style="color:var(--ink3);">'+fmtM(as.p50)+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:var(--ink3);">'+fmtM(as.p95)+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:var(--ink3);">'+fmtM(thrVal)+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:'+riskCol+';font-size:15px;font-weight:800;">'+pct.toFixed(1)+'%</span></td>'
+      +'<td class="tc"><span style="display:inline-block;padding:2px 10px;border-radius:99px;font-size:10px;font-weight:700;background:'+riskCol.replace(')',',0.12)').replace('var(','rgba(')+';color:'+riskCol+';">'+riskLbl+'</span></td>'
+      +'</tr>';
+  }
+
+  var tbl='<table class="btbl"><thead><tr>'
+    +'<th>Year</th><th>P50 NBI</th><th>P95 NBI</th>'
+    +'<th>Threshold (£'+thrM+'M)</th>'
+    +'<th>Prob &gt; Threshold</th><th>Risk Signal</th>'
+    +'</tr></thead><tbody>'+probRows+'</tbody></table>';
+  var el=$('thr-prob-table');if(el) el.innerHTML=tbl;
+
+  // ── Breakeven cards ────────────────────────────────────────
+  if(npCost>0){
+    var beMedian=npCost*(thrVal/(SIM.p50||1));
+    var be95th  =npCost*(thrVal/(SIM.p95||1));
+
+    var riskInpEl=$('psa-risk-inp');
+    var riskPct=parseFloat((riskInpEl&&riskInpEl.value)||'10')||10;
+    // Find price where Prob > threshold = riskPct%
+    // Binary search: scale price → scale NBI proportionally → find where pct breaches = riskPct
+    var beRisk=npCost;
+    // NBI ∝ drug cost, so scaling price by factor f scales NBI by f
+    // We want: fraction of simulations where NBI*f > thrVal = riskPct/100
+    // i.e. fraction where NBI > thrVal/f = riskPct/100
+    // Sort cumNBI (SIM.data is sorted), find value at (1-riskPct/100) percentile
+    var targetPct=(1-riskPct/100);
+    var targetNBI=SIM.data[Math.min(SIM.data.length-1,Math.floor(targetPct*SIM.data.length))];
+    if(targetNBI>0) beRisk=npCost*(thrVal/targetNBI);
+
+    var cards=[
+      {
+        label:'Median (P50) Breakeven',
+        formula:'List Price × (Threshold / P50)',
+        price:beMedian,
+        discount:((npCost-beMedian)/npCost*100),
+        desc:'Price at which half of simulations stay under threshold. Robust when distribution is skewed.',
+        col:'#0d7a5f',
+        badge:'Balanced'
+      },
+      {
+        label:'95th Percentile Breakeven',
+        formula:'List Price × (Threshold / P95)',
+        price:be95th,
+        discount:((npCost-be95th)/npCost*100),
+        desc:'Price giving near-certainty of staying affordable. Drives managed entry agreement negotiations.',
+        col:'#be123c',
+        badge:'Conservative — Recommended'
+      },
+      {
+        label:'Risk Tolerance Breakeven',
+        formula:'At '+riskPct+'% breach probability',
+        price:beRisk,
+        discount:((npCost-beRisk)/npCost*100),
+        desc:'Price at which only '+riskPct+'% of simulations breach the threshold. Links price to risk appetite.',
+        col:'#9333ea',
+        badge:'Risk-Based'
+      }
+    ];
+
+    var cardsHtml=cards.map(function(c){
+      var disc=c.discount;
+      var discStr=disc>0?'&#9660; '+disc.toFixed(1)+'% discount from list':'&#9650; '+Math.abs(disc).toFixed(1)+'% above list';
+      var discCol=disc>0?'var(--red)':'var(--teal)';
+      return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid '+c.col+';">'
+        +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:'+c.col+';margin-bottom:2px;">'+c.badge+'</div>'
+        +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3;">'+c.label+'</div>'
+        +'<div style="font-family:var(--mono);font-size:10px;color:var(--ink5);margin-bottom:10px;background:var(--surface2);padding:4px 8px;border-radius:4px;">'+c.formula+'</div>'
+        +'<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;margin-bottom:4px;">'+fmtM(c.price)+'</div>'
+        +'<div style="font-size:11px;font-weight:600;color:'+discCol+';margin-bottom:8px;">'+discStr+'</div>'
+        +'<div style="font-size:10px;color:var(--ink4);line-height:1.5;">'+c.desc+'</div>'
+        +'</div>';
+    }).join('');
+
+    var el2=$('thr-breakeven-cards');if(el2) el2.innerHTML=cardsHtml;
+
+    // Risk tolerance result
+    var el3=$('thr-risk-result');
+    if(el3){
+      el3.innerHTML='<div style="padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);">'
+        +'<div style="font-size:10px;color:var(--ink4);margin-bottom:4px;">At <strong style="color:var(--ink3);">'+riskPct+'%</strong> risk tolerance — breakeven price:</div>'
+        +'<div style="font-family:var(--mono);font-size:18px;font-weight:800;color:#9333ea;">'+fmtM(beRisk)+'</div>'
+        +'<div style="font-size:10px;color:var(--ink4);margin-top:3px;">Only '+riskPct+'% of scenarios breach the threshold at this price</div>'
+        +'</div>';
+    }
+  }
+}
+
 function runTornado(){
   syncAll(); compute(); populateSaYrSelects();
   var varPct=parseFloat($('tornado-var').value)||20;
@@ -2882,6 +3162,130 @@ function renderCompactRanking(results, varFull){
 
 
 
+
+
+function renderThresholdSection(){
+  var el=$('psa-threshold-section');
+  if(!el||!SIM||!SIM.data||SIM.data.length===0) return;
+
+  var ss=cfg._S||S, yrs=+(($('yr-range')||{}).value||S.years)||S.years;
+  var listPrice=ss.txCost&&ss.txCost.np?ss.txCost.np.pricePerPack:0;
+  var thrInput=$('psa-thr-input');
+  var THR=thrInput?parseFloat(thrInput.value)||20000000:20000000;
+
+  // ── Per-year P(NBI > threshold) ────────────────────────────────
+  var annRaw=SIM.annRaw||{};
+  var N=SIM.data.length;
+  var yearRows='';
+  for(var y=0;y<yrs;y++){
+    var arr=annRaw[y]||[];
+    var exceed=arr.filter(function(v){return v>THR;}).length;
+    var prob=arr.length>0?exceed/arr.length:null;
+    var pct=prob!==null?(prob*100).toFixed(1)+'%':'—';
+    var cls=prob===null?'':prob>0.5?'neg':prob>0.1?'warn':'grn';
+    var ann=SIM.annStats[y];
+    var p50y=ann?ann.p50:null;
+    var p95y=ann?ann.p95:null;
+    var beP50=listPrice&&p50y&&THR?'£'+(listPrice*(THR/p50y)).toFixed(2):'—';
+    var beP95=listPrice&&p95y&&THR?'£'+(listPrice*(THR/p95y)).toFixed(2):'—';
+    yearRows+='<tr class="dr">'
+      +'<td class="rl">Year '+(y+1)+'</td>'
+      +'<td class="tc"><span class="cv" style="color:var(--ink3);">'+fmtM(p50y||0)+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:var(--ink3);">'+fmtM(p95y||0)+'</span></td>'
+      +'<td class="tc"><span class="cv '+cls+'">'+pct+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:var(--teal);">'+beP50+'</span></td>'
+      +'<td class="tc"><span class="cv" style="color:var(--red);">'+beP95+'</span></td>'
+      +'</tr>';
+  }
+
+  // ── Cumulative P(NBI > threshold) ──────────────────────────────
+  var cumExceed=SIM.data.filter(function(v){return v>THR;}).length;
+  var cumProb=(cumExceed/N*100).toFixed(1);
+  var cumCls=cumExceed/N>0.5?'neg':cumExceed/N>0.1?'warn':'grn';
+
+  // ── Breakeven prices (cumulative) ──────────────────────────────
+  var beMedian=listPrice&&SIM.p50&&THR?'£'+(listPrice*(THR/SIM.p50)).toFixed(2):'—';
+  var beConserv=listPrice&&SIM.p95&&THR?'£'+(listPrice*(THR/SIM.p95)).toFixed(2):'—';
+
+  // 10% risk price: find price where P(>THR)=10%
+  // At current list price, prob = cumExceed/N
+  // Scale factor: listPrice * (THR/p_x) where p_x is 90th pctl
+  var p90=SIM.p90||SIM.p95;
+  var be10pct=listPrice&&p90&&THR?'£'+(listPrice*(THR/p90)).toFixed(2):'—';
+
+  el.innerHTML=
+    // ── Header ──
+    '<div style="margin-top:20px;">'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">'
+      +'<div>'
+        +'<div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:3px;letter-spacing:-.2px;">Prob &gt; Budget Impact Threshold &mdash; By Year</div>'
+        +'<div style="font-size:11px;color:var(--ink4);max-width:600px;line-height:1.6;">'
+          +'Budget impact thresholds (e.g. £20M/yr in the UK) cap what a payer will accept per year. '
+          +'Exceeding these may trigger price negotiations or delay launch.'
+        +'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">'
+        +'<label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;">Threshold (£)</label>'
+        +'<input type="number" id="psa-thr-input" value="'+THR+'" step="1000000" min="0"'
+          +' style="width:140px;height:32px;padding:0 10px;border:1.5px solid var(--border);border-radius:6px;'
+          +'background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;"'
+          +' oninput="renderThresholdSection()"/>'
+      +'</div>'
+    +'</div>'
+
+    // ── Annual table ──
+    +'<div style="overflow-x:auto;margin-bottom:18px;">'
+    +'<table class="btbl"><thead><tr>'
+      +'<th>Year</th><th style="text-align:center;">P50 Annual NBI</th>'
+      +'<th style="text-align:center;">P95 Annual NBI</th>'
+      +'<th style="text-align:center;">Prob &gt; Threshold</th>'
+      +'<th style="text-align:center;">Break-even (P50)</th>'
+      +'<th style="text-align:center;">Break-even (P95)</th>'
+    +'</tr></thead><tbody>'
+    +yearRows
+    +'</tbody></table></div>'
+
+    // ── Breakeven summary cards ──
+    +'<div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;text-transform:uppercase;letter-spacing:.3px;">Break-even Price Analysis &mdash; Cumulative 3-Year</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">'
+      // Card 1 — P50
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid var(--teal);">'
+        +'<div style="font-size:9px;font-weight:700;color:var(--ink5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Median (P50) Break-even</div>'
+        +'<div style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--teal);">'+beMedian+'</div>'
+        +'<div style="font-size:10px;color:var(--ink5);margin-top:6px;line-height:1.5;">Price where half of simulations stay under threshold. Balanced approach.</div>'
+      +'</div>'
+      // Card 2 — P95
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid var(--red);">'
+        +'<div style="font-size:9px;font-weight:700;color:var(--ink5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Conservative (P95) Break-even</div>'
+        +'<div style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--red);">'+beConserv+'</div>'
+        +'<div style="font-size:10px;color:var(--ink5);margin-top:6px;line-height:1.5;">Price at which even top 5% worst-case stays under threshold. Risk-averse payer target.</div>'
+      +'</div>'
+      // Card 3 — 10% risk
+      +'<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid var(--gold-mid);">'
+        +'<div style="font-size:9px;font-weight:700;color:var(--ink5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">10% Risk Price</div>'
+        +'<div style="font-family:var(--mono);font-size:20px;font-weight:800;color:var(--gold);">'+be10pct+'</div>'
+        +'<div style="font-size:10px;color:var(--ink5);margin-top:6px;line-height:1.5;">Price where only 10% of simulations breach threshold. Directly links price to risk tolerance.</div>'
+      +'</div>'
+    +'</div>'
+
+    // ── Cumulative prob banner ──
+    +'<div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;">'
+      +'<div style="font-size:11px;font-weight:600;color:var(--ink3);flex:1;">'
+        +'Cumulative 3-year NBI exceeds threshold in <span class="cv '+cumCls+'" style="font-size:14px;">'+cumProb+'%</span> of scenarios'
+      +'</div>'
+      +'<div style="font-size:10px;color:var(--ink5);">at current list price</div>'
+    +'</div>'
+
+    // ── Methodology note ──
+    +'<div style="font-size:10px;color:var(--ink5);line-height:1.7;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;">'
+      +'<strong style="color:var(--ink4);">Methodology:</strong> '
+      +'Break-even price = List price × (Threshold ÷ BIA percentile). '
+      +'P95 break-even is most actionable for managed entry agreement negotiations — '
+      +'it gives NHS near-certainty of staying within budget. '
+      +'Base probabilities use current list price across all '+N.toLocaleString()+' simulation runs.'
+    +'</div>'
+  +'</div>';
+}
 
 </script>
 
