@@ -546,6 +546,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
             </div>
           </div>
           <div id="thr-breakeven-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+          <div id="thr-breakeven-by-year"></div>
 
           <!-- Risk tolerance inverse -->
           <div id="thr-risk-section" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;">
@@ -822,6 +823,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
             </div>
           </div>
           <div id="thr-breakeven-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+          <div id="thr-breakeven-by-year"></div>
 
           <!-- Risk tolerance inverse -->
           <div id="thr-risk-section" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;">
@@ -2806,6 +2808,101 @@ function renderThresholdSection(){
     }).join('');
 
     var el2=$('thr-breakeven-cards');if(el2) el2.innerHTML=cardsHtml;
+
+    // ── Per-year breakeven table ────────────────────────────────
+    var el3=$('thr-breakeven-by-year');
+    if(el3&&npCost>0){
+      var yrRows='';
+      var ss2=cfg._S||S;
+      var launchYr=ss2.launchYear||2026;
+      for(var wy=0;wy<yrs;wy++){
+        var wasY=annData&&annData[wy];
+        if(!wasY) continue;
+        var rawY=SIM.annRaw&&(SIM.annRaw[wy]||SIM.annRaw[String(wy)]);
+
+        // P50 and P95 for this year
+        var yP50=wasY.p50||0;
+        var yP95=wasY.p95||0;
+
+        // P50 breakeven
+        var beP50y=yP50>0?npCost*(thrVal/yP50):0;
+        var packP50y=listPackPrice>0?listPackPrice*(thrVal/yP50):0;
+        var discP50y=yP50>0?((npCost-beP50y)/npCost*100):0;
+
+        // P95 breakeven
+        var beP95y=yP95>0?npCost*(thrVal/yP95):0;
+        var packP95y=listPackPrice>0?listPackPrice*(thrVal/yP95):0;
+        var discP95y=yP95>0?((npCost-beP95y)/npCost*100):0;
+
+        // Risk tolerance breakeven for this year
+        var beRiskY=npCost;
+        var packRiskY=listPackPrice;
+        if(rawY&&rawY.length){
+          var sortedY=rawY.slice().sort(function(a,b){return a-b;});
+          var tIdx=Math.floor((1-riskPct/100)*sortedY.length);
+          tIdx=Math.min(Math.max(0,tIdx),sortedY.length-1);
+          var tNBIy=sortedY[tIdx];
+          if(tNBIy>0){
+            beRiskY=npCost*(thrVal/tNBIy);
+            packRiskY=listPackPrice>0?listPackPrice*(thrVal/tNBIy):0;
+          }
+        }
+
+        // Format: show pack price primary, headroom/discount secondary
+        function fmtBE(pack,listPack,annCostBE){
+          if(listPack>0){
+            var disc=((listPack-pack)/listPack*100);
+            var discTxt=disc>0?'↓'+disc.toFixed(0)+'% disc.':'↑'+Math.abs(disc).toFixed(0)+'% headroom';
+            var discCol=disc>0?'var(--red)':'var(--teal)';
+            return '<span style="font-family:var(--mono);font-weight:700;font-size:12px;">£'+pack.toFixed(2)+'/pk</span>'
+              +'<br><span style="font-size:9px;color:'+discCol+';font-weight:600;">'+discTxt+'</span>';
+          }
+          return '<span style="font-family:var(--mono);font-size:11px;">'+fmtM(annCostBE)+'/yr</span>';
+        }
+
+        // Prob breaching threshold in this year
+        var exceedY=0;
+        if(rawY&&rawY.length){
+          rawY.forEach(function(v){if(v>thrVal)exceedY++;});
+        }
+        var probY=(exceedY/(rawY&&rawY.length||1)*100);
+        var probCol=probY>=50?'var(--red)':probY>=20?'var(--gold-mid)':'var(--ink4)';
+
+        yrRows+='<tr class="dr">'
+          +'<td class="rl" style="font-weight:700;color:var(--ink);">Y'+(wy+1)
+            +'<span style="font-weight:400;color:var(--ink4);font-size:9px;"> ('+(launchYr+wy)+')</span></td>'
+          +'<td class="tc" style="font-size:10px;color:var(--ink3);">'
+            +'<div>'+fmtM(yP50)+'</div>'
+            +'<div style="font-size:9px;color:var(--ink5);">P95: '+fmtM(yP95)+'</div></td>'
+          +'<td class="tc">'+fmtBE(packP50y,listPackPrice,beP50y)+'</td>'
+          +'<td class="tc">'+fmtBE(packP95y,listPackPrice,beP95y)+'</td>'
+          +'<td class="tc">'+fmtBE(packRiskY,listPackPrice,beRiskY)+'</td>'
+          +'<td class="tc"><span style="font-weight:700;font-family:var(--mono);color:'+probCol+';">'+probY.toFixed(1)+'%</span></td>'
+          +'</tr>';
+      }
+
+      el3.innerHTML='<div style="margin-top:20px;">'
+        +'<div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price — By Year</div>'
+        +'<div style="font-size:11px;color:var(--ink4);margin-bottom:12px;line-height:1.6;">'
+          +'Each year\u2019s breakeven is computed independently using that year\u2019s annual NBI distribution. '
+          +'The binding constraint is the year with the lowest breakeven price (highest NBI). '
+          +'Pack price shown at £'+thrM+'M/yr threshold.'
+        +'</div>'
+        +'<table class="btbl"><thead><tr>'
+          +'<th>Year</th>'
+          +'<th>Annual NBI<br><span style="font-weight:400;font-size:9px;">(P50 / P95)</span></th>'
+          +'<th style="color:#0d7a5f;">P50 Breakeven<br><span style="font-weight:400;font-size:9px;">Half breach threshold</span></th>'
+          +'<th style="color:#be123c;">P95 Breakeven<br><span style="font-weight:400;font-size:9px;">Conservative (MEA)</span></th>'
+          +'<th style="color:#9333ea;">Risk='+riskPct+'% Breakeven<br><span style="font-weight:400;font-size:9px;">Inverse approach</span></th>'
+          +'<th>Prob&gt;£'+thrM+'M</th>'
+        +'</tr></thead><tbody>'+yrRows+'</tbody></table>'
+        +'<div style="font-size:9px;color:var(--ink5);margin-top:8px;padding:6px 10px;background:var(--surface2);border-radius:4px;">'
+          +'&#8505; Breakeven = List Price × (Threshold / Annual NBI at percentile). '
+          +'Headroom means current price is affordable in that year. '
+          +'Discount % = required reduction from list price to stay within threshold.'
+        +'</div>'
+        +'</div>';
+    }
 
     // thr-risk-result removed (now shown in card 3)
   }
