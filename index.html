@@ -742,7 +742,29 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
           <button class="tbtn" onclick="showTab('vd',this);runVD()">Variance Decomposition (OAT)</button>
           <button class="tbtn" onclick="showTab('vd',this);runSobol()" style="color:var(--teal);">Sobol Indices &#946;</button>
         </div>
-        <div class="tab-panel active" id="tab-hist"><canvas id="hist-chart"></canvas></div>
+        <div class="tab-panel active" id="tab-hist">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+              <span style="font-size:10px;color:var(--ink4);font-weight:600;margin-right:2px;">View:</span>
+              <button class="hist-yr-btn" data-yr="-1" onclick="renderHistForYear(-1)"
+                style="padding:4px 10px;border-radius:99px;border:1px solid var(--border);font-size:10px;font-weight:600;cursor:pointer;background:var(--teal);color:#fff;transition:all .2s;">
+                Cumulative
+              </button>
+              <button class="hist-yr-btn" data-yr="0" onclick="renderHistForYear(0)"
+                style="padding:4px 10px;border-radius:99px;border:1px solid var(--border);font-size:10px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+                Year 1
+              </button>
+              <button class="hist-yr-btn" data-yr="1" onclick="renderHistForYear(1)"
+                style="padding:4px 10px;border-radius:99px;border:1px solid var(--border);font-size:10px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+                Year 2
+              </button>
+              <button class="hist-yr-btn" data-yr="2" onclick="renderHistForYear(2)"
+                style="padding:4px 10px;border-radius:99px;border:1px solid var(--border);font-size:10px;font-weight:600;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+                Year 3
+              </button>
+              <span id="hist-yr-label" style="font-size:10px;color:var(--ink4);margin-left:4px;"></span>
+            </div>
+            <canvas id="hist-chart"></canvas>
+          </div>
         <div class="tab-panel" id="tab-cdf"><canvas id="cdf-chart"></canvas></div>
         <div class="tab-panel" id="tab-box"><canvas id="box-chart"></canvas></div>
         <div class="tab-panel" id="tab-vd"><div id="vd-wrap"></div></div>
@@ -906,6 +928,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 </div>
 
 <script>
+
 
 
 
@@ -2143,7 +2166,7 @@ function runSim(){
     var fn=$('psa-footnote');
     if(fn)fn.textContent='* P95 uses ~'+(Math.round(N*0.05)).toLocaleString()+' tail obs at n='+N.toLocaleString()+'. Treat as indicative for n<50,000.';
     $('idle').style.display='none';$('res').style.display='block';
-    renderHist(all,SIM);renderCDF(all);renderBox(SIM);renderAnnualTable(SIM.annStats,yrs);
+    renderHistForYear(-1);renderCDF(all);renderBox(SIM);renderAnnualTable(SIM.annStats,yrs);
     // annRaw already set from r.annRaw in SIM={} above
     setTimeout(function(){renderThresholdSection();},100);
     // Populate PSA NBI row in base page BI summary card
@@ -2181,7 +2204,7 @@ function runSim(){
 
 // ==================== CHARTS ====================
 var HC=null,CC=null,BC=null;
-function renderHist(data,R){
+function renderHist(data,R,label){
   if(HC){HC.destroy();HC=null;}
   var el=$('hist-chart');if(!el)return;
   var bins=50,mn=data[0],mx=data[data.length-1],bw=((mx-mn)||1)/bins;
@@ -2211,7 +2234,7 @@ function renderHist(data,R){
           bodyColor:'rgba(255,255,255,.75)',
           padding:11,cornerRadius:8,
           callbacks:{
-            title:function(i){return 'NBI: '+i[0].label;},
+            title:function(i){return (label||'Cumulative NBI')+': '+i[0].label;},
             label:function(i){return '  '+i.raw.toLocaleString()+' scenarios ('+((i.raw/data.length)*100).toFixed(1)+'%)';}
           }
         }
@@ -2262,6 +2285,50 @@ function renderHist(data,R){
           '<div style="font-size:13px;font-weight:700;color:'+p[2]+';font-family:var(--mono);">'+fmtM(p[1])+'</div></div>';
       }).join('')+'</div>';
   }
+}
+
+
+function renderHistForYear(yearIdx){
+  // yearIdx: -1=cumulative, 0=Y1, 1=Y2, 2=Y3
+  if(!SIM||!SIM.data) return;
+  var ss=cfg._S||S;
+  if(yearIdx===-1){
+    // Cumulative — use main PSA data
+    renderHist(SIM.data, SIM, 'Cumulative 3-yr NBI');
+  } else {
+    // Annual — use annRaw for that year
+    var rawY=SIM.annRaw&&(SIM.annRaw[yearIdx]||SIM.annRaw[String(yearIdx)]);
+    if(!rawY||!rawY.length){
+      var el=$('ptbl');
+      if(el) el.innerHTML='<div style="padding:12px;color:var(--ink4);font-size:11px;">Annual data not available. Re-run PSA.</div>';
+      return;
+    }
+    var sorted=rawY.slice().sort(function(a,b){return a-b;});
+    function pc(p){var idx=(p/100)*(sorted.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);return lo===hi?sorted[lo]:sorted[lo]+(sorted[hi]-sorted[lo])*(idx-lo);}
+    var mean=sorted.reduce(function(a,b){return a+b;},0)/sorted.length;
+    // Annual stats object
+    var annStats=SIM.annStats&&(SIM.annStats[yearIdx]||SIM.annStats[String(yearIdx)]);
+    var R_ann={
+      p5:pc(5), p25:pc(25), p50:pc(50), p75:pc(75),
+      p80:pc(80), p90:pc(90), p95:pc(95),
+      mean:mean, min:sorted[0], max:sorted[sorted.length-1],
+      baseTotal:null  // annual base shown separately
+    };
+    // Get deterministic annual NBI for this year
+    if(ss&&typeof compute==='function'){
+      compute();
+      if(D&&D.netBI&&D.netBI[yearIdx]!==undefined) R_ann.baseTotal=D.netBI[yearIdx];
+    }
+    var yr=2026+(yearIdx);
+    renderHist(sorted, R_ann, 'Year '+(yearIdx+1)+' ('+yr+') Annual NBI');
+  }
+  // Update selector active state
+  document.querySelectorAll('.hist-yr-btn').forEach(function(b){
+    var active=(b.getAttribute('data-yr')===String(yearIdx));
+    b.style.background=active?'var(--teal)':'var(--surface2)';
+    b.style.color=active?'#fff':'var(--ink4)';
+    b.style.borderColor=active?'var(--teal)':'var(--border)';
+  });
 }
 
 function renderCDF(data){
@@ -3870,6 +3937,7 @@ function renderThresholdSection(){
     +'</div>'
   +'</div>';
 }
+
 
 
 </script>
