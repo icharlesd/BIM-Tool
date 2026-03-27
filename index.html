@@ -2805,10 +2805,18 @@ function renderThresholdSection(){
         +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:'+c.col+';margin-bottom:2px;">'+c.badge+'</div>'
         +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3;">'+c.label+'</div>'
         +'<div style="font-family:var(--mono);font-size:10px;color:var(--ink5);margin-bottom:10px;background:var(--surface2);padding:4px 8px;border-radius:4px;">'+c.formula+'</div>'
-        +'<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;margin-bottom:2px;">'
-          +(listPackPrice>0?'£'+bePackPrice.toFixed(2)+'/pack':fmtM(c.price)+'/yr')+'</div>'
-        +(listPackPrice>0?packLine:'')
-        +'<div style="font-size:11px;font-weight:600;color:'+discCol+';margin-top:6px;margin-bottom:8px;">'+discStr+'</div>'
+        +(listPackPrice>0
+          ?('<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">'
+            +'<div><div style="font-size:9px;color:var(--ink5);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Pack Price</div>'
+            +'<div style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;">£'+bePackPrice.toFixed(2)+'</div>'
+            +'<div style="font-size:9px;color:var(--ink5);">per pack</div></div>'
+            +'<div><div style="font-size:9px;color:var(--ink5);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Unit Price</div>'
+            +'<div style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;">£'+beUnitPrice.toFixed(4)+'</div>'
+            +'<div style="font-size:9px;color:var(--ink5);">per '+(npTx.unit||'unit')+'</div></div>'
+            +'</div>'
+            +'<div style="font-size:10px;color:var(--ink4);margin-bottom:4px;">Annual cost/pt: <span style="font-family:var(--mono);font-weight:600;">'+fmtM(c.price)+'/yr</span></div>')
+          :('<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;margin-bottom:4px;">'+fmtM(c.price)+'/yr</div>'))
+        +'<div style="font-size:11px;font-weight:600;color:'+discCol+';margin-top:4px;margin-bottom:8px;">'+discStr+'</div>'
         +'<div style="font-size:10px;color:var(--ink4);line-height:1.5;">'+c.desc+'</div>'
         +'</div>';
     }).join('');
