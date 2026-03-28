@@ -2700,17 +2700,26 @@ function renderThresholdSection(){
   // NBI scales proportionally with drug price, so:
   //   breakeven_price = list_price × (threshold / worst_annual_NBI_at_percentile)
   if(npCost>0){
-    // Find worst-year P50 and P95 across all forecast years
-    var worstP50=0, worstP95=0;
-    for(var wy=0;wy<yrs;wy++){
-      var was=annData&&annData[wy];
-      if(!was) continue;
-      if(was.p50>worstP50) worstP50=was.p50;
-      if(was.p95>worstP95) worstP95=was.p95;
+    // Compute worst-year value for each percentile across forecast years
+    // annStats has p5,p25,p50,p75,p95 per year; use max across years as binding constraint
+    function worstPct(key, fallback){
+      var v=0;
+      for(var wy=0;wy<yrs;wy++){
+        var was=annData&&annData[wy];
+        if(was&&was[key]>v) v=was[key];
+      }
+      return v>0?v:(fallback||1);
     }
-    // Fallback to cumulative if no annual data available
-    if(worstP50<=0) worstP50=SIM.p50||1;
-    if(worstP95<=0) worstP95=SIM.p95||1;
+    var worstP5  = worstPct('p5',  SIM.p5);
+    var worstP25 = worstPct('p25', SIM.p25);
+    var worstP50 = worstPct('p50', SIM.p50);
+    var worstP75 = worstPct('p75', SIM.p75);
+    var worstP95 = worstPct('p95', SIM.p95);
+    // P80 and P90 only in cumulative SIM — use proportional interpolation from annual
+    // or fall back to cumulative values scaled by worst-year ratio
+    var annRatio=worstP95>0&&SIM.p95>0?worstP95/SIM.p95:1;
+    var worstP80 = (SIM.p80||0)*annRatio;
+    var worstP90 = (SIM.p90||0)*annRatio;
 
     var beMedian = npCost*(thrVal/worstP50);
     var be95th   = npCost*(thrVal/worstP95);
