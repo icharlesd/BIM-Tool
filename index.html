@@ -335,7 +335,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 @keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(13,122,95,.3)}50%{box-shadow:0 0 0 6px rgba(13,122,95,.25),0 4px 14px rgba(13,122,95,.3)}}
 </style>
 </head>
-<body>
+<body><div style="position:fixed;top:0;right:0;background:#be123c;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774978489</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -882,7 +882,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         </div>
         <div id="psa-threshold-section"></div>
         <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
-        <button id="be-scroll-btn" onclick="var r=document.getElementById('psa-r');var s=document.getElementById('threshold-psa-section');if(r&&s)r.scrollTo({top:s.offsetTop-20,behavior:'smooth'});" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
+        <button id="be-scroll-btn" onclick="var s=document.getElementById('threshold-psa-section');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
         <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
       </div>
     </div>
@@ -959,7 +959,6 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 </div>
 
 <script>
-
 
 
 
@@ -2685,12 +2684,11 @@ function renderThresholdSection(){
   var sec=$('threshold-psa-section');
   if(sec) sec.style.display='block';
   // Ensure section scrolls into view first time
-  // Scroll threshold section into view within psa-r panel
-  var psaR=$('psa-r');
-  if(psaR&&sec){
+  // Scroll threshold section into view
+  if(sec){
     setTimeout(function(){
-      psaR.scrollTo({top:sec.offsetTop-20,behavior:'smooth'});
-    },150);
+      sec.scrollIntoView({behavior:'smooth',block:'start'});
+    },200);
   }
 
   var thrInp=$('psa-threshold-inp');
@@ -2710,7 +2708,7 @@ function renderThresholdSection(){
   // ── Per-year prob table ────────────────────────────────────
   var probRows='';
   for(var y=0;y<yrs;y++){
-    var as=annData&&annData[y];
+    var as=annData&&(annData[y]||annData[String(y)]);
     if(!as) continue;
     // Use raw annual data if available, else interpolate from percentiles
     var exceed=0,total=SIM.data.length;
@@ -2752,7 +2750,7 @@ function renderThresholdSection(){
   // ── Compute worst year values (needed for breakeven) ────────
     var worstP50=0, worstP95=0, worstYearIdx=0, worstMed2=0;
     for(var wy3=0;wy3<yrs;wy3++){
-      var wasW=annData&&annData[wy3];
+      var wasW=annData&&(annData[wy3]||annData[String(wy3)]);
       if(!wasW) continue;
       if(wasW.p50>worstP50) worstP50=wasW.p50;
       if(wasW.p95>worstP95) worstP95=wasW.p95;
@@ -3996,7 +3994,6 @@ function renderThresholdSection(){
     +'</div>'
   +'</div>';
 }
-
 
 
 </script>
