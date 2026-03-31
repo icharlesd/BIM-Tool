@@ -882,6 +882,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         </div>
         <div id="psa-threshold-section"></div>
         <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
+        <button id="be-scroll-btn" onclick="var r=document.getElementById('psa-r');var s=document.getElementById('threshold-psa-section');if(r&&s)r.scrollTo({top:s.offsetTop-20,behavior:'smooth'});" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
         <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
       </div>
     </div>
@@ -2193,6 +2194,9 @@ function runSim(){
     if(varyCompCosts){ss.comparators.forEach(function(c){var cc=ss.comparators.find(function(x){return x.id===c.id;});varL.push((cc?cc.name:c.id)+' cost');});}
     varL.push('population','uptake trajectory');
     $('binfo').textContent='n='+N.toLocaleString()+' \u00b7 '+yrs+'yr \u0394Cost \u00b7 Varied: '+varL.join(', ')+' \u00b7 Fixed: market share, capture, expansion';
+    // Add scroll-to-breakeven button in results banner
+    var beScrollBtn=$('be-scroll-btn');
+    if(beScrollBtn) beScrollBtn.style.display='inline-flex';
     var fn=$('psa-footnote');
     if(fn)fn.textContent='* P95 uses ~'+(Math.round(N*0.05)).toLocaleString()+' tail obs at n='+N.toLocaleString()+'. Treat as indicative for n<50,000.';
     $('idle').style.display='none';$('res').style.display='block';
@@ -2681,7 +2685,13 @@ function renderThresholdSection(){
   var sec=$('threshold-psa-section');
   if(sec) sec.style.display='block';
   // Ensure section scrolls into view first time
-  if(sec&&sec._first!==false){sec._first=false;sec.scrollIntoView&&sec.scrollIntoView({behavior:'smooth',block:'nearest'});}
+  // Scroll threshold section into view within psa-r panel
+  var psaR=$('psa-r');
+  if(psaR&&sec){
+    setTimeout(function(){
+      psaR.scrollTo({top:sec.offsetTop-20,behavior:'smooth'});
+    },150);
+  }
 
   var thrInp=$('psa-threshold-inp');
   var thrM=parseFloat((thrInp&&thrInp.value)||'20')||20;
