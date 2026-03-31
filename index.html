@@ -523,7 +523,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
             <div style="display:flex;align-items:flex-end;gap:8px;flex-shrink:0;">
               <div class="field" style="margin:0;">
                 <label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;">Threshold (£M/yr)</label>
-                <input type="number" id="psa-threshold-inp" value="20" min="0.1" step="0.5"
+                <input type="number" id="psa-threshold-inp-b" value="20" min="0.1" step="0.5"
                   style="width:110px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;font-weight:700;outline:none;"
                   oninput="_thrDebounced()" title="Annual budget impact threshold in £ millions"/>
               </div>
@@ -535,7 +535,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
           </div>
 
           <!-- Prob by year table -->
-          <div id="thr-prob-table" style="margin-bottom:20px;"></div>
+          <div id="thr-prob-table-b" style="margin-bottom:20px;"></div>
 
           <!-- Breakeven section -->
           <div style="margin-bottom:8px;">
@@ -546,24 +546,24 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
           </div>
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
             <span style="font-size:10px;font-weight:600;color:var(--ink4);">Show price as:</span>
-            <button id="be-toggle-pack" onclick="setBeDisplay('pack')"
+            <button id="be-toggle-pack-b" onclick="setBeDisplay('pack')"
               style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--teal);font-size:10px;font-weight:700;cursor:pointer;background:var(--teal);color:#fff;transition:all .2s;">
               &#163;/pack
             </button>
-            <button id="be-toggle-unit" onclick="setBeDisplay('unit')"
+            <button id="be-toggle-unit-b" onclick="setBeDisplay('unit')"
               style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
               &#163;/unit
             </button>
-            <button id="be-toggle-annual" onclick="setBeDisplay('annual')"
+            <button id="be-toggle-annual-b" onclick="setBeDisplay('annual')"
               style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
               &#163;/yr per patient
             </button>
           </div>
-          <div id="thr-breakeven-cards" style="margin-bottom:20px;"></div>
-          <div id="thr-breakeven-by-year"></div>
+          <div id="thr-breakeven-cards-b" style="margin-bottom:20px;"></div>
+          <div id="thr-breakeven-by-year-b"></div>
 
           <!-- Risk tolerance inverse -->
-          <div id="thr-risk-section" style="display:none;">
+          <div id="thr-risk-section-b" style="display:none;">
             <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;">
               Prob &gt; Threshold = X% &nbsp;<span style="font-weight:400;color:var(--ink4);font-size:11px;">(Inverse — risk tolerance approach)</span>
             </div>
@@ -573,11 +573,11 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
             <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
               <div class="field" style="margin:0;">
                 <label style="font-size:10px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:4px;">Risk Tolerance (%)</label>
-                <input type="number" id="psa-risk-inp" value="10" min="1" max="50" step="1"
+                <input type="number" id="psa-risk-inp-b" value="10" min="1" max="50" step="1"
                   style="width:90px;height:34px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:#fffef7;color:var(--ink);font-family:var(--mono);font-size:13px;outline:none;"
                   oninput="_riskDebounced()"/>
               </div>
-              <div id="thr-risk-result" style="display:none;"></div>
+              <div id="thr-risk-result-b" style="display:none;"></div>
             </div>
           </div>
 
