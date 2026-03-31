@@ -2755,35 +2755,28 @@ function renderThresholdSection(){
     if(npCost>0){
       // Compute breakeven for every stored percentile using worst annual year
       // Also compute from annRaw for percentiles not in annStats
-      var pctList=[
-        {pct:'P5',  val:worstP50>0?null:null, cumVal:SIM.p5,  col:'#10b981', badge:'Lower bound'},
-        {pct:'P25', val:null, cumVal:SIM.p25, col:'#34d399', badge:''},
-        {pct:'P50', val:worstP50, cumVal:SIM.p50, col:'#0d7a5f', badge:'Median — Balanced'},
-        {pct:'P75', val:null, cumVal:SIM.p75, col:'#f59e0b', badge:''},
-        {pct:'P80', val:null, cumVal:SIM.p80, col:'#f97316', badge:''},
-        {pct:'P90', val:null, cumVal:SIM.p90, col:'#ef4444', badge:''},
-        {pct:'P95', val:worstP95, cumVal:SIM.p95, col:'#be123c', badge:'Conservative — MEA anchor'},
-        {pct:'Mean',val:null, cumVal:SIM.mean, col:'#3b82f6', badge:'Expected value'}
-      ];
-
-      // Fill in worst-year values from annRaw for all percentiles
+      // Build percentile list using annStats (worst year) + annRaw for extra pcts
+      var worstAnn=SIM.annStats&&(SIM.annStats[worstYearIdx]||SIM.annStats[String(worstYearIdx)])||{};
       var worstRaw=SIM.annRaw&&(SIM.annRaw[worstYearIdx]||SIM.annRaw[String(worstYearIdx)]);
-      var sortedWR=worstRaw?worstRaw.slice().sort(function(a,b){return a-b;}):null;
-      function pcFromArr(arr,p){
-        if(!arr||!arr.length) return 0;
-        var idx=(p/100)*(arr.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);
-        return lo===hi?arr[lo]:arr[lo]+(arr[hi]-arr[lo])*(idx-lo);
+      var sortedWR=worstRaw&&worstRaw.length?worstRaw.slice().sort(function(a,b){return a-b;}):null;
+      function pcWR(p){
+        if(!sortedWR) return 0;
+        var idx=(p/100)*(sortedWR.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);
+        return lo===hi?sortedWR[lo]:sortedWR[lo]+(sortedWR[hi]-sortedWR[lo])*(idx-lo);
       }
-      var worstMeanVal=worstRaw?worstRaw.reduce(function(a,b){return a+b;},0)/worstRaw.length:0;
-
-      pctList[0].val=sortedWR?pcFromArr(sortedWR,5):0;   // P5
-      pctList[1].val=sortedWR?pcFromArr(sortedWR,25):0;  // P25
-      // P50 already set to worstP50
-      pctList[3].val=sortedWR?pcFromArr(sortedWR,75):0;  // P75
-      pctList[4].val=sortedWR?pcFromArr(sortedWR,80):0;  // P80
-      pctList[5].val=sortedWR?pcFromArr(sortedWR,90):0;  // P90
-      // P95 already set to worstP95
-      pctList[7].val=worstMeanVal;                        // Mean
+      var worstMeanVal=sortedWR?sortedWR.reduce(function(a,b){return a+b;},0)/sortedWR.length:(worstAnn.mean||0);
+      // Use annStats values where available, annRaw for P80/P90
+      var pctList=[
+        {pct:'P5',  val:worstAnn.p5  ||pcWR(5),  col:'#10b981', badge:'Lower bound (5% of simulations below this)'},
+        {pct:'P25', val:worstAnn.p25 ||pcWR(25), col:'#34d399', badge:''},
+        {pct:'P50', val:worstAnn.p50 ||worstP50, col:'#0d7a5f', badge:'Median — Balanced'},
+        {pct:'P75', val:worstAnn.p75 ||pcWR(75), col:'#f59e0b', badge:''},
+        {pct:'P80', val:pcWR(80),                col:'#f97316', badge:''},
+        {pct:'P90', val:pcWR(90),                col:'#ef4444', badge:''},
+        {pct:'P95', val:worstAnn.p95 ||worstP95, col:'#be123c', badge:'Conservative — MEA anchor'},
+        {pct:'Mean',val:worstMeanVal,             col:'#3b82f6', badge:'Expected value'}
+      ];
+      // worstMeanVal already set above
 
       // Risk tolerance row (inverse)
       var riskInpEl=$('psa-risk-inp');
