@@ -540,16 +540,30 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
           <!-- Breakeven section -->
           <div style="margin-bottom:8px;">
             <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price Analysis</div>
-            <div style="font-size:11px;color:var(--ink4);line-height:1.6;margin-bottom:14px;">
-              At what list price would the budget impact stay within the threshold?
-              Three approaches — each answering a different commercial question.
+            <div style="font-size:11px;color:var(--ink4);line-height:1.6;">
+              At what price does the annual budget impact stay within the threshold?
             </div>
           </div>
-          <div id="thr-breakeven-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+            <span style="font-size:10px;font-weight:600;color:var(--ink4);">Show price as:</span>
+            <button id="be-toggle-pack" onclick="setBeDisplay('pack')"
+              style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--teal);font-size:10px;font-weight:700;cursor:pointer;background:var(--teal);color:#fff;transition:all .2s;">
+              &#163;/pack
+            </button>
+            <button id="be-toggle-unit" onclick="setBeDisplay('unit')"
+              style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+              &#163;/unit
+            </button>
+            <button id="be-toggle-annual" onclick="setBeDisplay('annual')"
+              style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+              &#163;/yr per patient
+            </button>
+          </div>
+          <div id="thr-breakeven-cards" style="margin-bottom:20px;"></div>
           <div id="thr-breakeven-by-year"></div>
 
           <!-- Risk tolerance inverse -->
-          <div id="thr-risk-section" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;">
+          <div id="thr-risk-section" style="display:none;">
             <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;">
               Prob &gt; Threshold = X% &nbsp;<span style="font-weight:400;color:var(--ink4);font-size:11px;">(Inverse — risk tolerance approach)</span>
             </div>
@@ -817,16 +831,30 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
           <!-- Breakeven section -->
           <div style="margin-bottom:8px;">
             <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price Analysis</div>
-            <div style="font-size:11px;color:var(--ink4);line-height:1.6;margin-bottom:14px;">
-              At what list price would the budget impact stay within the threshold?
-              Three approaches — each answering a different commercial question.
+            <div style="font-size:11px;color:var(--ink4);line-height:1.6;">
+              At what price does the annual budget impact stay within the threshold?
             </div>
           </div>
-          <div id="thr-breakeven-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:14px;flex-wrap:wrap;">
+            <span style="font-size:10px;font-weight:600;color:var(--ink4);">Show price as:</span>
+            <button id="be-toggle-pack" onclick="setBeDisplay('pack')"
+              style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--teal);font-size:10px;font-weight:700;cursor:pointer;background:var(--teal);color:#fff;transition:all .2s;">
+              &#163;/pack
+            </button>
+            <button id="be-toggle-unit" onclick="setBeDisplay('unit')"
+              style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+              &#163;/unit
+            </button>
+            <button id="be-toggle-annual" onclick="setBeDisplay('annual')"
+              style="padding:4px 12px;border-radius:99px;border:1.5px solid var(--border);font-size:10px;font-weight:700;cursor:pointer;background:var(--surface2);color:var(--ink4);transition:all .2s;">
+              &#163;/yr per patient
+            </button>
+          </div>
+          <div id="thr-breakeven-cards" style="margin-bottom:20px;"></div>
           <div id="thr-breakeven-by-year"></div>
 
           <!-- Risk tolerance inverse -->
-          <div id="thr-risk-section" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;">
+          <div id="thr-risk-section" style="display:none;">
             <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px;">
               Prob &gt; Threshold = X% &nbsp;<span style="font-weight:400;color:var(--ink4);font-size:11px;">(Inverse — risk tolerance approach)</span>
             </div>
@@ -2632,6 +2660,22 @@ function debounce(fn,ms){
 }
 var _thrDebounced=debounce(function(){renderThresholdSection();},400);
 var _riskDebounced=debounce(function(){renderThresholdSection();},400);
+
+// ── Breakeven display mode ────────────────────────────────────────
+var _beDisplay='pack';
+function setBeDisplay(mode){
+  _beDisplay=mode;
+  ['pack','unit','annual'].forEach(function(m){
+    var btn=$('be-toggle-'+m);
+    if(!btn) return;
+    var active=(m===mode);
+    btn.style.background=active?'var(--teal)':'var(--surface2)';
+    btn.style.color=active?'#fff':'var(--ink4)';
+    btn.style.borderColor=active?'var(--teal)':'var(--border)';
+  });
+  renderThresholdSection();
+}
+
 function renderThresholdSection(){
   if(!SIM||!SIM.data||SIM.data.length===0) return;
   var sec=$('threshold-psa-section');
@@ -2695,239 +2739,129 @@ function renderThresholdSection(){
     +'</tr></thead><tbody>'+probRows+'</tbody></table>';
   var el=$('thr-prob-table');if(el) el.innerHTML=tbl;
 
-  // ── Breakeven cards ────────────────────────────────────────
-  // Threshold is per year — use the WORST (highest NBI) year's percentile
-  // NBI scales proportionally with drug price, so:
-  //   breakeven_price = list_price × (threshold / worst_annual_NBI_at_percentile)
-  if(npCost>0){
-    // Compute worst-year value for each percentile across forecast years
-    // annStats has p5,p25,p50,p75,p95 per year; use max across years as binding constraint
-    function worstPct(key, fallback){
-      var v=0;
-      for(var wy=0;wy<yrs;wy++){
-        var was=annData&&annData[wy];
-        if(was&&was[key]>v) v=was[key];
-      }
-      return v>0?v:(fallback||1);
+  // ── Compute worst year values (needed for breakeven) ────────
+    var worstP50=0, worstP95=0, worstYearIdx=0, worstMed2=0;
+    for(var wy3=0;wy3<yrs;wy3++){
+      var wasW=annData&&annData[wy3];
+      if(!wasW) continue;
+      if(wasW.p50>worstP50) worstP50=wasW.p50;
+      if(wasW.p95>worstP95) worstP95=wasW.p95;
+      if(wasW.p50>worstMed2){worstMed2=wasW.p50;worstYearIdx=wy3;}
     }
-    var worstP5  = worstPct('p5',  SIM.p5);
-    var worstP25 = worstPct('p25', SIM.p25);
-    var worstP50 = worstPct('p50', SIM.p50);
-    var worstP75 = worstPct('p75', SIM.p75);
-    var worstP95 = worstPct('p95', SIM.p95);
-    // P80 and P90 only in cumulative SIM — use proportional interpolation from annual
-    // or fall back to cumulative values scaled by worst-year ratio
-    var annRatio=worstP95>0&&SIM.p95>0?worstP95/SIM.p95:1;
-    var worstP80 = (SIM.p80||0)*annRatio;
-    var worstP90 = (SIM.p90||0)*annRatio;
+    if(worstP50<=0) worstP50=SIM.p50||1;
+    if(worstP95<=0) worstP95=SIM.p95||1;
 
-    var beMedian = npCost*(thrVal/worstP50);
-    var be95th   = npCost*(thrVal/worstP95);
+  // ── Breakeven — all percentiles table ────────────────────────
+    if(npCost>0){
+      // Compute breakeven for every stored percentile using worst annual year
+      // Also compute from annRaw for percentiles not in annStats
+      var pctList=[
+        {pct:'P5',  val:worstP50>0?null:null, cumVal:SIM.p5,  col:'#10b981', badge:'Lower bound'},
+        {pct:'P25', val:null, cumVal:SIM.p25, col:'#34d399', badge:''},
+        {pct:'P50', val:worstP50, cumVal:SIM.p50, col:'#0d7a5f', badge:'Median — Balanced'},
+        {pct:'P75', val:null, cumVal:SIM.p75, col:'#f59e0b', badge:''},
+        {pct:'P80', val:null, cumVal:SIM.p80, col:'#f97316', badge:''},
+        {pct:'P90', val:null, cumVal:SIM.p90, col:'#ef4444', badge:''},
+        {pct:'P95', val:worstP95, cumVal:SIM.p95, col:'#be123c', badge:'Conservative — MEA anchor'},
+        {pct:'Mean',val:null, cumVal:SIM.mean, col:'#3b82f6', badge:'Expected value'}
+      ];
 
-    // Risk tolerance: find price where % of simulations breaching threshold = riskPct%
-    // Uses worst annual year raw data
-    var riskInpEl=$('psa-risk-inp');
-    var riskPct=parseFloat((riskInpEl&&riskInpEl.value)||'10')||10;
-    var beRisk=npCost;
-    // Find worst year raw data (highest median year)
-    var worstYearIdx=0;
-    var worstMed=0;
-    for(var wy2=0;wy2<yrs;wy2++){
-      var was2=annData&&annData[wy2];
-      if(was2&&was2.p50>worstMed){worstMed=was2.p50;worstYearIdx=wy2;}
-    }
-    var rawWorst=SIM.annRaw&&(SIM.annRaw[worstYearIdx]||SIM.annRaw[String(worstYearIdx)]);
-    if(rawWorst&&rawWorst.length){
-      // Sort the worst year data
-      var sortedWorst=rawWorst.slice().sort(function(a,b){return a-b;});
-      // Find NBI value at (1 - riskPct/100) percentile
-      // If riskPct% of sims breach threshold, then (100-riskPct)% are below threshold
-      // Breakeven = price × threshold / NBI_at_(1-riskPct)_percentile
-      var targetIdx=Math.floor((1-riskPct/100)*sortedWorst.length);
-      targetIdx=Math.min(Math.max(0,targetIdx),sortedWorst.length-1);
-      var targetNBI=sortedWorst[targetIdx];
-      if(targetNBI>0) beRisk=npCost*(thrVal/targetNBI);
-    } else {
-      // Fallback: use percentile approach on sorted cumulative data
-      var sortedAll=SIM.data; // already sorted
-      var tIdx=Math.floor((1-riskPct/100)*sortedAll.length);
-      var tNBI=sortedAll[Math.min(tIdx,sortedAll.length-1)];
-      if(tNBI>0) beRisk=npCost*(thrVal/tNBI);
-    }
-
-    var cards=[
-      {
-        label:'1. Median (P50) Breakeven',
-        formula:'List Price × (Threshold / P50 BIA) = £'+npCost.toFixed(2)+' × (£'+thrM+'M / '+fmtM(worstP50)+')',
-        price:beMedian,
-        discount:((npCost-beMedian)/npCost*100),
-        desc:'The price at which half of simulations stay under the annual threshold. Uses the P50 of the annual BIA distribution (binding year). More robust than mean when distribution is skewed.',
-        col:'#0d7a5f',
-        badge:'1 — Balanced'
-      },
-      {
-        label:'2. 95th Percentile Breakeven',
-        formula:'List Price × (Threshold / P95 BIA) = £'+npCost.toFixed(2)+' × (£'+thrM+'M / '+fmtM(worstP95)+')',
-        price:be95th,
-        discount:((npCost-be95th)/npCost*100),
-        desc:'The price at which even the worst-case scenario (top 5%) stays under threshold. This is what a risk-averse payer wants — near-certainty of staying affordable. Drives MEA negotiations.',
-        col:'#be123c',
-        badge:'2 — Conservative (Recommended)'
-      },
-      {
-        label:'3. Prob > Threshold = '+riskPct+'% — Inverse',
-        formula:'Find price where Prob(annual BIA > £'+thrM+'M) ≤ '+riskPct+'%',
-        price:beRisk,
-        discount:((npCost-beRisk)/npCost*100),
-        desc:'Rather than fixing a percentile, asks: at what price does the probability of breaching the annual threshold drop to '+riskPct+'%? Directly links pricing to the payer’s risk tolerance.',
-        col:'#9333ea',
-        badge:'3 — Risk-Based (Inverse)'
+      // Fill in worst-year values from annRaw for all percentiles
+      var worstRaw=SIM.annRaw&&(SIM.annRaw[worstYearIdx]||SIM.annRaw[String(worstYearIdx)]);
+      var sortedWR=worstRaw?worstRaw.slice().sort(function(a,b){return a-b;}):null;
+      function pcFromArr(arr,p){
+        if(!arr||!arr.length) return 0;
+        var idx=(p/100)*(arr.length-1),lo=Math.floor(idx),hi=Math.ceil(idx);
+        return lo===hi?arr[lo]:arr[lo]+(arr[hi]-arr[lo])*(idx-lo);
       }
-    ];
+      var worstMeanVal=worstRaw?worstRaw.reduce(function(a,b){return a+b;},0)/worstRaw.length:0;
 
-    var cardsHtml=cards.map(function(c){
-      var disc=c.discount;
-      var discStr, discCol;
-      if(disc>0){
-        // Breakeven BELOW list price — discount required
-        discStr='&#9660; '+disc.toFixed(1)+'% discount required';
-        discCol='var(--red)';
-      } else {
-        // Breakeven ABOVE list price — headroom available
-        discStr='&#9650; '+Math.abs(disc).toFixed(1)+'% headroom above list price';
-        discCol='var(--teal)';
+      pctList[0].val=sortedWR?pcFromArr(sortedWR,5):0;   // P5
+      pctList[1].val=sortedWR?pcFromArr(sortedWR,25):0;  // P25
+      // P50 already set to worstP50
+      pctList[3].val=sortedWR?pcFromArr(sortedWR,75):0;  // P75
+      pctList[4].val=sortedWR?pcFromArr(sortedWR,80):0;  // P80
+      pctList[5].val=sortedWR?pcFromArr(sortedWR,90):0;  // P90
+      // P95 already set to worstP95
+      pctList[7].val=worstMeanVal;                        // Mean
+
+      // Risk tolerance row (inverse)
+      var riskInpEl=$('psa-risk-inp');
+      var riskPct=parseFloat((riskInpEl&&riskInpEl.value)||'10')||10;
+      var beRisk=npCost;
+      var packRisk=listPackPrice;
+      if(sortedWR&&sortedWR.length){
+        var tIdx=Math.floor((1-riskPct/100)*sortedWR.length);
+        tIdx=Math.min(Math.max(0,tIdx),sortedWR.length-1);
+        var tNBI=sortedWR[tIdx];
+        if(tNBI>0){beRisk=npCost*(thrVal/tNBI);packRisk=listPackPrice>0?listPackPrice*(thrVal/tNBI):0;}
       }
-      // Compute pack price for this breakeven
-      var bePackPrice=listPackPrice>0?listPackPrice*(c.price/npCost):0;
-      var beUnitPrice=packUnits>0?bePackPrice/packUnits:0;
-      var packLine=listPackPrice>0
-        ?('<div style="margin-top:6px;font-size:10px;color:var(--ink4);line-height:1.8;">'
-           +'<span style="color:var(--ink3);font-weight:600;">Pack:</span> '
-           +'<span style="font-family:var(--mono);font-weight:700;color:'+c.col+';">£'+bePackPrice.toFixed(2)+'/pack</span>'
-           +' &nbsp;&bull;&nbsp; <span style="color:var(--ink3);font-weight:600;">Unit:</span> '
-           +'<span style="font-family:var(--mono);font-weight:700;color:'+c.col+';">£'+beUnitPrice.toFixed(4)+'/'+( npTx.unit||'unit')+'</span>'
-           +'<br><span style="color:var(--ink3);font-weight:600;">Annual cost/pt:</span> '
-           +'<span style="font-family:var(--mono);">'+fmtM(c.price)+'/yr</span>'
-           +'</div>')
-        :'';
-      return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;border-top:3px solid '+c.col+';">'
-        +'<div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:'+c.col+';margin-bottom:2px;">'+c.badge+'</div>'
-        +'<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;line-height:1.3;">'+c.label+'</div>'
-        +'<div style="font-family:var(--mono);font-size:10px;color:var(--ink5);margin-bottom:10px;background:var(--surface2);padding:4px 8px;border-radius:4px;">'+c.formula+'</div>'
-        +(listPackPrice>0
-          ?('<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;">'
-            +'<div><div style="font-size:9px;color:var(--ink5);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Pack Price</div>'
-            +'<div style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;">£'+bePackPrice.toFixed(2)+'</div>'
-            +'<div style="font-size:9px;color:var(--ink5);">per pack</div></div>'
-            +'<div><div style="font-size:9px;color:var(--ink5);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-bottom:2px;">Unit Price</div>'
-            +'<div style="font-family:var(--mono);font-size:18px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;">£'+beUnitPrice.toFixed(4)+'</div>'
-            +'<div style="font-size:9px;color:var(--ink5);">per '+(npTx.unit||'unit')+'</div></div>'
-            +'</div>'
-            +'<div style="font-size:10px;color:var(--ink4);margin-bottom:4px;">Annual cost/pt: <span style="font-family:var(--mono);font-weight:600;">'+fmtM(c.price)+'/yr</span></div>')
-          :('<div style="font-family:var(--mono);font-size:22px;font-weight:800;color:'+c.col+';letter-spacing:-.4px;margin-bottom:4px;">'+fmtM(c.price)+'/yr</div>'))
-        +'<div style="font-size:11px;font-weight:600;color:'+discCol+';margin-top:4px;margin-bottom:8px;">'+discStr+'</div>'
-        +'<div style="font-size:10px;color:var(--ink4);line-height:1.5;">'+c.desc+'</div>'
-        +'</div>';
-    }).join('');
 
-    var el2=$('thr-breakeven-cards');if(el2) el2.innerHTML=cardsHtml;
-
-    // ── Per-year breakeven table ────────────────────────────────
-    var el3=$('thr-breakeven-by-year');
-    if(el3&&npCost>0){
-      var yrRows='';
-      var ss2=cfg._S||S;
-      var launchYr=ss2.launchYear||2026;
-      for(var wy=0;wy<yrs;wy++){
-        var wasY=annData&&annData[wy];
-        if(!wasY) continue;
-        var rawY=SIM.annRaw&&(SIM.annRaw[wy]||SIM.annRaw[String(wy)]);
-
-        // P50 and P95 for this year
-        var yP50=wasY.p50||0;
-        var yP95=wasY.p95||0;
-
-        // P50 breakeven
-        var beP50y=yP50>0?npCost*(thrVal/yP50):0;
-        var packP50y=listPackPrice>0?listPackPrice*(thrVal/yP50):0;
-        var discP50y=yP50>0?((npCost-beP50y)/npCost*100):0;
-
-        // P95 breakeven
-        var beP95y=yP95>0?npCost*(thrVal/yP95):0;
-        var packP95y=listPackPrice>0?listPackPrice*(thrVal/yP95):0;
-        var discP95y=yP95>0?((npCost-beP95y)/npCost*100):0;
-
-        // Risk tolerance breakeven for this year
-        var beRiskY=npCost;
-        var packRiskY=listPackPrice;
-        if(rawY&&rawY.length){
-          var sortedY=rawY.slice().sort(function(a,b){return a-b;});
-          var tIdx=Math.floor((1-riskPct/100)*sortedY.length);
-          tIdx=Math.min(Math.max(0,tIdx),sortedY.length-1);
-          var tNBIy=sortedY[tIdx];
-          if(tNBIy>0){
-            beRiskY=npCost*(thrVal/tNBIy);
-            packRiskY=listPackPrice>0?listPackPrice*(thrVal/tNBIy):0;
-          }
-        }
-
-        // Format: show pack price primary, headroom/discount secondary
-        function fmtBE(pack,listPack,annCostBE){
-          if(listPack>0){
-            var disc=((listPack-pack)/listPack*100);
-            var discTxt=disc>0?'↓'+disc.toFixed(0)+'% disc.':'↑'+Math.abs(disc).toFixed(0)+'% headroom';
-            var discCol=disc>0?'var(--red)':'var(--teal)';
-            var unitPx=packUnits>0?pack/packUnits:0;
-            return '<span style="font-family:var(--mono);font-weight:700;font-size:11px;">£'+pack.toFixed(2)+'/pk</span>'
-              +'<br><span style="font-family:var(--mono);font-size:9px;color:var(--ink4);">£'+unitPx.toFixed(4)+'/'+(npTx.unit||'unit')+'</span>'
-              +'<br><span style="font-size:9px;color:'+discCol+';font-weight:600;">'+discTxt+'</span>';
-          }
-          return '<span style="font-family:var(--mono);font-size:11px;">'+fmtM(annCostBE)+'/yr</span>';
-        }
-
-        // Prob breaching threshold in this year
-        var exceedY=0;
-        if(rawY&&rawY.length){
-          rawY.forEach(function(v){if(v>thrVal)exceedY++;});
-        }
-        var probY=(exceedY/(rawY&&rawY.length||1)*100);
-        var probCol=probY>=50?'var(--red)':probY>=20?'var(--gold-mid)':'var(--ink4)';
-
-        yrRows+='<tr class="dr">'
-          +'<td class="rl" style="font-weight:700;color:var(--ink);">Y'+(wy+1)
-            +'<span style="font-weight:400;color:var(--ink4);font-size:9px;"> ('+(launchYr+wy)+')</span></td>'
-          +'<td class="tc" style="font-size:10px;color:var(--ink3);">'
-            +'<div>'+fmtM(yP50)+'</div>'
-            +'<div style="font-size:9px;color:var(--ink5);">P95: '+fmtM(yP95)+'</div></td>'
-          +'<td class="tc">'+fmtBE(packP50y,listPackPrice,beP50y)+'</td>'
-          +'<td class="tc">'+fmtBE(packP95y,listPackPrice,beP95y)+'</td>'
-          +'<td class="tc">'+fmtBE(packRiskY,listPackPrice,beRiskY)+'</td>'
-          +'<td class="tc"><span style="font-weight:700;font-family:var(--mono);color:'+probCol+';">'+probY.toFixed(1)+'%</span></td>'
+      // Build table rows
+      var pRows='';
+      pctList.forEach(function(p){
+        if(!p.val||p.val<=0) return;
+        var bePack=listPackPrice>0?listPackPrice*(thrVal/p.val):0;
+        var beUnit=bePack>0&&packUnits>0?bePack/packUnits:0;
+        var beAnn=npCost*(thrVal/p.val);
+        var disc=listPackPrice>0?((listPackPrice-bePack)/listPackPrice*100):((npCost-beAnn)/npCost*100);
+        var headroom=disc<0;
+        var discTxt=headroom?('↑'+Math.abs(disc).toFixed(1)+'% headroom'):('↓'+disc.toFixed(1)+'% discount');
+        var discCol=headroom?'var(--teal)':'var(--red)';
+        pRows+='<tr class="dr">'
+          +'<td class="rl">'
+            +'<span style="font-family:var(--mono);font-weight:800;color:'+p.col+';font-size:12px;">'+p.pct+'</span>'
+            +(p.badge?'<br><span style="font-size:9px;color:var(--ink4);">'+p.badge+'</span>':'')
+          +'</td>'
+          +'<td class="tc"><span style="font-family:var(--mono);font-size:11px;color:var(--ink3);">'+fmtM(p.val)+'</span></td>'
+          +(listPackPrice>0
+            ?(_beDisplay==='unit'
+              ?'<td class="tc" colspan="2">'              +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:'+p.col+';">£'+beUnit.toFixed(4)+'</div>'              +'<div style="font-size:9px;color:var(--ink5);">per '+(npTx.unit||'unit')+'&nbsp;&nbsp;(£'+bePack.toFixed(2)+'/pack)</div></td>'              :_beDisplay==='annual'              ?'<td class="tc" colspan="2">'              +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:'+p.col+';">'+fmtM(beAnn)+'</div>'              +'<div style="font-size:9px;color:var(--ink5);">per patient/yr&nbsp;&nbsp;(£'+bePack.toFixed(2)+'/pack)</div></td>'              :'<td class="tc" colspan="2">'              +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:'+p.col+';">£'+bePack.toFixed(2)+'</div>'              +'<div style="font-size:9px;color:var(--ink5);">per pack&nbsp;&nbsp;(£'+beUnit.toFixed(4)+'/'+(npTx.unit||'unit')+')</div></td>')            :'<td class="tc" colspan="2">'            +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:'+p.col+';">'+fmtM(beAnn)+'/yr</div></td>')
++'<td class="tc"><span style="font-size:11px;font-weight:700;color:'+discCol+';">'+discTxt+'</span></td>'
           +'</tr>';
-      }
+      });
 
-      el3.innerHTML='<div style="margin-top:20px;">'
-        +'<div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price — By Year</div>'
+      // Risk tolerance row
+      var riskDisc=listPackPrice>0?((listPackPrice-packRisk)/listPackPrice*100):((npCost-beRisk)/npCost*100);
+      var riskHeadroom=riskDisc<0;
+      var riskDiscTxt=riskHeadroom?('↑'+Math.abs(riskDisc).toFixed(1)+'% headroom'):('↓'+riskDisc.toFixed(1)+'% discount');
+      var riskDiscCol=riskHeadroom?'var(--teal)':'var(--red)';
+      var riskUnitP=packRisk>0&&packUnits>0?packRisk/packUnits:0;
+      pRows+='<tr class="dr" style="background:rgba(147,51,234,.04);border-top:2px solid rgba(147,51,234,.2);">'
+        +'<td class="rl">'
+          +'<span style="font-family:var(--mono);font-weight:800;color:#9333ea;font-size:12px;">Risk='+riskPct+'%</span>'
+          +'<br><span style="font-size:9px;color:var(--ink4);">Prob breach = '+riskPct+'%</span>'
+        +'</td>'
+        +'<td class="tc"><span style="font-size:9px;color:var(--ink4);">Inverse approach</span></td>'
+        +(listPackPrice>0
+          ?(_beDisplay==='unit'
+            ?'<td class="tc" colspan="2">'            +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:#9333ea;">£'+riskUnitP.toFixed(4)+'</div>'            +'<div style="font-size:9px;color:var(--ink5);">per '+(npTx.unit||'unit')+'&nbsp;&nbsp;(£'+packRisk.toFixed(2)+'/pack)</div></td>'            :_beDisplay==='annual'            ?'<td class="tc" colspan="2">'            +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:#9333ea;">'+fmtM(beRisk)+'</div>'            +'<div style="font-size:9px;color:var(--ink5);">per patient/yr&nbsp;&nbsp;(£'+packRisk.toFixed(2)+'/pack)</div></td>'            :'<td class="tc" colspan="2">'            +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:#9333ea;">£'+packRisk.toFixed(2)+'</div>'            +'<div style="font-size:9px;color:var(--ink5);">per pack&nbsp;&nbsp;(£'+riskUnitP.toFixed(4)+'/'+(npTx.unit||'unit')+')</div></td>')          :'<td class="tc" colspan="2">'          +'<div style="font-family:var(--mono);font-weight:800;font-size:15px;color:#9333ea;">'+fmtM(beRisk)+'/yr</div></td>')
++'<td class="tc"><span style="font-size:11px;font-weight:700;color:'+riskDiscCol+';">'+riskDiscTxt+'</span></td>'
+        +'</tr>';
+
+      var tableHtml='<div style="margin-bottom:20px;">'
+        +'<div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:4px;">Breakeven Price — By Percentile</div>'
         +'<div style="font-size:11px;color:var(--ink4);margin-bottom:12px;line-height:1.6;">'
-          +'Each year\u2019s breakeven is computed independently using that year\u2019s annual NBI distribution. '
-          +'The binding constraint is the year with the lowest breakeven price (highest NBI). '
-          +'Pack price shown at £'+thrM+'M/yr threshold.'
+          +'At what price does the budget impact stay within £'+thrM+'M in the binding year (Y'+(worstYearIdx+1)+')? '
+          +'Each row shows the breakeven at a different confidence level.'
         +'</div>'
         +'<table class="btbl"><thead><tr>'
-          +'<th>Year</th>'
-          +'<th>Annual NBI<br><span style="font-weight:400;font-size:9px;">(P50 / P95)</span></th>'
-          +'<th style="color:#0d7a5f;">P50 Breakeven<br><span style="font-weight:400;font-size:9px;">Half breach threshold</span></th>'
-          +'<th style="color:#be123c;">P95 Breakeven<br><span style="font-weight:400;font-size:9px;">Conservative (MEA)</span></th>'
-          +'<th style="color:#9333ea;">Risk='+riskPct+'% Breakeven<br><span style="font-weight:400;font-size:9px;">Inverse approach</span></th>'
-          +'<th>Prob&gt;£'+thrM+'M</th>'
-        +'</tr></thead><tbody>'+yrRows+'</tbody></table>'
+          +'<th>Percentile</th>'
+          +'<th>Annual NBI<br><span style="font-weight:400;font-size:9px;">Binding year worst-case</span></th>'
+          +(listPackPrice>0
+            ?(_beDisplay==='unit'?'<th colspan="2">Unit Price<br><span style="font-weight:400;font-size:9px;">£/'+(npTx.unit||'unit')+' at threshold</span></th>':_beDisplay==='annual'?'<th colspan="2">Annual Cost/pt<br><span style="font-weight:400;font-size:9px;">£/yr at threshold</span></th>':'<th colspan="2">Pack Price<br><span style="font-weight:400;font-size:9px;">£/pack at threshold</span></th>')
+            :'<th colspan="2">Annual Cost/pt<br><span style="font-weight:400;font-size:9px;">at threshold</span></th>')
+          +'<th>vs List Price</th>'
+          +'</tr></thead><tbody>'+pRows+'</tbody></table>'
         +'<div style="font-size:9px;color:var(--ink5);margin-top:8px;padding:6px 10px;background:var(--surface2);border-radius:4px;">'
-          +'&#8505; Breakeven = List Price × (Threshold / Annual NBI at percentile). '
-          +'Headroom means current price is affordable in that year. '
-          +'Discount % = required reduction from list price to stay within threshold.'
+          +'ℹ Breakeven = List Price × (Threshold / Annual NBI at percentile). '
+          +'Using Y'+(worstYearIdx+1)+' as binding year (highest expected NBI). '
+          +'List price: £'+listPackPrice.toFixed(2)+'/pack (£'+listUnitPrice.toFixed(4)+'/'+(npTx.unit||'unit')+').'
         +'</div>'
         +'</div>';
-    }
+
+      var beEl=$('thr-breakeven-cards');
+      if(beEl) beEl.innerHTML=tableHtml;
 
     // thr-risk-result removed (now shown in card 3)
   }
