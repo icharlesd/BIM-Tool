@@ -335,7 +335,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 @keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(13,122,95,.3)}50%{box-shadow:0 0 0 6px rgba(13,122,95,.25),0 4px 14px rgba(13,122,95,.3)}}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#be123c;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774978489</div>
+<body><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774978714</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -882,7 +882,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         </div>
         <div id="psa-threshold-section"></div>
         <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
-        <button id="be-scroll-btn" onclick="var s=document.getElementById('threshold-psa-section');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
+        <button id="be-scroll-btn" onclick="var r=document.getElementById('psa-r');var s=document.getElementById('threshold-psa-section');if(r&&s){var t=s.getBoundingClientRect().top-r.getBoundingClientRect().top+r.scrollTop-16;r.scrollTo({top:Math.max(0,t),behavior:'smooth'});}" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
         <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
       </div>
     </div>
@@ -2684,11 +2684,13 @@ function renderThresholdSection(){
   var sec=$('threshold-psa-section');
   if(sec) sec.style.display='block';
   // Ensure section scrolls into view first time
-  // Scroll threshold section into view
-  if(sec){
+  // Scroll psa-r to show threshold section
+  var psaR=document.getElementById('psa-r');
+  if(psaR&&sec){
     setTimeout(function(){
-      sec.scrollIntoView({behavior:'smooth',block:'start'});
-    },200);
+      var top=sec.getBoundingClientRect().top-psaR.getBoundingClientRect().top+psaR.scrollTop-16;
+      psaR.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+    },250);
   }
 
   var thrInp=$('psa-threshold-inp');
