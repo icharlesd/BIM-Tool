@@ -137,7 +137,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 
 /* PAGES */
 .page{display:none;flex-direction:column;overflow:hidden;}
-.page.active{display:flex;height:calc(100vh - 136px);}
+.page.active{display:flex;height:calc(100vh - 136px);overflow-y:auto;}
 .inner{flex:1;overflow-y:auto;padding:22px 24px;max-width:1220px;width:100%;margin:0 auto;}
 
 /* VALIDATION */
@@ -200,11 +200,11 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 #run-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none;}
 
 /* PSA LAYOUT */
-.psa-layout{display:grid;grid-template-columns:380px 1fr;flex:1;overflow:hidden;min-height:0;}
-#psa-l{background:var(--surface2);border-right:1px solid var(--border);padding:20px;overflow-y:auto;}
+.psa-layout{display:grid;grid-template-columns:380px 1fr;align-items:start;min-height:100%;}
+#psa-l{background:var(--surface2);border-right:1px solid var(--border);padding:20px;overflow-y:auto;height:calc(100vh - 136px);position:sticky;top:0;}
 #psa-l h2{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-.3px;margin-bottom:2px;}
 .psub{font-size:11px;color:var(--ink5);margin-bottom:8px;}
-#psa-r{background:var(--bg);padding:22px;overflow-y:auto;}
+#psa-r{background:var(--bg);padding:22px;}
 
 /* DISTRIBUTION CARDS */
 .dc{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);border-top:3px solid var(--teal);box-shadow:var(--shadow-sm);margin-bottom:10px;overflow:hidden;}
@@ -335,7 +335,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 @keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(13,122,95,.3)}50%{box-shadow:0 0 0 6px rgba(13,122,95,.25),0 4px 14px rgba(13,122,95,.3)}}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774978714</div>
+<body><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -882,7 +882,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
         </div>
         <div id="psa-threshold-section"></div>
         <div id="binfo" style="font-size:9px;color:var(--ink5);margin-top:10px;line-height:1.6;"></div>
-        <button id="be-scroll-btn" onclick="var r=document.getElementById('psa-r');var s=document.getElementById('threshold-psa-section');if(r&&s){var t=s.getBoundingClientRect().top-r.getBoundingClientRect().top+r.scrollTop-16;r.scrollTo({top:Math.max(0,t),behavior:'smooth'});}" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
+        <button id="be-scroll-btn" onclick="var s=document.getElementById('threshold-psa-section');if(s)s.scrollIntoView({behavior:'smooth',block:'start'});" style="display:none;margin-top:10px;padding:6px 16px;background:var(--teal);color:#fff;border:none;border-radius:99px;font-size:10px;font-weight:700;cursor:pointer;width:100%;">&#9660;&nbsp; Threshold &amp; Breakeven Analysis</button>
         <div id="psa-footnote" style="font-size:9px;color:var(--ink5);margin-top:4px;"></div>
       </div>
     </div>
@@ -1235,6 +1235,7 @@ function updateCalcs(){
     sv('aft-tot-ms-y'+y,((up+totMs)*100).toFixed(2)+'%');
     var npPt=(D.expPts.np&&D.expPts.np[y])||0;
     sv('aft-np-pt-y'+y,fmtN(npPt.toFixed(0)));
+    sv('aft-exp-pool-y'+y,fmtN((D.expandedPop[y]||0).toFixed(1)));
     sv('aft-tot-pt-y'+y,fmtN(Math.round(npPt+S.comparators.reduce(function(s,c){return s+((D.expPts[c.id]&&D.expPts[c.id][y])||0);},0))));
   }
   var npTot=(D.expPts.np||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0);
@@ -1461,7 +1462,10 @@ function renderSubsTable(){
   h+='<tr class="tr"><td class="rl ind bold">Total</td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv" id="cb-tot-y'+i+'">—</span></td>';
   h+='<td></td></tr>';
-  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Adjusted Market Share After Launch (%)</td></tr>';
+  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Adjusted Market Share After Launch (% of expanded pool)</td></tr>'
+  +'<tr class="cr"><td class="rl ind">Expanded pool (base × (1+expansion))</td>'
+  +Array.from({length:yrs},function(_,i){return '<td class="tc"><span class="cv" id="aft-exp-pool-y'+i+'">—</span></td>';}).join('')
+  +'<td></td></tr>';
   h+='<tr class="cr"><td class="rl ind">'+esc(np)+' <span class="npb">New</span></td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv amb" id="aft-np-ms-y'+i+'">—</span></td>';
   h+='<td></td></tr>';
@@ -1473,7 +1477,7 @@ function renderSubsTable(){
   h+='<tr class="tr"><td class="rl ind bold">Total, %</td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv" id="aft-tot-ms-y'+i+'">—</span></td>';
   h+='<td></td></tr>';
-  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Market Share (No. of Patients) After Substitution</td></tr>';
+  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Market Share (No. of Patients) After Substitution (applied to expanded pool)</td></tr>';
   h+='<tr class="cr"><td class="rl ind">'+esc(np)+' <span class="npb">New</span></td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv amb" id="aft-np-pt-y'+i+'">—</span></td>';
   h+='<td class="tc"><span class="cv" id="aft-np-pt-tot">—</span></td></tr>';
@@ -2684,13 +2688,11 @@ function renderThresholdSection(){
   var sec=$('threshold-psa-section');
   if(sec) sec.style.display='block';
   // Ensure section scrolls into view first time
-  // Scroll psa-r to show threshold section
-  var psaR=document.getElementById('psa-r');
-  if(psaR&&sec){
+  // Scroll threshold section into view
+  if(sec){
     setTimeout(function(){
-      var top=sec.getBoundingClientRect().top-psaR.getBoundingClientRect().top+psaR.scrollTop-16;
-      psaR.scrollTo({top:Math.max(0,top),behavior:'smooth'});
-    },250);
+      sec.scrollIntoView({behavior:'smooth',block:'start'});
+    },200);
   }
 
   var thrInp=$('psa-threshold-inp');
