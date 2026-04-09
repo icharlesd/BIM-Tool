@@ -335,7 +335,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 @keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(13,122,95,.3)}50%{box-shadow:0 0 0 6px rgba(13,122,95,.25),0 4px 14px rgba(13,122,95,.3)}}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -1195,8 +1195,8 @@ function updateCalcs(){
   cascIds.forEach(function(id,i){sv(id,fmtN(Math.round(cascVals[i])));});
 
   // Patient volume
-  for(var y=0;y<yrs;y++) sv('vol-y'+y, fmtN(D.patVol[y].toFixed(2)));
-  sv('vol-tot', fmtN(D.patVol.slice(0,yrs).reduce(function(a,b){return a+b;},0).toFixed(2)));
+  for(var y=0;y<yrs;y++) sv('vol-y'+y, fmtN(Math.round(D.patVol[y])));
+  sv('vol-tot', fmtN(Math.round(D.patVol.slice(0,yrs).reduce(function(a,b){return a+b;},0))));
 
   // Before launch patient counts
   for(var y=0;y<yrs;y++){
@@ -1204,15 +1204,15 @@ function updateCalcs(){
     var tp=0;
     S.comparators.forEach(function(c){
       var pt=(D.befPts[c.id]&&D.befPts[c.id][y])||0;
-      sv('bef-pt-'+c.id+'-y'+y, fmtN(pt.toFixed(3)));
+      sv('bef-pt-'+c.id+'-y'+y, fmtN(Math.round(pt)));
       tn+=pt; tp+=((S.befMS[c.id]&&S.befMS[c.id][y])||0);
     });
     sv('bef-tot-pct-'+y, tp.toFixed(2)+'%');
-    sv('bef-tot-pt-'+y, fmtN(tn.toFixed(0)));
+    sv('bef-tot-pt-'+y, fmtN(Math.round(tn)));
   }
   S.comparators.forEach(function(c){
     var t=(D.befPts[c.id]||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0);
-    sv('bef-pt-'+c.id+'-tot', fmtN(t.toFixed(1)));
+    sv('bef-pt-'+c.id+'-tot', fmtN(Math.round(t)));
   });
   sv('bef-pt-tot-all', fmtN(S.comparators.reduce(function(s,c){return s+(D.befPts[c.id]||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0);},0).toFixed(0)));
 
@@ -1227,35 +1227,45 @@ function updateCalcs(){
       var aftMs=Math.max(0,befMs-cb); totMs+=aftMs;
       sv('cb-'+c.id+'-y'+y,(cb*100).toFixed(2)+'%');
       sv('aft-'+c.id+'-ms-y'+y,(aftMs*100).toFixed(2)+'%');
-      var pt=(D.expPts[c.id]&&D.expPts[c.id][y])||0;
-      sv('aft-'+c.id+'-pt-y'+y,fmtN(pt.toFixed(3)));
+      // pt display set below using basePop — skip here
     });
     sv('cb-tot-y'+y,(totCB*100).toFixed(2)+'%');
     sv('aft-np-ms-y'+y,(up*100).toFixed(2)+'%');
     sv('aft-tot-ms-y'+y,((up+totMs)*100).toFixed(2)+'%');
-    var npPt=(D.expPts.np&&D.expPts.np[y])||0;
-    sv('aft-np-pt-y'+y,fmtN(npPt.toFixed(0)));
-    sv('aft-exp-pool-y'+y,fmtN((D.expandedPop[y]||0).toFixed(1)));
-    sv('aft-tot-pt-y'+y,fmtN(Math.round(npPt+S.comparators.reduce(function(s,c){return s+((D.expPts[c.id]&&D.expPts[c.id][y])||0);},0))));
+    // Patient counts in substitution table use basePop so Total n = patVol[y]
+    var basePop=D.patVol[y]||0;
+    var npPtDisp=basePop*(up);
+    sv('aft-np-pt-y'+y,fmtN(Math.round(npPtDisp)));
+    sv('aft-exp-pool-y'+y,fmtN(Math.round(D.expandedPop[y]||0)));
+    var totPtDisp=npPtDisp;
+    S.comparators.forEach(function(c){
+      var befMs=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
+      var capPropC=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
+      var aftMsC=Math.max(0,befMs-up*capPropC);
+      var ptDisp=basePop*aftMsC;
+      sv('aft-'+c.id+'-pt-y'+y,fmtN(Math.round(ptDisp)));
+      totPtDisp+=ptDisp;
+    });
+    sv('aft-tot-pt-y'+y,fmtN(Math.round(totPtDisp)));
   }
   var npTot=(D.expPts.np||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0);
-  sv('aft-np-pt-tot',fmtN(npTot.toFixed(0)));
+  sv('aft-np-pt-tot',fmtN(Math.round(npTot)));
   S.comparators.forEach(function(c){sv('aft-'+c.id+'-pt-tot',fmtN((D.expPts[c.id]||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0).toFixed(1)));});
 
   // Expansion
   for(var y=0;y<yrs;y++){
     var bef=D.patVol[y]||0,expRate=(S.expansionRates[y]||0)/100,add=bef*expRate;
-    sv('exp-bef-y'+y,fmtN(bef.toFixed(2)));
-    sv('exp-add-y'+y,fmtN(add.toFixed(2)));
-    sv('exp-tot-y'+y,fmtN((D.expandedPop[y]||0).toFixed(2)));
-    sv('exp-np-y'+y,fmtN(((D.expPts.np&&D.expPts.np[y])||0).toFixed(2)));
-    S.comparators.forEach(function(c){sv('exp-'+c.id+'-y'+y,fmtN(((D.expPts[c.id]&&D.expPts[c.id][y])||0).toFixed(2)));});
+    sv('exp-bef-y'+y,fmtN(Math.round(bef)));
+    sv('exp-add-y'+y,fmtN(Math.round(add)));
+    sv('exp-tot-y'+y,fmtN(Math.round(D.expandedPop[y]||0)));
+    sv('exp-np-y'+y,fmtN(Math.round((D.expPts.np&&D.expPts.np[y])||0)));
+    S.comparators.forEach(function(c){sv('exp-'+c.id+'-y'+y,fmtN(Math.round((D.expPts[c.id]&&D.expPts[c.id][y])||0)));});
     var tAll=D.expPts.np[y];
     S.comparators.forEach(function(c){tAll+=(D.expPts[c.id]&&D.expPts[c.id][y])||0;});
-    sv('exp-all-y'+y,fmtN(tAll.toFixed(2)));
+    sv('exp-all-y'+y,fmtN(Math.round(tAll)));
   }
-  sv('exp-np-tot',fmtN((D.expPts.np||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0).toFixed(2)));
-  S.comparators.forEach(function(c){sv('exp-'+c.id+'-tot',fmtN((D.expPts[c.id]||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0).toFixed(2)));});
+  sv('exp-np-tot',fmtN(Math.round((D.expPts.np||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0))));
+  S.comparators.forEach(function(c){sv('exp-'+c.id+'-tot',fmtN(Math.round((D.expPts[c.id]||[]).slice(0,yrs).reduce(function(a,b){return a+b;},0))));});
   sv('exp-all-tot',fmtN(Object.values(D.expPts).reduce(function(s,a){return s+a.slice(0,yrs).reduce(function(x,b){return x+b;},0);},0).toFixed(2)));
 
   // Tx pack calculations
@@ -1462,7 +1472,7 @@ function renderSubsTable(){
   h+='<tr class="tr"><td class="rl ind bold">Total</td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv" id="cb-tot-y'+i+'">—</span></td>';
   h+='<td></td></tr>';
-  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Adjusted Market Share After Launch (% of expanded pool)</td></tr>'
+  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Adjusted Market Share After Launch (%)</td></tr>'
   +'<tr class="cr"><td class="rl ind">Expanded pool (base × (1+expansion))</td>'
   +Array.from({length:yrs},function(_,i){return '<td class="tc"><span class="cv" id="aft-exp-pool-y'+i+'">—</span></td>';}).join('')
   +'<td></td></tr>';
@@ -1477,7 +1487,7 @@ function renderSubsTable(){
   h+='<tr class="tr"><td class="rl ind bold">Total, %</td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv" id="aft-tot-ms-y'+i+'">—</span></td>';
   h+='<td></td></tr>';
-  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Market Share (No. of Patients) After Substitution (applied to expanded pool)</td></tr>';
+  h+='<tr class="subh"><td colspan="'+(yrs+2)+'">Market Share (No. of Patients) After Substitution (— Total n = patient volume for that year)</td></tr>';
   h+='<tr class="cr"><td class="rl ind">'+esc(np)+' <span class="npb">New</span></td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><span class="cv amb" id="aft-np-pt-y'+i+'">—</span></td>';
   h+='<td class="tc"><span class="cv" id="aft-np-pt-tot">—</span></td></tr>';
