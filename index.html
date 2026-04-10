@@ -335,7 +335,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 @keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(13,122,95,.3)}50%{box-shadow:0 0 0 6px rgba(13,122,95,.25),0 4px 14px rgba(13,122,95,.3)}}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780271</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -1119,7 +1119,7 @@ function compute(){
   var eligN=diagN*S.eligPct/100;
   var accessN=eligN*S.accessPct/100;
   var captureN0=accessN*S.capturePct/100;
-  // Patient volume
+  // Patient volume: use direct input override if enabled, else derive from funnel
   var patVol;
   if(S.usePatVolOverride){
     patVol=[];
@@ -1134,7 +1134,6 @@ function compute(){
   var compAnn={};
   S.comparators.forEach(function(c){compAnn[c.id]=annCost(c.id);});
 
-  // World Without — basePop x befMS x compAnn
   var befPts={};
   S.comparators.forEach(function(c){befPts[c.id]=[];});
   var befCostTot=[];
@@ -1149,25 +1148,22 @@ function compute(){
     befCostTot.push(tot);
   }
 
-  // World With — additive model:
-  // New drug patients = basePop x uptake (treatment naive / additive)
-  // Comparator patients unchanged (no switching)
-  // expandedPop = basePop (no expansion used in NBI)
   var expPts={np:[]};
   S.comparators.forEach(function(c){expPts[c.id]=[];});
   var expandedPop=[];
   for(var y=0;y<yrs;y++){
-    var up=(S.npUptake[y]||0)/100;
     var expRate=(S.expansionRates[y]||0)/100;
-    expandedPop.push(patVol[y]*(1+expRate));  // kept for display only
-    expPts.np.push(patVol[y]*up);             // additive: basePop x uptake
+    var up=(S.npUptake[y]||0)/100;
+    var totPop=patVol[y]*(1+expRate);
+    expandedPop.push(totPop);
+    expPts.np.push(totPop*up);
     S.comparators.forEach(function(c){
       var befMs=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
-      expPts[c.id].push(patVol[y]*befMs);     // unchanged: basePop x befMS
+      var capProp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
+      expPts[c.id].push(totPop*Math.max(0,befMs-up*capProp));
     });
   }
 
-  // World With cost = World Without cost + np cost (comparators unchanged)
   var aftCostTot=[];
   for(var y=0;y<yrs;y++){
     var tot=expPts.np[y]*npAnn;
@@ -3519,6 +3515,13 @@ function renderFromS(){
   // Snapshot loaded state into cfg so PSA tab uses loaded scenario
   cfg._S=JSON.parse(JSON.stringify(S));
   cfg._D=JSON.parse(JSON.stringify(D));
+  // Force re-render after DOM settles
+  setTimeout(function(){
+    syncAll(); compute(); updateCalcs();
+    renderBITable();
+    renderSubsTable();
+    renderExpTable();
+  }, 50);
 }
 
 function _restoreS(saved){
