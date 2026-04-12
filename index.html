@@ -367,7 +367,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .dti.hidden{display:none}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775977431</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775979012</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -4055,6 +4055,13 @@ function renderThresholdSection(){
 
 
 
+
+
+// ── Drug calc helper functions (aliases) ──
+function fmt(n,dec=2){if(n==null||!isFinite(n)||isNaN(n))return'—';if(Math.abs(n)>=1e12)return n.toExponential(2);if(Math.abs(n)<0.0001&&n!==0)return n.toExponential(4);return n.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:dec});}
+function setEl(id,val){const e=document.getElementById(id);if(e)e.textContent=val;}
+function v(id){const e=document.getElementById(id);return e?e.value:null;}
+function pn(id){const x=v(id);return x?parseFloat(x):0;}
 
 // ══ DRUG COST CALCULATOR INTEGRATION ══
 const DT = {
