@@ -333,9 +333,41 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 #chartjs-warn{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(190,18,60,.9);color:#fff;padding:10px 20px;border-radius:var(--radius);font-size:11px;font-weight:700;z-index:9999;box-shadow:var(--shadow-lg);}
 .cw{background:var(--surface);border-radius:var(--radius);padding:16px;border:1px solid var(--border);margin-bottom:12px;}
 @keyframes pulseBtn{0%,100%{box-shadow:0 4px 14px rgba(13,122,95,.3)}50%{box-shadow:0 0 0 6px rgba(13,122,95,.25),0 4px 14px rgba(13,122,95,.3)}}
+
+/* ── Drug Cost Calc Panel ── */
+#dcp-ov{display:none;position:fixed;inset:0;background:rgba(8,6,4,.45);z-index:300;backdrop-filter:blur(2px);align-items:flex-start;justify-content:flex-end}
+#dcp-ov.open{display:flex}
+#dcp-panel{background:var(--surface);width:640px;max-width:96vw;height:100vh;overflow-y:auto;box-shadow:-8px 0 40px rgba(0,0,0,.18);display:flex;flex-direction:column}
+.dcp-phdr{background:var(--teal);color:#fff;padding:18px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10}
+.dcp-xbtn{background:rgba(255,255,255,.14);border:none;color:#fff;width:30px;height:30px;border-radius:7px;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center}
+.dcp-xbtn:hover{background:rgba(255,255,255,.26)}
+.dcp-ai-hdr{background:linear-gradient(135deg,#0c2218,#1B4332);border-radius:10px;padding:14px 16px;margin-bottom:16px;color:#fff;display:flex;align-items:flex-start;gap:12px}
+.dcp-ai-inp{flex:1;min-width:130px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:7px;padding:7px 10px;color:#fff;font-family:var(--font);font-size:12.5px;outline:none}
+.dcp-ai-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);color:#fff;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);white-space:nowrap}
+.dcp-ai-btn:hover{background:rgba(255,255,255,.26)}
+.dcp-ai-resp{background:rgba(255,255,255,.09);border-radius:6px;padding:9px;margin-top:9px;font-size:11.5px;line-height:1.6;display:none;border-left:3px solid rgba(255,255,255,.35)}
+.dcp-clbl{font-size:10.5px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.9px;margin-bottom:9px}
+.dcp-tab{flex:1;padding:7px 10px;border-radius:7px;text-align:center;font-size:12px;font-weight:500;color:var(--ink4);cursor:pointer;transition:all .14s}
+.dcp-tab-on{background:var(--surface);color:var(--teal);font-weight:600;box-shadow:0 1px 5px rgba(0,0,0,.08);cursor:default}
+.dcp-sec-hdr{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.dcp-sec-lbl{background:var(--teal);color:#fff;width:21px;height:21px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.dcp-drow{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dcp-drow-gold{background:#FDF4E0;border-color:#DBBF6E}
+.dcp-outputs{background:#FDF4E0;border:2px solid #DBBF6E;border-radius:12px;padding:14px 16px}
+.rid{font-family:var(--mono);font-size:9.5px;background:var(--surface2);border:1px solid var(--border);padding:1px 4px;border-radius:3px;color:var(--ink4)}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10.5px;font-weight:600;color:var(--ink4);text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.fi,.fsel{border:1.5px solid var(--border);border-radius:8px;padding:8px 11px;font-family:var(--font);font-size:13px;background:var(--surface);color:var(--ink);transition:border-color .14s;outline:none;width:100%}
+.fi:focus,.fsel:focus{border-color:var(--teal)}
+.fhint{font-size:11px;color:var(--ink4);line-height:1.4;margin-top:1px}
+.fu{display:flex;gap:6px}.fu .fi{flex:1}.fu .fsel{width:115px;flex-shrink:0}
+.dti{border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;cursor:pointer;transition:all .14s;display:flex;align-items:center;gap:8px;background:var(--surface)}
+.dti:hover{border-color:var(--teal);background:var(--surface2)}
+.dti.sel{border-color:var(--teal);background:var(--surface2)}
+.dti.hidden{display:none}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775977431</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -1572,6 +1604,7 @@ function renderTxTable(){
     +'<th>Dosage Schedule</th><th>Dose per Admin</th><th>Dosage Period (days)</th>'
     +'<th>Annual Dosage <span class="calc-badge">Auto</span></th>'
     +'<th>Annual Cost ($) <span class="calc-badge">Auto</span></th>'
+    +'<th style="width:80px"></th>'
     +'</tr></thead><tbody>';
   all.forEach(function(p){
     var t=S.txCost[p.id]||{molType:'Small Molecules',dosePerAdmin:1,dosagePeriod:365.25};
@@ -1587,6 +1620,7 @@ function renderTxTable(){
       +'<td class="tc"><input type="number" id="tx-dp-'+p.id+'" value="'+(t.dosagePeriod||365.25)+'" min="0" step="any" class="inp-dosing" oninput="d_tx()"/></td>'
       +'<td class="tc"><span class="cv" id="tx-ad-'+p.id+'">'+fmtN(ad.toFixed(2))+'</span></td>'
       +'<td class="tc"><span class="cv amb" id="tx-ann-'+p.id+'">'+fmtM(ad*cpu)+'</span></td>'
+      +'<td class="tc"><button style="background:var(--teal);color:#fff;border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap" onclick="openDrugCalc(\''+p.id+'\')">'+(t._dcDrugTypeId?'✔ Recalc':'❖ Drug Calc')+'</button></td>'
       +'</tr>';
   });
   h+='</tbody></table></div>';
@@ -4020,9 +4054,436 @@ function renderThresholdSection(){
 }
 
 
+
+
+// ══ DRUG COST CALCULATOR INTEGRATION ══
+const DT = {
+  tablet:{id:'tablet',emoji:'💊',name:'Tablets',cpu:{strengthUnits:['mg','mcg','g','IU'],defSU:'mg',strengthLbl:'Strength per tablet',strengthHint:'e.g. 40 mg for Atorvastatin 40mg tablet',packSizeLbl:'Tablets per pack',packSizeHint:'e.g. 28, 30, 84 tablets per pack',showConc:false,showVol:false,costOpts:[{v:'per_tablet',l:'Per tablet (D3) — recommended'},{v:'per_mg',l:'Per mg (D2)'}],defCost:'per_tablet',d2lbl:'Cost per mg',d3lbl:'Cost per tablet',d4lbl:null},dos:{doseUnits:['mg','mcg','g','tablet(s)'],defDU:'mg',doseLbl:'Dose per administration',doseHint:'e.g. 40 for 40mg once daily',showWt:false,showBSA:false,showCap:false,extraFields:[],freqNote:'Most tablets taken once or twice daily'}},
+  capsule:{id:'capsule',emoji:'💊',name:'Capsules',cpu:{strengthUnits:['mg','mcg','g','IU'],defSU:'mg',strengthLbl:'Strength per capsule',strengthHint:'e.g. 200 mg, 300 mg',packSizeLbl:'Capsules per pack',packSizeHint:'e.g. 30, 60, 90 capsules',showConc:false,showVol:false,costOpts:[{v:'per_capsule',l:'Per capsule (D3) — recommended'},{v:'per_mg',l:'Per mg (D2)'}],defCost:'per_capsule',d2lbl:'Cost per mg',d3lbl:'Cost per capsule',d4lbl:null},dos:{doseUnits:['mg','mcg','capsule(s)'],defDU:'mg',doseLbl:'Dose per administration',doseHint:'e.g. 300 mg per dose',showWt:false,showBSA:false,showCap:false,extraFields:[],freqNote:null}},
+  injection:{id:'injection',emoji:'💉',name:'Injections (SC/IM)',cpu:{strengthUnits:['mg','mcg','IU','mg/mL'],defSU:'mg',strengthLbl:'Strength per vial / pen / syringe (total mg)',strengthHint:'Total mg content — NOT per mL.',packSizeLbl:'Units per pack',packSizeHint:'e.g. 1, 2, 4, 6 pre-filled syringes per pack',showConc:true,concLbl:'Concentration (mg/mL)',concHint:'From SmPC.',concUnits:['mg/mL','mcg/mL','IU/mL'],showVol:true,volLbl:'Fill volume per unit (mL)',volHint:'e.g. 1.0 mL for a 1mL pen',costOpts:[{v:'per_mg',l:'Per mg (D2) — recommended for weight-based dosing'},{v:'per_unit',l:'Per unit/syringe (D3)'},{v:'per_ml',l:'Per mL (D4)'}],defCost:'per_mg',d2lbl:'Cost per mg',d3lbl:'Cost per unit/syringe',d4lbl:'Cost per mL'},dos:{doseUnits:['mg','mcg','mg/kg','mcg/kg','IU','IU/kg','mL'],defDU:'mg',doseLbl:'Dose per administration',doseHint:'e.g. 40 for flat 40mg; or dose factor for weight-based',showWt:true,showBSA:false,showCap:true,extraFields:[],freqNote:null}},
+  infusion:{id:'infusion',emoji:'🩺',name:'Infusions (IV)',cpu:{strengthUnits:['mg','mcg','g','IU'],defSU:'mg',strengthLbl:'Strength per vial (total mg — not per mL)',strengthHint:'e.g. 80 mg total for Docetaxel 20mg/mL 4mL vial',packSizeLbl:'Vials per pack',packSizeHint:'Usually 1 vial per pack',showConc:true,concLbl:'Concentration (mg/mL)',concHint:'From SmPC',concUnits:['mg/mL','mcg/mL','g/mL','IU/mL'],showVol:true,volLbl:'Withdrawable volume per vial (mL)',volHint:'Check SmPC — may differ from label due to overfill',costOpts:[{v:'per_mg',l:'Per mg (D2) — standard for infusions'},{v:'per_vial',l:'Per vial (D3)'},{v:'per_ml',l:'Per mL (D4) — informational'}],defCost:'per_mg',d2lbl:'Cost per mg',d3lbl:'Cost per vial',d4lbl:'Cost per mL'},dos:{doseUnits:['mg','mg/kg','mg/m²','mcg','mcg/kg','g','IU','IU/m²','mL'],defDU:'mg/kg',doseLbl:'Dose per infusion',doseHint:'e.g. 75 for 75mg/m²; or 200 for 200mg flat dose',showWt:true,showBSA:true,showCap:true,extraFields:[],freqNote:null}},
+  antibody:{id:'antibody',emoji:'🔬',name:'Antibodies (Monoclonal / mAb)',cpu:{strengthUnits:['mg','mcg'],defSU:'mg',strengthLbl:'mg content per vial',strengthHint:'e.g. 100 mg for Pembrolizumab 100mg/4mL vial',packSizeLbl:'Vials per pack',packSizeHint:'Usually 1 vial per pack',showConc:true,concLbl:'Concentration (mg/mL)',concHint:'e.g. 25 mg/mL for Pembrolizumab',concUnits:['mg/mL','mcg/mL'],showVol:true,volLbl:'Vial volume (mL)',volHint:'e.g. 4 mL for Pembrolizumab 100mg/4mL',costOpts:[{v:'per_mg',l:'Per mg (D2) — standard for mAbs'},{v:'per_vial',l:'Per vial (D3)'}],defCost:'per_mg',d2lbl:'Cost per mg',d3lbl:'Cost per vial',d4lbl:'Cost per mL'},dos:{doseUnits:['mg/kg','mg/m²','mg (flat)','mcg/kg'],defDU:'mg/kg',doseLbl:'Dose per administration',doseHint:'e.g. 200 flat; or 6 for 6mg/kg',showWt:true,showBSA:true,showCap:true,capHint:'Max dose cap e.g. 420mg for Pembrolizumab 6mg/kg',extraFields:[],freqNote:null}},
+  oligo:{id:'oligo',emoji:'🧪',name:'Oligonucleotides / RNA Therapies',cpu:{strengthUnits:['mg','mcg','nmol'],defSU:'mg',strengthLbl:'mg content per vial / syringe',strengthHint:'e.g. 284 mg for Inclisiran 284mg/1.5mL',packSizeLbl:'Vials / syringes per pack',packSizeHint:'Usually 1',showConc:true,concLbl:'Concentration (mg/mL)',concHint:'e.g. 189.3 mg/mL for Inclisiran',concUnits:['mg/mL','mcg/mL'],showVol:true,volLbl:'Volume per vial (mL)',volHint:'e.g. 1.5 mL',costOpts:[{v:'per_vial',l:'Per vial/syringe (D3) — recommended for fixed dose'},{v:'per_mg',l:'Per mg (D2)'}],defCost:'per_vial',d2lbl:'Cost per mg',d3lbl:'Cost per vial/syringe',d4lbl:'Cost per mL'},dos:{doseUnits:['mg','mg/kg','mcg','dose (flat)'],defDU:'mg',doseLbl:'Dose per administration',doseHint:'e.g. 284 mg flat for Inclisiran',showWt:false,showBSA:false,showCap:false,extraFields:[],freqNote:null}},
+  inhaler:{id:'inhaler',emoji:'🌬️',name:'Inhalers (MDI / DPI / Nebuliser)',cpu:{strengthUnits:['mcg','mg','mcg/actuation'],defSU:'mcg',strengthLbl:'Strength per actuation / dose',strengthHint:'e.g. 100 mcg/actuation for Salbutamol MDI',packSizeLbl:'Total actuations per inhaler device',packSizeHint:'e.g. 200 actuations for Salbutamol MDI',showConc:false,showVol:false,costOpts:[{v:'per_act',l:'Per actuation (D3) — standard for inhalers'},{v:'per_mcg',l:'Per mcg (D2)'},{v:'per_dev',l:'Per device (whole pack)'}],defCost:'per_act',d2lbl:'Cost per mcg',d3lbl:'Cost per actuation',d4lbl:null},dos:{doseUnits:['actuation(s)','mcg','mg','puff(s)'],defDU:'actuation(s)',doseLbl:'Actuations per dose',doseHint:'e.g. 2 puffs per dose for Salbutamol',showWt:false,showBSA:false,showCap:false,extraFields:[],freqNote:'PRN inhalers: use max daily PRN doses × 365 for worst-case annual cost'}},
+  gene:{id:'gene',emoji:'🧬',name:'Gene Therapies',cpu:{strengthUnits:['vg','genome copies'],defSU:'vg',strengthLbl:'Viral genome (vg) content per vial',strengthHint:'e.g. 2×10¹⁵ vg per vial. Use scientific notation e.g. 2e15',packSizeLbl:'Vials per batch',packSizeHint:'Almost always 1',showConc:false,showVol:true,volLbl:'Total vial volume (mL)',volHint:'e.g. 5.5 mL for Zolgensma',costOpts:[{v:'per_batch',l:'Per batch/vial (D3) — recommended for gene therapy'},{v:'per_vg',l:'Per viral genome vg (D2)'}],defCost:'per_batch',d2lbl:'Cost per vg',d3lbl:'Cost per batch/vial',d4lbl:'Cost per mL (informational)'},dos:{doseUnits:['vg/kg','vg (flat dose)','genome copies/kg'],defDU:'vg/kg',doseLbl:'Dose (viral genomes)',doseHint:'e.g. 1.1×10¹⁴ vg/kg (enter as 1.1e14)',showWt:true,showBSA:false,showCap:false,extraFields:[{id:'mfr',lbl:'Manufacturing Failure Rate (%)',hint:'Probability batch fails QC e.g. 5',ph:'e.g. 5',type:'number'}],freqNote:'Gene therapies: almost always a single lifetime administration'}},
+  vaccine:{id:'vaccine',emoji:'💉',name:'Vaccines',cpu:{strengthUnits:['dose','mcg','IU','mg'],defSU:'dose',strengthLbl:'Content per vial / dose unit',strengthHint:'Usually 1 dose per vial.',packSizeLbl:'Vials / units per pack',packSizeHint:'e.g. 1, 5, 10 vials per pack',showConc:false,showVol:true,volLbl:'Volume per dose (mL)',volHint:'e.g. 0.5 mL for most vaccines',costOpts:[{v:'per_dose',l:'Per dose (D3) — standard'},{v:'per_mcg',l:'Per mcg antigen (D2)'}],defCost:'per_dose',d2lbl:'Cost per mcg/IU',d3lbl:'Cost per dose',d4lbl:'Cost per mL'},dos:{doseUnits:['dose (flat)','mcg','IU'],defDU:'dose (flat)',doseLbl:'Doses per visit',doseHint:'Usually 1 dose per visit',showWt:false,showBSA:false,showCap:false,extraFields:[{id:'course',lbl:'Total doses in primary course',hint:'e.g. 2 for HPV, 3 for hepatitis B',ph:'e.g. 2',type:'number'}],freqNote:'For multi-dose schedules set total cycles = number of doses in course'}},
+  topical:{id:'topical',emoji:'🧴',name:'Topical / Transdermal',cpu:{strengthUnits:['mg/g','%','g','mg'],defSU:'mg/g',strengthLbl:'Strength / concentration per unit',strengthHint:'e.g. 5 mg/g for a cream',packSizeLbl:'Units per pack (tubes/bottles)',packSizeHint:'e.g. 1 tube, 2 tubes',showConc:false,showVol:true,volLbl:'Size per tube / container (g)',volHint:'e.g. 30 g for a 30g tube',costOpts:[{v:'per_tube',l:'Per tube/container (D3)'},{v:'per_g',l:'Per gram (D4-style)'},{v:'per_mg',l:'Per mg active (D2)'}],defCost:'per_tube',d2lbl:'Cost per mg active',d3lbl:'Cost per tube/container',d4lbl:'Cost per gram'},dos:{doseUnits:['g','mg','cm²','application','mL'],defDU:'g',doseLbl:'Amount applied per application',doseHint:'e.g. 2 g per application',showWt:false,showBSA:false,showCap:false,extraFields:[],freqNote:null}},
+  oral_liquid:{id:'oral_liquid',emoji:'🥤',name:'Oral Liquids / Suspensions',cpu:{strengthUnits:['mg/mL','mcg/mL','mg/5mL'],defSU:'mg/mL',strengthLbl:'Concentration (mg per mL)',strengthHint:'e.g. 5 mg/mL or 125 mg/5mL suspension',packSizeLbl:'Bottles per pack',packSizeHint:'Usually 1 bottle per pack',showConc:true,concLbl:'Numeric concentration (mg/mL)',concHint:'Enter value for dose→volume conversion',concUnits:['mg/mL','mcg/mL'],showVol:true,volLbl:'Volume per bottle (mL)',volHint:'e.g. 100 mL, 150 mL, 200 mL bottle',costOpts:[{v:'per_mg',l:'Per mg (D2) — recommended for weight-based'},{v:'per_ml',l:'Per mL (D4)'},{v:'per_bottle',l:'Per bottle (D3)'}],defCost:'per_mg',d2lbl:'Cost per mg',d3lbl:'Cost per bottle',d4lbl:'Cost per mL'},dos:{doseUnits:['mg','mg/kg','mL','mcg/kg'],defDU:'mg/kg',doseLbl:'Dose per administration',doseHint:'e.g. 10 mg/kg or 5 mL flat dose',showWt:true,showBSA:false,showCap:true,extraFields:[],freqNote:null}},
+  patch:{id:'patch',emoji:'🩹',name:'Transdermal Patches',cpu:{strengthUnits:['mcg/hr','mg/24hr','mg/patch','mcg/patch'],defSU:'mcg/hr',strengthLbl:'Release rate or total content per patch',strengthHint:'e.g. 25 mcg/hr for Fentanyl 25mcg/hr patch',packSizeLbl:'Patches per pack',packSizeHint:'e.g. 5 patches per pack',showConc:false,showVol:false,costOpts:[{v:'per_patch',l:'Per patch (D3) — recommended'},{v:'per_mcg',l:'Per mcg (D2)'}],defCost:'per_patch',d2lbl:'Cost per mcg/mg total',d3lbl:'Cost per patch',d4lbl:null},dos:{doseUnits:['patch','mcg/hr','mg/patch'],defDU:'patch',doseLbl:'Patches per administration',doseHint:'Usually 1 patch replaced every 72h or 7 days',showWt:false,showBSA:false,showCap:false,extraFields:[{id:'weardays',lbl:'Patch wear duration (days)',hint:'e.g. 3 for 72hr patch; 7 for weekly patch',ph:'e.g. 3',type:'number'}],freqNote:null}},
+  eyedrop:{id:'eyedrop',emoji:'👁️',name:'Eye Drops / Intravitreal',cpu:{strengthUnits:['mg/mL','mcg/mL','mg','%'],defSU:'mg/mL',strengthLbl:'Concentration or content per unit',strengthHint:'e.g. 10 mg/mL for Eylea',packSizeLbl:'Bottles / vials per pack',packSizeHint:'e.g. 1, 3 single-use vials',showConc:false,showVol:true,volLbl:'Volume per bottle / vial (mL)',volHint:'e.g. 0.05 mL intravitreal; 5 mL eye drop bottle',costOpts:[{v:'per_vial',l:'Per vial/unit (D3) — recommended for intravitreal'},{v:'per_mg',l:'Per mg (D2)'},{v:'per_ml',l:'Per mL (D4)'}],defCost:'per_vial',d2lbl:'Cost per mg',d3lbl:'Cost per vial/unit',d4lbl:'Cost per mL'},dos:{doseUnits:['drop(s)','mg','mcg','injection (flat)','mL'],defDU:'injection (flat)',doseLbl:'Dose per eye per administration',doseHint:'e.g. 1 intravitreal injection; or 1–2 drops',showWt:false,showBSA:false,showCap:false,extraFields:[{id:'eyes',lbl:'Eyes treated',hint:'1 = monocular; 2 = bilateral (doubles cost)',ph:'1',type:'number'}],freqNote:null}},
+  lyophilised:{id:'lyophilised',emoji:'🧂',name:'Lyophilised / Reconstituted Powders',cpu:{strengthUnits:['mg','mcg','g','IU','mg/vial'],defSU:'mg',strengthLbl:'Strength per vial (total mg)',strengthHint:'e.g. 500 mg powder for reconstitution per vial',packSizeLbl:'Vials per pack',packSizeHint:'Usually 1 per pack',showConc:true,concLbl:'Concentration after reconstitution (mg/mL)',concHint:'Refer to SmPC for reconstitution volumes',concUnits:['mg/mL','mcg/mL','IU/mL'],showVol:true,volLbl:'Reconstituted volume per vial (mL)',volHint:'Volume of diluent added per SmPC e.g. 10 mL',costOpts:[{v:'per_mg',l:'Per mg (D2) — recommended for weight-based dosing'},{v:'per_vial',l:'Per vial (D3)'},{v:'per_ml',l:'Per mL after reconstitution (D4)'}],defCost:'per_mg',d2lbl:'Cost per mg',d3lbl:'Cost per vial',d4lbl:'Cost per mL (reconstituted)'},dos:{doseUnits:['mg','mg/kg','mg/m²','mcg','IU','IU/kg'],defDU:'mg/kg',doseLbl:'Dose per administration',doseHint:'e.g. 30 mg/kg or flat 500 mg',showWt:true,showBSA:true,showCap:true,extraFields:[],freqNote:null}}
+};
+const DT_LIST=[
+  ['tablet','💊','Tablets'],['capsule','💊','Capsules'],['gene','🧬','Gene Therapies'],
+  ['injection','💉','Injections (SC/IM)'],['infusion','🩺','Infusions (IV)'],
+  ['antibody','🔬','Antibodies (mAb)'],['vaccine','💉','Vaccines'],
+  ['topical','🧴','Topical / Transdermal'],['inhaler','🌬️','Inhalers (MDI/DPI/Neb)'],
+  ['oral_liquid','🥤','Oral Liquids / Suspensions'],['oligo','🧪','Oligonucleotides / RNA'],
+  ['eyedrop','👁️','Eye Drops / Intravitreal'],['patch','🩹','Transdermal Patches'],
+  ['lyophilised','🧂','Lyophilised / Reconstituted'],
+];
+const FREQS=[
+  {l:'Once daily',d:1,dpc:1},{l:'Twice daily (BID)',d:1,dpc:2},
+  {l:'Three times daily (TID)',d:1,dpc:3},{l:'Four times daily (QID)',d:1,dpc:4},
+  {l:'Every other day',d:2,dpc:1},{l:'Weekly',d:7,dpc:1},
+  {l:'Every 2 weeks (q2w)',d:14,dpc:1},{l:'Every 3 weeks (q3w)',d:21,dpc:1},
+  {l:'Every 4 weeks (q4w)',d:28,dpc:1},{l:'Monthly (~30 days)',d:30,dpc:1},
+  {l:'Every 6 weeks',d:42,dpc:1},{l:'Every 8 weeks',d:56,dpc:1},
+  {l:'Every 12 weeks',d:84,dpc:1},{l:'Every 6 months',d:182,dpc:1},
+  {l:'Annually',d:365,dpc:1},{l:'Single lifetime dose',d:365,dpc:1},
+  {l:'PRN — max 4/day',d:1,dpc:4},{l:'PRN — max 2/day',d:1,dpc:2},
+  {l:'Custom schedule',d:null,dpc:null},
+];
+var dcp={};
+function isCombo(n){return /[+\/]/.test(n);}
+function filterDT(q){q=q.toLowerCase();document.querySelectorAll('.dti').forEach(el=>el.classList.toggle('hidden',!el.querySelector('.dtnm').textContent.toLowerCase().includes(q)));}
+function calcCPU(){
+  const cfg=ps.dt?.cpu; if(!cfg) return;
+  const i1=pn('i1'), i2=pn('i2')||1, i3=pn('i3'), i5=pn('i5');
+  const i3u=v('i3u')||cfg.strengthUnits[0], i6=v('i6')||cfg.defCost;
+  const d1=i3*i2;
+  const d2=d1>0?i1/d1:null, d3=i2>0?i1/i2:null, d4=i5>0?i1/i5:null;
+  setEl('d1',d1>0?`${fmt(d1,4)} ${i3u}`:'—');
+  setEl('d2',d2!=null?`£${fmt(d2,6)} / ${i3u}`:'—');
+  setEl('d3',d3!=null?`£${fmt(d3,4)} / unit`:'—');
+  if(document.getElementById('d4')) setEl('d4',d4!=null?`£${fmt(d4,4)} / mL`:'—');
+  let star=null;
+  if(['per_mg','per_mcg','per_vg','per_GBq','per_cell','per_act','per_spray'].includes(i6)){star=d2;}
+  else if(['per_ml','per_g'].includes(i6)){star=d4;}
+  else{star=d3;}
+  const el=document.getElementById('starcpu');
+  if(el) el.value=(star!=null&&isFinite(star))?`£${fmt(star,6)}`:'';
+  ps.cpuIn={i1,i2,i3,i3u,i5,i6};
+  ps.cpuCalc={d1,d2,d3,d4,star,i3u};
+}
+function calcDos(){
+  const cfg=ps.dt?.dos; if(!cfg) return;
+  const dose=pn('d-dose'), du=v('d-du')||cfg.doseUnits[0];
+  const wt=pn('d-wt')||0, bsa=pn('d-bsa')||0, cap=pn('d-cap')||Infinity;
+  const i3=ps.cpuIn?.i3||0, i2=ps.cpuIn?.i2||1, i1=ps.cpuIn?.i1||0, i3u=ps.cpuIn?.i3u||'mg';
+  let c1=dose;
+  if(du.includes('/kg')) c1=dose*wt;
+  else if(du.includes('/m²')) c1=dose*bsa;
+  if(isFinite(cap)&&cap>0&&c1>cap) c1=cap;
+  const c2=i3>0?c1/i3:0, c3=Math.ceil(c2);
+  const d3=i2>0?i1/i2:0;
+  const wastB=(c3*i3)-c1, wastGBP=(c3-c2)*d3, c5=c3*d3;
+  const cl=pn('d-cl')||1, dpc=pn('d-dpc')||1, tc=pn('d-tc')||0;
+  const c6=tc>0?tc*dpc:Math.floor(365/cl)*dpc;
+  const star1=c6*c1, star2=c6*c5;
+  setEl('c1',c1>0?`${fmt(c1,2)} ${i3u}`:'—');
+  setEl('c2',c2>0?`${fmt(c2,4)} units`:'—');
+  setEl('c3',c3>0?`${c3} units`:'—');
+  setEl('c4',c3>0?`${fmt(wastB,2)} ${i3u} / £${fmt(wastGBP,2)}`:'—');
+  setEl('c5',c5>0?`£${fmt(c5,2)}`:'—');
+  setEl('c6',c6>0?`${c6} / year`:'—');
+  setEl('star1',star1>0?`${fmt(star1,2)} ${i3u}/yr`:'—');
+  setEl('star2',star2>0?`£${fmt(star2,0)}`:'—');
+  ps.dosCalc={c1,c2,c3,c5,c6,star1,star2,i3u,du,wastB,wastGBP};
+  ps.dosIn={dose,du,wt,bsa,cap:isFinite(cap)?cap:null,freq:v('d-freq'),cl,dpc,tc};
+}
+function onDU(){
+  const du=v('d-du')||''; const row=document.getElementById('wt-bsa-row');
+  if(row) row.style.display=(du.includes('/kg')||du.includes('/m²')||du.includes('cells')||du.includes('vg'))?'':'none';
+}
+function onFreq(){
+  const f=FREQS.find(x=>x.l===v('d-freq')); if(!f) return;
+  const cl=document.getElementById('d-cl'), dpc=document.getElementById('d-dpc');
+  if(cl&&f.d!=null) cl.value=f.d;
+  if(dpc&&f.dpc!=null) dpc.value=f.dpc;
+}
+function autoBSA(){
+  const h=pn('bsa-h'), w=pn('bsa-w');
+  if(h&&w){const b=Math.sqrt(h*w/3600);const el=document.getElementById('d-bsa');if(el){el.value=b.toFixed(2);calcDos();}}
+}
+async function callAI(prompt){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json(); return d.content?.map(c=>c.text||'').join('')||'No response';
+}
+async function aiExplain(){
+  const nm=document.getElementById('ai-dn')?.value||ps.dt?.name;
+  const l=document.getElementById('ail1'),r=document.getElementById('air1');
+  l.style.display='block';r.style.display='none';
+  try{const t=await callAI(`Pharmacoeconomics expert. For drug "${nm}" (${ps.dt?.name}), give 3-4 concise bullets: typical pack config, approximate NHS/EMA price, key cost driver, any important calculation note. End: "Source: [name]"`);r.innerHTML=t.replace(/\n/g,'<br>');r.style.display='block';}
+  catch(e){r.textContent='AI unavailable — enter values manually.';r.style.display='block';}
+  l.style.display='none';
+}
+async function aiPrefill(){
+  const nm=document.getElementById('ai-dn')?.value||'';if(!nm){toast('Enter drug name first');return;}
+  const l=document.getElementById('ail1'),r=document.getElementById('air1');
+  l.style.display='block';r.style.display='none';
+  try{
+    const t=await callAI(`For drug "${nm}" (${ps.dt?.name}), give pack details in EXACTLY this format:\nPACK_PRICE: [£ number]\nPACK_SIZE: [number]\nSTRENGTH: [number]\nSTRENGTH_UNIT: [unit]\nCONCENTRATION: [mg/mL or N/A]\nVOLUME: [mL or N/A]\nSOURCE: [reference]\nUse NHS England/EMA approved details.`);
+    r.innerHTML=t.replace(/\n/g,'<br>');r.style.display='block';
+    const g=(k)=>{const m=t.match(new RegExp(`${k}:\\s*([^\\n]+)`,'i'));return m?m[1].trim():null;};
+    const pp=g('PACK_PRICE');if(pp&&!isNaN(pp)){const e=document.getElementById('i1');if(e)e.value=parseFloat(pp);}
+    const ps2=g('PACK_SIZE');if(ps2&&!isNaN(ps2)){const e=document.getElementById('i2');if(e)e.value=parseFloat(ps2);}
+    const st=g('STRENGTH');if(st&&!isNaN(st)){const e=document.getElementById('i3');if(e)e.value=parseFloat(st);}
+    const su=g('STRENGTH_UNIT');if(su){const s=document.getElementById('i3u');if(s)for(let o of s.options)if(o.value.toLowerCase()===su.toLowerCase()){s.value=o.value;break;}}
+    const co=g('CONCENTRATION');if(co&&co!=='N/A'&&!isNaN(parseFloat(co))){const e=document.getElementById('i4');if(e)e.value=parseFloat(co);}
+    const vo=g('VOLUME');if(vo&&vo!=='N/A'&&!isNaN(parseFloat(vo))){const e=document.getElementById('i5');if(e)e.value=parseFloat(vo);}
+    calcCPU();
+  }catch(e){r.textContent='AI unavailable.';r.style.display='block';}
+  l.style.display='none';
+}
+async function aiGetDosing(){
+  const nm=document.getElementById('ai-dn2')?.value||'';if(!nm){toast('Enter drug name first');return;}
+  const l=document.getElementById('ail2'),r=document.getElementById('air2');
+  l.style.display='block';r.style.display='none';
+  try{
+    const t=await callAI(`For drug "${nm}" (${ps.dt?.name}), approved adult dosing in EXACTLY this format:\nDOSE: [number]\nDOSE_UNIT: [mg/mg/kg/mg/m²/mcg/vg/kg/actuation/dose]\nWEIGHT: [kg or N/A]\nCAP: [max dose in base units or N/A]\nFREQUENCY: [Once daily/Every 3 weeks (q3w)/Single lifetime dose/etc]\nCYCLE_DAYS: [number]\nDOSES_PER_CYCLE: [number]\nTOTAL_CYCLES: [number or 0 if ongoing]\nBASIS: [one sentence]\nSOURCE: [FDA/EMA/NICE reference]`);
+    r.innerHTML=t.replace(/\n/g,'<br>');r.style.display='block';
+    const g=(k)=>{const m=t.match(new RegExp(`${k}:\\s*([^\\n]+)`,'i'));return m?m[1].trim():null;};
+    const dose=g('DOSE');if(dose&&!isNaN(dose)){const e=document.getElementById('d-dose');if(e)e.value=parseFloat(dose);}
+    const du=g('DOSE_UNIT');if(du){const s=document.getElementById('d-du');if(s)for(let o of s.options)if(o.value.toLowerCase().includes(du.toLowerCase().slice(0,4))){s.value=o.value;break;}}
+    const wt=g('WEIGHT');if(wt&&wt!=='N/A'&&!isNaN(wt)){const e=document.getElementById('d-wt');if(e)e.value=parseFloat(wt);}
+    const cap=g('CAP');if(cap&&cap!=='N/A'&&!isNaN(parseFloat(cap))){const e=document.getElementById('d-cap');if(e)e.value=parseFloat(cap);}
+    const freq=g('FREQUENCY');if(freq){const s=document.getElementById('d-freq');if(s)for(let o of s.options)if(o.value.toLowerCase().includes(freq.toLowerCase().slice(0,8))){s.value=o.value;break;}}
+    const cd=g('CYCLE_DAYS');if(cd&&!isNaN(cd)){const e=document.getElementById('d-cl');if(e)e.value=parseInt(cd);}
+    const dpc=g('DOSES_PER_CYCLE');if(dpc&&!isNaN(dpc)){const e=document.getElementById('d-dpc');if(e)e.value=parseInt(dpc);}
+    const tc=g('TOTAL_CYCLES');if(tc&&!isNaN(tc)){const e=document.getElementById('d-tc');if(e)e.value=parseInt(tc);}
+    onDU(); calcDos();
+  }catch(e){r.textContent='AI unavailable — enter manually.';r.style.display='block';}
+  l.style.display='none';
+}
+
+function openDrugCalc(tid){
+  dcp={tid:tid,step:'select-type',drugTypeId:null,dt:null,cpuIn:{},dosIn:{},cpuCalc:{},dosCalc:{}};
+  var t=S.txCost[tid]||{};
+  if(t._dcDrugTypeId){
+    dcp.drugTypeId=t._dcDrugTypeId; dcp.dt=DT[t._dcDrugTypeId];
+    dcp.cpuIn=t._dcCpuIn||{}; dcp.dosIn=t._dcDosIn||{};
+    dcp.cpuCalc=t._dcCpuCalc||{}; dcp.dosCalc=t._dcDosCalc||{};
+    dcp.step='cpu';
+  }
+  var nm=tid==='np'?(S.npName||'New Product'):(S.comparators.find(function(c){return c.id===tid;})||{}).name||tid;
+  var el=document.getElementById('dcp-title'); if(el) el.textContent=nm+' — Drug Cost Calculator';
+  renderDCPStep();
+  document.getElementById('dcp-ov').classList.add('open');
+}
+
+function closeDrugCalc(){document.getElementById('dcp-ov').classList.remove('open');}
+
+function renderDCPStep(){
+  ps=dcp;
+  if(dcp.step==='select-type') renderDCPSelectType();
+  else if(dcp.step==='cpu') renderDCPCPU();
+  else if(dcp.step==='dosing') renderDCPDosing();
+}
+
+function renderDCPSelectType(){
+  document.getElementById('dcp-abar').style.display='none';
+  var g='';
+  DT_LIST.forEach(function(it){
+    var id=it[0],em=it[1],nm=it[2];
+    g+='<div class="dti '+(dcp.drugTypeId===id?'sel':'')+'" id="dti-'+id+'" onclick="dcpPickDT(\''+id+'\')">'
+      +'<span style="font-size:16px">'+em+'</span><span style="font-size:12px;font-weight:500">'+nm+'</span></div>';
+  });
+  document.getElementById('dcp-body').innerHTML=
+    '<div class="dcp-ai-hdr"><div style="font-size:17px">✦</div><div>'
+    +'<div style="font-weight:600;font-size:13px;margin-bottom:3px">AI-Assisted Drug Cost Calculator</div>'
+    +'<div style="font-size:11.5px;opacity:.82;line-height:1.5">14 drug type templates. Select the drug type to apply the correct costing template. AI can prefill pack and dosing from FDA/EMA/NHS labels.</div>'
+    +'</div></div>'
+    +'<div class="dcp-clbl">Select Drug Type</div>'
+    +'<div style="position:relative;margin-bottom:10px">'
+    +'<span style="position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink4)">⌕</span>'
+    +'<input class="fi" style="padding-left:32px" placeholder="Search drug types…" oninput="filterDT(this.value)"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:400px;overflow-y:auto" id="dtgrid">'+g+'</div>';
+}
+
+function dcpPickDT(id){
+  dcp.drugTypeId=id; dcp.dt=DT[id]; dcp.cpuIn={}; dcp.dosIn={};
+  dcp.step='cpu'; ps=dcp; renderDCPStep();
+}
+
+function dcpTabHdr(active){
+  return '<div style="display:flex;gap:6px;background:var(--surface2);border-radius:9px;padding:3px;margin-bottom:20px">'
+    +'<div class="dcp-tab '+(active===1?'dcp-tab-on':'')+'" '+(active===2?'onclick="dcp.step=\'cpu\';ps=dcp;renderDCPStep()"':'')+'>① Pack / Cost per Unit'+(active===2?' ✓':'')+'</div>'
+    +'<div class="dcp-tab '+(active===2?'dcp-tab-on':'')+'" '+(active===1?'onclick="dcpGoToDosing()"':'')+'>② Dosing &amp; Schedule</div>'
+    +'</div>';
+}
+
+function dcpSecHdr(lbl,sub,letter){
+  return '<div class="dcp-sec-hdr"><div class="dcp-sec-lbl">'+letter+'</div>'
+    +'<div><div style="font-weight:600;font-size:13px">'+lbl+'</div>'
+    +(sub?'<div style="font-size:11px;color:var(--ink4)">'+sub+'</div>':'')+'</div></div>';
+}
+
+function dcpDRow(code,lbl,elId){
+  return '<div class="dcp-drow"><span style="font-size:12px;color:var(--ink4)"><strong style="font-family:var(--mono);font-size:11px;margin-right:4px">'+code+'</strong>'+lbl+'</span>'
+    +'<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--teal)" id="'+elId+'">—</span></div>';
+}
+
+function renderDCPCPU(){
+  ps=dcp;
+  document.getElementById('dcp-abar').style.display='flex';
+  document.getElementById('dcp-save').textContent='Next: Dosing & Schedule →';
+  document.getElementById('dcp-save').onclick=function(){dcpGoToDosing();};
+  var dt=dcp.dt, cfg=dt.cpu, i=dcp.cpuIn||{};
+  var concRow=cfg.showConc
+    ?'<div class="fg"><label class="fl"><span class="rid">I4</span> '+cfg.concLbl+'</label>'
+      +'<div class="fu"><input class="fi" type="number" id="i4" value="'+(i.i4||'')+'" oninput="calcCPU()" placeholder="e.g. 25">'
+      +'<select class="fsel" id="i4u" onchange="calcCPU()">'
+      +cfg.concUnits.map(function(u){return '<option '+(i.i4u===u?'selected':'')+'>'+u+'</option>';}).join('')
+      +'</select></div><span class="fhint">'+cfg.concHint+'</span></div>'
+    :'<div></div>';
+  var volRow=cfg.showVol
+    ?'<div class="fg"><label class="fl"><span class="rid">I5</span> '+cfg.volLbl+'</label>'
+      +'<input class="fi" type="number" id="i5" value="'+(i.i5||'')+'" oninput="calcCPU()" placeholder="e.g. 4">'
+      +'<span class="fhint">'+cfg.volHint+'</span></div>'
+    :'';
+
+  document.getElementById('dcp-body').innerHTML=
+    dcpTabHdr(1)
+    +'<div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11.5px;font-weight:500;color:var(--ink3);margin-bottom:14px">'+dt.emoji+' '+dt.name+'</div>'
+    +'<div class="dcp-ai-hdr"><div style="font-size:15px">✦</div><div style="flex:1">'
+    +'<div style="font-weight:600;font-size:13px;margin-bottom:6px">✦ AI: Explain / Prefill from label</div>'
+    +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+    +'<input class="dcp-ai-inp" id="ai-dn" placeholder="e.g. Pembrolizumab 100mg/4mL">'
+    +'<button class="dcp-ai-btn" onclick="aiExplain()">✦ Explain</button>'
+    +'<button class="dcp-ai-btn" onclick="aiPrefill()">✦ Prefill pack</button></div>'
+    +'<div id="ail1" style="font-size:11.5px;opacity:.7;margin-top:8px;display:none">⏳ Fetching…</div>'
+    +'<div id="air1" class="dcp-ai-resp"></div></div></div>'
+    +dcpSecHdr('Pack / Product Definition','Source: NHS Drug Tariff, BNF, MIMS, or manufacturer','A')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    +'<div class="fg"><label class="fl"><span class="rid">I1</span> Pack Price (£) <span style="color:var(--red)">*</span></label>'
+    +'<input class="fi" type="number" id="i1" value="'+(i.i1||'')+'" oninput="calcCPU()" placeholder="e.g. 150"><span class="fhint">List or net price after rebate</span></div>'
+    +'<div class="fg"><label class="fl"><span class="rid">I2</span> '+cfg.packSizeLbl+'</label>'
+    +'<input class="fi" type="number" id="i2" value="'+(i.i2||'')+'" oninput="calcCPU()" placeholder="e.g. 28"><span class="fhint">'+cfg.packSizeHint+'</span></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    +'<div class="fg"><label class="fl"><span class="rid">I3</span> '+cfg.strengthLbl+' <span style="color:var(--red)">*</span></label>'
+    +'<div class="fu"><input class="fi" type="number" id="i3" value="'+(i.i3||'')+'" oninput="calcCPU()" placeholder="e.g. 100" style="flex:1">'
+    +'<select class="fsel" id="i3u" style="width:110px" onchange="calcCPU()">'
+    +cfg.strengthUnits.map(function(u){return '<option value="'+u+'" '+(i.i3u===u?'selected':'')+'>'+u+'</option>';}).join('')
+    +'</select></div><span class="fhint">'+cfg.strengthHint+'</span></div>'
+    +concRow+'</div>'
+    +(cfg.showVol?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'+volRow+'<div></div></div>':'')
+    +dcpSecHdr('Derived Cost per Base Unit','Calculated automatically','B')
+    +'<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px">'
+    +dcpDRow('D1','Total drug per pack','d1')
+    +dcpDRow('D2',cfg.d2lbl,'d2')
+    +dcpDRow('D3','Cost per dosage unit','d3')
+    +(cfg.d4lbl?dcpDRow('D4',cfg.d4lbl,'d4'):'')
+    +'</div>'
+    +dcpSecHdr('Costing Unit Selection','','C')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+    +'<div class="fg"><label class="fl"><span class="rid">I6</span> Selected Costing Unit</label>'
+    +'<select class="fsel" id="i6" onchange="calcCPU()">'
+    +cfg.costOpts.map(function(o){return '<option value="'+o.v+'" '+((i.i6||cfg.defCost)===o.v?'selected':'')+'>'+o.l+'</option>';}).join('')
+    +'</select></div>'
+    +'<div class="fg"><label class="fl" style="color:#92600a">★ Cost per Selected Unit</label>'
+    +'<input class="fi" id="starcpu" readonly placeholder="Auto" style="background:#FDF4E0;border-color:#DBBF6E;color:#7A5C10;font-family:var(--mono);font-weight:700"></div></div>';
+  calcCPU();
+}
+
+function dcpGoToDosing(){
+  calcCPU();
+  if(!dcp.cpuIn||!dcp.cpuIn.i1){toast('Enter a pack price first');return;}
+  dcp.step='dosing'; ps=dcp; renderDCPStep();
+}
+
+function renderDCPDosing(){
+  ps=dcp;
+  document.getElementById('dcp-abar').style.display='flex';
+  document.getElementById('dcp-save').textContent='✓ Apply to BIM Tool';
+  document.getElementById('dcp-save').onclick=function(){dcpSaveToTx();};
+  var dt=dcp.dt, cfg=dt.dos, inp=dcp.dosIn||{}, i3u=(dcp.cpuIn&&dcp.cpuIn.i3u)||'mg';
+
+  var wtRow=cfg.showWt
+    ?'<div class="fg"><label class="fl"><span class="rid">I3</span> Patient Weight (kg)</label>'
+      +'<input class="fi" type="number" id="d-wt" value="'+(inp.wt||'')+'" oninput="calcDos()" placeholder="e.g. 70">'
+      +'<span class="fhint">Standard modelling weight</span></div>'
+    :'<div></div>';
+  var bsaRow=cfg.showBSA
+    ?'<div class="fg"><label class="fl"><span class="rid">I4</span> BSA (m²)</label>'
+      +'<input class="fi" type="number" id="d-bsa" value="'+(inp.bsa||'')+'" oninput="calcDos()" placeholder="e.g. 1.73">'
+      +'<div style="display:flex;gap:5px;margin-top:4px">'
+      +'<input class="fi" type="number" id="bsa-h" placeholder="Height (cm)" style="flex:1" oninput="autoBSA()">'
+      +'<input class="fi" type="number" id="bsa-w" placeholder="Wt (kg)" style="flex:1" oninput="autoBSA()"></div>'
+      +'<span class="fhint">Or enter height+weight (Mosteller)</span></div>'
+    :'<div></div>';
+  var capRow=cfg.showCap
+    ?'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+      +'<div class="fg"><label class="fl"><span class="rid">I5</span> Max Dose Cap ('+i3u+')</label>'
+      +'<input class="fi" type="number" id="d-cap" value="'+(inp.cap||'')+'" oninput="calcDos()" placeholder="Leave blank if no cap">'
+      +'<span class="fhint">'+(cfg.capHint||'Maximum absolute dose')+'</span></div><div></div></div>'
+    :'';
+  var extRows=cfg.extraFields.map(function(ef){
+    return '<div class="fg"><label class="fl">'+ef.lbl+'</label>'
+      +'<input class="fi" type="'+(ef.type||'text')+'" id="ef-'+ef.id+'" value="'+(inp['ef_'+ef.id]||'')+'" placeholder="'+(ef.ph||'')+'">'
+      +'<span class="fhint">'+ef.hint+'</span></div>';
+  }).join('');
+
+  document.getElementById('dcp-body').innerHTML=
+    dcpTabHdr(2)
+    +'<div style="display:inline-flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11.5px;font-weight:500;color:var(--ink3);margin-bottom:14px">'+dt.emoji+' '+dt.name+'</div>'
+    +'<div class="dcp-ai-hdr"><div style="font-size:15px">✦</div><div style="flex:1">'
+    +'<div style="font-weight:600;font-size:13px;margin-bottom:6px">✦ AI: Fetch approved dosing from FDA/EMA label</div>'
+    +'<div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">'
+    +'<input class="dcp-ai-inp" id="ai-dn2" placeholder="e.g. Pembrolizumab, Keytruda">'
+    +'<button class="dcp-ai-btn" onclick="aiGetDosing()">✦ Fetch dosing</button></div>'
+    +'<div id="ail2" style="font-size:11.5px;opacity:.7;margin-top:8px;display:none">⏳ Searching…</div>'
+    +'<div id="air2" class="dcp-ai-resp"></div></div></div>'
+    +dcpSecHdr('Patient &amp; Dose Definition','','A')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    +'<div class="fg"><label class="fl"><span class="rid">I1</span> '+cfg.doseLbl+' <span style="color:var(--red)">*</span></label>'
+    +'<input class="fi" type="number" id="d-dose" value="'+(inp.dose||'')+'" oninput="calcDos()" placeholder="e.g. 200"><span class="fhint">'+cfg.doseHint+'</span></div>'
+    +'<div class="fg"><label class="fl"><span class="rid">I2</span> Dose Unit</label>'
+    +'<select class="fsel" id="d-du" onchange="onDU();calcDos()">'
+    +cfg.doseUnits.map(function(u){return '<option value="'+u+'" '+(inp.du===u?'selected':'')+'>'+u+'</option>';}).join('')
+    +'</select></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px" id="wt-bsa-row">'
+    +wtRow+bsaRow+'</div>'
+    +capRow
+    +(extRows?'<div style="display:grid;grid-template-columns:'+(cfg.extraFields.length===1?'1fr':'1fr 1fr')+';gap:12px;margin-bottom:12px">'+extRows+'</div>':'')
+    +dcpSecHdr('Absolute Dose &amp; Pack Requirement','Ceiling rounding — always rounds UP','B')
+    +'<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:16px">'
+    +dcpDRow('C1','Absolute dose per admin','c1')
+    +dcpDRow('C2','Units required — exact','c2')
+    +dcpDRow('C3','Units required — CEILING ⚠','c3')
+    +dcpDRow('C4','Wastage per administration','c4')
+    +'<div class="dcp-drow dcp-drow-gold"><span style="font-size:12px;color:#7A5C10;font-weight:600"><strong style="font-family:var(--mono);font-size:11px;margin-right:4px">C5</strong>Cost per administration (£)</span>'
+    +'<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:#7A5C10" id="c5">—</span></div></div>'
+    +dcpSecHdr('Annual Schedule','','C')
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">'
+    +'<div class="fg"><label class="fl"><span class="rid">I6</span> Dosing Frequency <span style="color:var(--red)">*</span></label>'
+    +'<select class="fsel" id="d-freq" onchange="onFreq();calcDos()">'
+    +FREQS.map(function(f){return '<option value="'+f.l+'" '+(inp.freq===f.l?'selected':'')+'>'+f.l+'</option>';}).join('')
+    +'</select>'+(cfg.freqNote?'<span class="fhint">'+cfg.freqNote+'</span>':'')+'</div>'
+    +'<div class="fg"><label class="fl"><span class="rid">I7</span> Cycle Length (days)</label>'
+    +'<input class="fi" type="number" id="d-cl" value="'+(inp.cl||'')+'" oninput="calcDos()" placeholder="e.g. 21">'
+    +'<span class="fhint">1=daily, 7=weekly, 21=q3w, 365=annual</span></div></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">'
+    +'<div class="fg"><label class="fl"><span class="rid">I8</span> Doses per Cycle</label>'
+    +'<input class="fi" type="number" id="d-dpc" value="'+(inp.dpc||1)+'" oninput="calcDos()"><span class="fhint">Day 1+8+15 of q3w → 3</span></div>'
+    +'<div class="fg"><label class="fl"><span class="rid">I9</span> Total Cycles (0=ongoing)</label>'
+    +'<input class="fi" type="number" id="d-tc" value="'+(inp.tc!=null?inp.tc:0)+'" oninput="calcDos()"><span class="fhint">0 = chronic/ongoing</span></div></div>'
+    +'<div class="dcp-outputs">'
+    +'<div style="font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#7A5C10;margin-bottom:10px">★ Key Outputs → NBI Inputs</div>'
+    +'<div style="display:flex;flex-direction:column;gap:7px">'
+    +dcpDRow('C6','Administrations per year','c6')
+    +'<div class="dcp-drow" style="background:#FDF4E0;border-color:#DBBF6E"><span style="font-size:12px;color:#7A5C10;font-weight:600"><strong style="font-family:var(--mono);font-size:11px;margin-right:4px">★1</strong>Annual Dosage / year</span>'
+    +'<span style="font-family:var(--mono);font-size:13px;font-weight:600;color:#7A5C10" id="star1">—</span></div>'
+    +'<div class="dcp-drow" style="background:#FDF4E0;border:2px solid #7A5C10"><span style="font-size:13px;color:#7A5C10;font-weight:700"><strong style="font-family:var(--mono);margin-right:4px">★2</strong>Annual Cost per Patient (£)</span>'
+    +'<span style="font-family:var(--mono);font-size:16px;font-weight:700;color:#7A5C10" id="star2">—</span></div>'
+    +'</div>'
+    +'<div style="margin-top:12px;padding-top:12px;border-top:1px solid #DBBF6E;font-size:11px;color:#7A5C10;line-height:1.5">'
+    +'<strong>BIM mapping:</strong> Cost/Unit = D3 · Dose/Admin = C3 (ceiling) · Dosage Period = C6 (admins/yr)<br>'
+    +'Annual Cost check: C3 × C6 × D3 = ★2</div></div>';
+  onDU(); onFreq(); calcDos();
+}
+
+function dcpSaveToTx(){
+  calcDos();
+  var dc=dcp.dosCalc;
+  if(!dc||!dc.star2){toast('Complete the dosing inputs first');return;}
+  var tid=dcp.tid, dt=dcp.dt, cc=dcp.cpuCalc||{}, ci=dcp.cpuIn||{}, di=dcp.dosIn||{};
+  if(!S.txCost[tid]) S.txCost[tid]={};
+  var t=S.txCost[tid];
+  // BIM: annCost = dosePerAdmin * dosagePeriod * costPerUnit
+  // Map: dosePerAdmin=C3 (units/admin ceiling), dosagePeriod=C6 (admins/yr), costPerUnit=D3 (£/unit)
+  t.pricePerPack=ci.i1||0;
+  t.packsize=ci.i2||1;
+  t.unitsPerPack=1;
+  t.costPerUnit=cc.d3||0;
+  t.dosePerAdmin=dc.c3||0;
+  t.dosagePeriod=dc.c6||365;
+  t.unit=ci.i3u||'mg';
+  t.molType=dt.name;
+  t.doseSched=(di.freq)||'';
+  // Store drug calc state for re-editing
+  t._dcDrugTypeId=dcp.drugTypeId;
+  t._dcCpuIn=JSON.parse(JSON.stringify(ci));
+  t._dcDosIn=JSON.parse(JSON.stringify(di));
+  t._dcCpuCalc=JSON.parse(JSON.stringify(cc));
+  t._dcDosCalc=JSON.parse(JSON.stringify(dc));
+  // Recalculate BIM
+  syncAll(); compute(); updateCalcs(); renderBITable(); renderTxTable();
+  closeDrugCalc();
+  toast('\u2713 Applied \u2014 Annual cost: \u00a3'+fmtN(Math.round(dc.star2))+'/patient/yr');
+}
 </script>
 
 <div id="chartjs-warn" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#7f1d1d;color:#fca5a5;padding:10px 20px;border-radius:6px;font-size:11px;font-weight:600;z-index:9999;">&#9888; Chart.js unavailable. Charts will not render. Calculations unaffected.</div>
 
+
+<div id="dcp-ov" onclick="if(event.target===this)closeDrugCalc()">
+  <div id="dcp-panel">
+    <div class="dcp-phdr">
+      <div>
+        <div style="font-weight:700;font-size:17px" id="dcp-title">Drug Cost Calculator</div>
+        <div style="font-size:11.5px;opacity:.75;margin-top:2px">14 drug type templates · AI-assisted · Pack &amp; dosing → NBI</div>
+      </div>
+      <button class="dcp-xbtn" onclick="closeDrugCalc()">×</button>
+    </div>
+    <div id="dcp-body" style="padding:22px;flex:1"></div>
+    <div id="dcp-abar" style="display:none;align-items:center;gap:10px;padding:14px 22px;border-top:1px solid var(--border);background:var(--surface);position:sticky;bottom:0;flex-shrink:0">
+      <button id="dcp-save" style="background:var(--teal);color:#fff;border:none;border-radius:8px;padding:9px 18px;font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer">Save</button>
+      <button onclick="closeDrugCalc()" style="background:none;border:1.5px solid var(--border);border-radius:8px;padding:9px 15px;font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;color:var(--ink4)">Cancel</button>
+      <div style="flex:1"></div>
+      <button onclick="dcp.step='select-type';renderDCPStep()" style="background:none;border:none;font-size:11px;color:var(--ink4);cursor:pointer">← Change drug type</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
