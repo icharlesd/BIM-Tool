@@ -371,151 +371,12 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .tx-cta{display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#0c2218,#1B4332);border-radius:10px;padding:12px 16px;color:#fff}
 .tx-calc-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:7px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap}
 .tx-calc-btn:hover{background:rgba(255,255,255,.25)}
-
-/* ════════════════════════════════════════════════
-   MOBILE RESPONSIVE — breakpoint ≤ 768px
-   ════════════════════════════════════════════════ */
-@media screen and (max-width:768px){
-
-  /* Allow page to scroll naturally */
-  html,body{height:auto;overflow:visible;}
-
-  /* Header — tighten */
-  #hdr{padding:0 12px;height:48px;}
-  #hdr-title h1{font-size:13px;}
-  #hdr-sub{display:none;}
-  .hdr-badge{display:none;}
-
-  /* Nav tabs — scrollable row */
-  #nav{padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .ntab{padding:0 10px;height:40px;font-size:10px;}
-
-  /* Save bar — compact */
-  #save-bar{height:auto;padding:6px 10px;flex-wrap:wrap;gap:6px;}
-  .sb-group{flex-wrap:wrap;gap:4px;}
-  .sbbtn{height:28px;padding:0 10px;font-size:10px;}
-  #save-ts{display:none;}
-
-  /* Pages — full height scroll, no fixed height */
-  .page{height:auto!important;overflow:visible!important;display:none;flex-direction:column;}
-  .page.active{display:flex;height:auto!important;overflow:visible!important;min-height:100vh;}
-  .inner{padding:12px;max-width:100%;overflow:visible;}
-
-  /* ── PSA PAGE MOBILE FIX ── */
-  /* Stack left panel above right panel */
-  .psa-layout{
-    display:flex!important;
-    flex-direction:column!important;
-    grid-template-columns:none!important;
-    min-height:0!important;
-  }
-  /* Left config panel — full width, auto height, NOT sticky */
-  #psa-l{
-    width:100%!important;
-    height:auto!important;
-    position:relative!important;
-    top:auto!important;
-    overflow-y:visible!important;
-    border-right:none!important;
-    border-bottom:1px solid var(--border);
-    padding:14px!important;
-  }
-  /* Right results panel — full width */
-  #psa-r{padding:14px!important;width:100%!important;}
-
-  /* PSA Run button — always full width, big tap target */
-  .run-psa-full-btn{
-    height:52px!important;
-    font-size:15px!important;
-    border-radius:12px!important;
-  }
-
-  /* Distribution cards — full width */
-  .dc{margin-bottom:8px;}
-  .dcf{grid-template-columns:1fr!important;}
-
-  /* PSA progress bar — visible */
-  #pw{margin-top:12px;}
-
-  /* KPI row — 2 columns on mobile */
-  .krow{grid-template-columns:repeat(2,1fr)!important;gap:8px;}
-  .kpi{padding:10px 8px;}
-  .kv{font-size:14px;}
-
-  /* Results banner — stack vertically */
-  #bann{flex-direction:column;}
-  .bi2{border-right:none!important;border-bottom:1px solid var(--border);}
-  .bi2:last-child{border-bottom:none;}
-
-  /* Chart tabs — scrollable */
-  .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .tbtn{padding:8px 12px;font-size:11px;white-space:nowrap;}
-
-  /* Tornado chart — scroll */
-  #tornado-chart-wrap{overflow-x:auto;padding:12px;}
-
-  /* Budget Impact summary cards — 2 cols */
-  .bi-sum{grid-template-columns:repeat(2,1fr)!important;gap:8px;}
-  .bi-card-val,.bv{font-size:16px;}
-
-  /* Scenario grid — 1 col */
-  .sc-grid{grid-template-columns:1fr!important;}
-
-  /* Threshold grid — 1 col */
-  .thresh-grid{grid-template-columns:1fr!important;}
-
-  /* Section 8 — drug calc 2-col → 1 col */
-  .tx-prod-card > div[style*="grid-template-columns:1fr 1fr"]{
-    grid-template-columns:1fr!important;
-  }
-  .tx-ann-bar{flex-direction:column;align-items:flex-start;gap:6px;}
-
-  /* Tables — horizontal scroll */
-  .sec-body{overflow-x:auto;padding:12px;}
-  .btbl{min-width:500px;}
-
-  /* Cascade / comparator rows */
-  .csc{flex-wrap:wrap;gap:6px;}
-  .csc-n{min-width:60px;}
-
-  /* Drug calc panel — full screen on mobile */
-  #dcp-panel{width:100vw!important;max-width:100vw!important;}
-  .dcp-phdr{padding:14px 16px;}
-
-  /* Section 8 drug calc layout — single column */
-  .tx-prod-card > div > div[style*="grid-template-columns:1fr 1fr"]{
-    display:flex!important;flex-direction:column!important;
-  }
-
-  /* PSA SA controls — stack */
-  .sa-header{flex-direction:column;}
-  .sa-controls{flex-direction:column;width:100%;}
-  .sa-ctrl-group{width:100%;}
-  .run-sa-btn{width:100%;}
-
-  /* Breakeven / threshold tables */
-  #annual-nbi-tbl{overflow-x:auto;}
-
-  /* Form grids inside sections — single column */
-  .fg-auto{grid-template-columns:1fr!important;}
-  .fr.c2{grid-template-columns:1fr!important;}
-
-  /* Version stamp — hide on mobile */
-  div[style*="position:fixed;top:0;right:0"]:not(#dcp-ov){display:none!important;}
-}
-
-/* Extra small — ≤ 480px */
-@media screen and (max-width:480px){
-  .krow{grid-template-columns:1fr 1fr!important;}
-  .bi-sum{grid-template-columns:1fr 1fr!important;}
-  .ntab{padding:0 8px;font-size:9px;}
-  .ntab-num{display:none;}
-  #psa-l h2{font-size:14px;}
-  .bvv{font-size:15px;}
-}
+.exp-mode-btn{background:var(--surface);border:1.5px solid var(--border);cursor:pointer;font-family:var(--font);transition:all .14s;color:var(--ink4);display:block}
+.exp-mode-btn:hover{border-color:var(--teal);background:var(--teal-light);color:var(--teal)}
+.exp-mode-on{border-color:var(--teal)!important;background:var(--teal-light)!important;color:var(--teal)!important}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1776115773</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778787433</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -1268,6 +1129,8 @@ function syncAll(){
     S.npUptake[y]=gn('up-y'+y,S.npUptake[y]||5);
     S.expansionRates[y]=gn('exp-y'+y,S.expansionRates[y]||1);
   }
+  var _emBtn=document.querySelector('.exp-mode-btn.exp-mode-on');
+  if(_emBtn) S.expansionMode=_emBtn.getAttribute('data-mode')||'proportional';
   S.usePatVolOverride=$('vol-override-toggle')&&$('vol-override-toggle').checked;
   if(S.usePatVolOverride){
     for(var y=0;y<S.years;y++) S.patVolOverride[y]=gn('vol-ov-y'+y,S.patVolOverride[y]||0);
@@ -1336,12 +1199,22 @@ function compute(){
     var up=(S.npUptake[y]||0)/100;
     var totPop=patVol[y]*(1+expRate);
     expandedPop.push(totPop);
-    expPts.np.push(totPop*up);
-    S.comparators.forEach(function(c){
-      var befMs=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
-      var capProp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
-      expPts[c.id].push(totPop*Math.max(0,befMs-up*capProp));
-    });
+    var modeA=(S.expansionMode||'proportional')==='np-only';
+    if(modeA){
+      expPts.np.push(patVol[y]*up+patVol[y]*expRate);
+      S.comparators.forEach(function(c){
+        var bm=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
+        var cp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
+        expPts[c.id].push(patVol[y]*Math.max(0,bm-up*cp));
+      });
+    } else {
+      expPts.np.push(totPop*up);
+      S.comparators.forEach(function(c){
+        var bm=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
+        var cp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
+        expPts[c.id].push(totPop*Math.max(0,bm-up*cp));
+      });
+    }
   }
 
   var aftCostTot=[];
@@ -1686,7 +1559,22 @@ function renderSubsTable(){
 // ==================== EXP TABLE ====================
 function renderExpTable(){
   var yrs=S.years,comps=S.comparators,np=S.npName;
-  var h='<table class="btbl"><thead>'+yrHdr(yrs,'Parameter')+'</thead><tbody>';
+  var modeA=(S.expansionMode||'proportional')==='np-only';
+  var h='';
+  h+='<div style="display:flex;gap:8px;margin-bottom:14px">';
+  h+='<button class="exp-mode-btn'+(!modeA?' exp-mode-on':'')+'" data-mode="proportional" onclick="setExpMode(&quot;proportional&quot;)" style="flex:1;padding:10px 14px;text-align:left;border-radius:8px">';
+  h+='<div style="font-size:11px;font-weight:700;margin-bottom:2px">B — Proportional (Sullivan 2014)</div>';
+  h+='<div style="font-size:10px;line-height:1.4;color:inherit">Expansion split by market share across all products (ISPOR standard)</div></button>';
+  h+='<button class="exp-mode-btn'+(modeA?' exp-mode-on':'')+'" data-mode="np-only" onclick="setExpMode(&quot;np-only&quot;)" style="flex:1;padding:10px 14px;text-align:left;border-radius:8px">';
+  h+='<div style="font-size:11px;font-weight:700;margin-bottom:2px">A — New Drug Only (Keshalini)</div>';
+  h+='<div style="font-size:10px;line-height:1.4;color:inherit">100% of expansion patients captured by new drug only</div></button>';
+  h+='</div>';
+  h+='<div style="font-size:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;color:var(--ink4)">';
+  h+=modeA
+    ?'<strong>A active:</strong> xx patients = (basePop × uptake%) + all expansion. Comparators: basePop × aftMS only.'
+    :'<strong>B active:</strong> All products use expandedPop = basePop × (1 + expRate). Standard World With/Without.';
+  h+='</div>';
+  h+='<table class="btbl"><thead>'+yrHdr(yrs,'Parameter')+'</thead><tbody>';
   h+='<tr class="dr"><td class="rl ind">Expansion Rate (%)</td>';
   for(var i=0;i<yrs;i++) h+='<td class="tc"><input type="number" id="exp-y'+i+'" value="'+(S.expansionRates[i]||1)+'" min="0" step="any" class="inp-rate" oninput="d_rc()"/></td>';
   h+='<td></td></tr>';
@@ -4298,6 +4186,13 @@ function fmt(n,dec){
   if(Math.abs(n)<0.0001&&n!==0)return n.toExponential(4);
   return n.toLocaleString('en-GB',{minimumFractionDigits:0,maximumFractionDigits:dec});
 }
+function setExpMode(mode){
+  S.expansionMode=mode;
+  document.querySelectorAll(".exp-mode-btn").forEach(function(b){if(b.getAttribute("data-mode")===mode)b.classList.add("exp-mode-on");else b.classList.remove("exp-mode-on");});
+  compute();updateCalcs();renderBITable();renderExpTable();renderSubsTable();
+  toast(mode==="np-only"?"✔ Option A active — all expansion → new drug only. 3yr NBI: "+fmtM(D.totalNet):"✔ Option B active — proportional split (Sullivan 2014). 3yr NBI: "+fmtM(D.totalNet));
+}
+
 // ══ DRUG COST CALCULATOR INTEGRATION ══
 const DT = {
   tablet:{id:'tablet',emoji:'💊',name:'Tablets',cpu:{strengthUnits:['mg','mcg','g','IU'],defSU:'mg',strengthLbl:'Strength per tablet',strengthHint:'e.g. 40 mg for Atorvastatin 40mg tablet',packSizeLbl:'Tablets per pack',packSizeHint:'e.g. 28, 30, 84 tablets per pack',showConc:false,showVol:false,costOpts:[{v:'per_tablet',l:'Per tablet (D3) — recommended'},{v:'per_mg',l:'Per mg (D2)'}],defCost:'per_tablet',d2lbl:'Cost per mg',d3lbl:'Cost per tablet',d4lbl:null},dos:{doseUnits:['mg','mcg','g','tablet(s)'],defDU:'mg',doseLbl:'Dose per administration',doseHint:'e.g. 40 for 40mg once daily',showWt:false,showBSA:false,showCap:false,extraFields:[],freqNote:'Most tablets taken once or twice daily'}},
