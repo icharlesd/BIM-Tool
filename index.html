@@ -376,7 +376,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .exp-mode-on{border-color:var(--teal)!important;background:var(--teal-light)!important;color:var(--teal)!important}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778788465</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778789216</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -1197,23 +1197,21 @@ function compute(){
   for(var y=0;y<yrs;y++){
     var expRate=(S.expansionRates[y]||0)/100;
     var up=(S.npUptake[y]||0)/100;
-    var totPop=patVol[y]*(1+expRate);
-    expandedPop.push(totPop);
-    var modeA=(S.expansionMode||'proportional')==='np-only';
-    if(modeA){
-      expPts.np.push(patVol[y]*up+patVol[y]*expRate);
-      S.comparators.forEach(function(c){
-        var bm=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
-        var cp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
-        expPts[c.id].push(patVol[y]*Math.max(0,bm-up*cp));
-      });
+    var expPts_n=patVol[y]*expRate; // expansion patients = basePop × expRate%
+    expandedPop.push(patVol[y]*(1+expRate)); // kept for display only
+    // Comparators ALWAYS use basePop × aftMS% (spreadsheet methodology)
+    S.comparators.forEach(function(c){
+      var bm=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
+      var cp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
+      expPts[c.id].push(patVol[y]*Math.max(0,bm-up*cp));
+    });
+    // New drug: substitution only OR substitution + expansion
+    if((S.expansionMode||'subs-exp')==='subs-exp'){
+      // Subs & Exp: xx gets substitution patients + ALL expansion patients
+      expPts.np.push(patVol[y]*up + expPts_n);
     } else {
-      expPts.np.push(totPop*up);
-      S.comparators.forEach(function(c){
-        var bm=((S.befMS[c.id]&&S.befMS[c.id][y])||0)/100;
-        var cp=((S.captureProp[c.id]&&S.captureProp[c.id][y])||0)/100;
-        expPts[c.id].push(totPop*Math.max(0,bm-up*cp));
-      });
+      // Subs only: xx gets substitution patients only
+      expPts.np.push(patVol[y]*up);
     }
   }
 
@@ -1559,20 +1557,20 @@ function renderSubsTable(){
 // ==================== EXP TABLE ====================
 function renderExpTable(){
   var yrs=S.years,comps=S.comparators,np=S.npName;
-  var modeA=(S.expansionMode||'proportional')==='np-only';
+  var mode=S.expansionMode||'subs-exp';
   var h='';
   h+='<div style="display:flex;gap:8px;margin-bottom:14px">';
-  h+='<button class="exp-mode-btn'+(!modeA?' exp-mode-on':'')+'" data-mode="proportional" onclick="setExpMode(\'proportional\')" style="flex:1;padding:10px 14px;text-align:left;border-radius:8px">';
-  h+='<div style="font-size:11px;font-weight:700;margin-bottom:2px">B — Proportional (Sullivan 2014)</div>';
-  h+='<div style="font-size:10px;line-height:1.4;color:inherit">Expansion split by market share across all products (ISPOR standard)</div></button>';
-  h+='<button class="exp-mode-btn'+(modeA?' exp-mode-on':'')+'" data-mode="np-only" onclick="setExpMode(\'np-only\')" style="flex:1;padding:10px 14px;text-align:left;border-radius:8px">';
-  h+='<div style="font-size:11px;font-weight:700;margin-bottom:2px">A — New Drug Only (Keshalini)</div>';
-  h+='<div style="font-size:10px;line-height:1.4;color:inherit">100% of expansion patients captured by new drug only</div></button>';
+  h+='<button class="exp-mode-btn'+(mode!=='subs-exp'?' exp-mode-on':'')+'" data-mode="subs" onclick="setExpMode(\'subs\')" style="flex:1;padding:10px 14px;text-align:left;border-radius:8px">';
+  h+='<div style="font-size:11px;font-weight:700;margin-bottom:2px">Substitution Only</div>';
+  h+='<div style="font-size:10px;line-height:1.4;color:inherit">No expansion — new drug replaces existing patients only. NBI = substitution effect only.</div></button>';
+  h+='<button class="exp-mode-btn'+(mode==='subs-exp'?' exp-mode-on':'')+'" data-mode="subs-exp" onclick="setExpMode(\'subs-exp\')" style="flex:1;padding:10px 14px;text-align:left;border-radius:8px">';
+  h+='<div style="font-size:11px;font-weight:700;margin-bottom:2px">Substitution + Expansion</div>';
+  h+='<div style="font-size:10px;line-height:1.4;color:inherit">New drug gains all expansion patients on top of substitution. NBI includes drug-driven access uplift.</div></button>';
   h+='</div>';
   h+='<div style="font-size:10px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;color:var(--ink4)">';
-  h+=modeA
-    ?'<strong>A active:</strong> xx patients = (basePop × uptake%) + all expansion. Comparators: basePop × aftMS only.'
-    :'<strong>B active:</strong> All products use expandedPop = basePop × (1 + expRate). Standard World With/Without.';
+  h+=mode==='subs-exp'
+    ?'<strong>Subs &amp; Exp active:</strong> xx patients = (basePop × uptake%) + (basePop × expRate%). Comparators unchanged.'
+    :'<strong>Subs Only active:</strong> xx patients = basePop × uptake%. No expansion. Comparators: basePop × aftMS%.';
   h+='</div>';
   h+='<table class="btbl"><thead>'+yrHdr(yrs,'Parameter')+'</thead><tbody>';
   h+='<tr class="dr"><td class="rl ind">Expansion Rate (%)</td>';
@@ -1768,7 +1766,7 @@ function renderBITable(){
     btsDir.style.fontSize='15px';
   }
 
-  var _modeA=(S.expansionMode||'proportional')==='np-only';
+  var _modeA=(S.expansionMode||'subs-exp')==='subs-exp';
   var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap">';
   h+='<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink4)">Expansion method:</span>';
   h+='<button onclick="setExpMode(\'proportional\')" style="padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);border:1.5px solid '+(!_modeA?'var(--teal)':'var(--border)')+';background:'+(!_modeA?'var(--teal-light)':'var(--surface)')+';color:'+(!_modeA?'var(--teal)':'var(--ink4)')+'">'+(!_modeA?'✓ ':'')+'B — Proportional</button>';
