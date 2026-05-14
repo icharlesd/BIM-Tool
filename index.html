@@ -376,7 +376,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .exp-mode-on{border-color:var(--teal)!important;background:var(--teal-light)!important;color:var(--teal)!important}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778794413</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778796329</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -3668,18 +3668,22 @@ function renderFromS(){
   // Snapshot loaded state into PSA cfg so PSA tab reflects loaded scenario
   cfg._S=JSON.parse(JSON.stringify(S));
   cfg._D=JSON.parse(JSON.stringify(D));
-
-  // Snapshot loaded state into cfg so PSA tab uses loaded scenario
-  cfg._S=JSON.parse(JSON.stringify(S));
-  cfg._D=JSON.parse(JSON.stringify(D));
   // Force re-render after DOM settles
   setTimeout(function(){
-    setExpMode(S.expansionMode||'subs-exp'); // ensure buttons correct after DOM settles
-    syncAll(); compute(); updateCalcs();
-    renderBITable();
+    // Re-render all sections once DOM has settled
+    renderCompList();
+    renderCascade();
+    renderGrowthFields();
+    renderVolTable();
+    renderBefTable();
     renderSubsTable();
     renderExpTable();
-  }, 50);
+    renderTxTable();
+    renderBITable();
+    setExpMode(S.expansionMode||'subs-exp');
+    // updateCalcs LAST — fills all '—' spans after all tables are built
+    syncAll(); compute(); updateCalcs();
+  }, 100);
 }
 
 function _restoreS(saved){
