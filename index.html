@@ -376,7 +376,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .exp-mode-on{border-color:var(--teal)!important;background:var(--teal-light)!important;color:var(--teal)!important}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778789216</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778794413</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -1129,8 +1129,7 @@ function syncAll(){
     S.npUptake[y]=gn('up-y'+y,S.npUptake[y]||5);
     S.expansionRates[y]=gn('exp-y'+y,S.expansionRates[y]||1);
   }
-  var _emBtn=document.querySelector('.exp-mode-btn.exp-mode-on');
-  if(_emBtn) S.expansionMode=_emBtn.getAttribute('data-mode')||'proportional';
+  // expansionMode managed by setExpMode() and _restoreS() only
   S.usePatVolOverride=$('vol-override-toggle')&&$('vol-override-toggle').checked;
   if(S.usePatVolOverride){
     for(var y=0;y<S.years;y++) S.patVolOverride[y]=gn('vol-ov-y'+y,S.patVolOverride[y]||0);
@@ -1396,6 +1395,7 @@ renderAll(){
   renderBefTable();
   renderSubsTable();
   renderExpTable();
+  setExpMode(S.expansionMode||'subs-exp'); // highlight correct button
   renderTxTable();
   renderBITable();
 }
@@ -1769,8 +1769,8 @@ function renderBITable(){
   var _modeA=(S.expansionMode||'subs-exp')==='subs-exp';
   var h='<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap">';
   h+='<span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--ink4)">Expansion method:</span>';
-  h+='<button onclick="setExpMode(\'proportional\')" style="padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);border:1.5px solid '+(!_modeA?'var(--teal)':'var(--border)')+';background:'+(!_modeA?'var(--teal-light)':'var(--surface)')+';color:'+(!_modeA?'var(--teal)':'var(--ink4)')+'">'+(!_modeA?'✓ ':'')+'B — Proportional</button>';
-  h+='<button onclick="setExpMode(\'np-only\')" style="padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);border:1.5px solid '+(_modeA?'var(--teal)':'var(--border)')+';background:'+(_modeA?'var(--teal-light)':'var(--surface)')+';color:'+(_modeA?'var(--teal)':'var(--ink4)')+'">'+(_modeA?'✓ ':'')+'A — New Drug Only</button>';
+  h+='<button onclick="setExpMode(\'subs\')" style="padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);border:1.5px solid '+(!_modeA?'var(--teal)':'var(--border)')+';background:'+(!_modeA?'var(--teal-light)':'var(--surface)')+';color:'+(!_modeA?'var(--teal)':'var(--ink4)')+'">'+(!_modeA?'✓ ':'')+'Subs Only</button>';
+  h+='<button onclick="setExpMode(\'subs-exp\')" style="padding:4px 12px;border-radius:99px;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);border:1.5px solid '+(_modeA?'var(--teal)':'var(--border)')+';background:'+(_modeA?'var(--teal-light)':'var(--surface)')+';color:'+(_modeA?'var(--teal)':'var(--ink4)')+'">'+(_modeA?'✓ ':'')+'A — New Drug Only</button>';
   h+='<span style="font-size:10px;color:var(--ink4);margin-left:4px">3yr NBI: <strong>'+fmtM(D.totalNet)+'</strong></span>';
   h+='</div>';
   h+='<div class="bi-sum">'
@@ -3674,6 +3674,7 @@ function renderFromS(){
   cfg._D=JSON.parse(JSON.stringify(D));
   // Force re-render after DOM settles
   setTimeout(function(){
+    setExpMode(S.expansionMode||'subs-exp'); // ensure buttons correct after DOM settles
     syncAll(); compute(); updateCalcs();
     renderBITable();
     renderSubsTable();
@@ -4195,7 +4196,7 @@ function setExpMode(mode){
   S.expansionMode=mode;
   document.querySelectorAll(".exp-mode-btn").forEach(function(b){if(b.getAttribute("data-mode")===mode)b.classList.add("exp-mode-on");else b.classList.remove("exp-mode-on");});
   compute();updateCalcs();renderBITable();renderExpTable();renderSubsTable();
-  toast(mode==="np-only"?"✔ Option A active — all expansion → new drug only. 3yr NBI: "+fmtM(D.totalNet):"✔ Option B active — proportional split (Sullivan 2014). 3yr NBI: "+fmtM(D.totalNet));
+  toast(mode==="subs-exp"?"✔ Subs + Expansion active. 3yr NBI: "+fmtM(D.totalNet):"✔ Substitution Only active. 3yr NBI: "+fmtM(D.totalNet));
 }
 
 // ══ DRUG COST CALCULATOR INTEGRATION ══
