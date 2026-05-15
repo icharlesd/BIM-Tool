@@ -376,7 +376,7 @@ input[type=number]::-webkit-inner-spin-button{opacity:.4;}
 .exp-mode-on{border-color:var(--teal)!important;background:var(--teal-light)!important;color:var(--teal)!important}
 </style>
 </head>
-<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778879823</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
+<body><div style="position:fixed;top:0;right:0;background:#0d5c63;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1778881998</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775782645</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775780642</div><div style="position:fixed;top:0;right:0;background:#1d4ed8;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775779290</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777672</div><div style="position:fixed;top:0;right:0;background:#b45309;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777528</div><div style="position:fixed;top:0;right:0;background:#7c3aed;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1775777226</div><div style="position:fixed;top:0;right:0;background:#0d7a5f;color:#fff;padding:3px 8px;font-size:10px;font-family:monospace;z-index:9999;border-radius:0 0 0 6px;">v1774995648</div>
 
 <!-- =================== PRINT HEADER =================== -->
 <div id="print-header">
@@ -2258,12 +2258,15 @@ function _getWorker(){
             var schedUptake=(ss.npUptake[y]||ss.npUptake[0]||5)/100;
             var uR=Math.min(1,Math.max(0,schedUptake*uMult));
             var expR=(ss.expansionRates[y]||0)/100;
-            var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;
+            var expMode=ss.expansionMode||'subs-exp';
+            // Match base case: xx gets basePop*uR + expansion; comparators use basePop only
+            var xxPts=pop*uR+(expMode==='subs-exp'?pop*expR:0);
+            var bef=0,aft=xxPts*npCs;
             ss.comparators.forEach(function(c){
               var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;
               var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;
               bef+=pop*bMs*ccs[c.id];
-              aft+=tPop*Math.max(0,bMs-uR*cP)*ccs[c.id];
+              aft+=pop*Math.max(0,bMs-uR*cP)*ccs[c.id];
             });
             var nbiY=aft-bef;
             tot+=nbiY;
@@ -3061,13 +3064,15 @@ function _evalBIM(npCs, pY1, drawnY1vd, ss, dd, yrs, popBase){
     var uY=(ss.npUptake[y]||ss.npUptake[0]||5)/100;
     var uR=Math.min(1,Math.max(0,uY*uM));
     var expR=(ss.expansionRates[y]||0)/100;
-    var tPop=pop*(1+expR),bef=0,aft=tPop*uR*npCs;
+    var expMode=ss.expansionMode||'subs-exp';
+    var xxPts=pop*uR+(expMode==='subs-exp'?pop*expR:0);
+    var bef=0,aft=xxPts*npCs;
     ss.comparators.forEach(function(c){
       var bMs=((ss.befMS[c.id]&&ss.befMS[c.id][y])||0)/100;
       var cP=((ss.captureProp[c.id]&&ss.captureProp[c.id][y])||0)/100;
       var cc=dd.compAnn[c.id]||0;
       bef+=pop*bMs*cc;
-      aft+=tPop*Math.max(0,bMs-uR*cP)*cc;
+      aft+=pop*Math.max(0,bMs-uR*cP)*cc;
     });
     tot+=(aft-bef);
   }
